@@ -9,6 +9,7 @@ typeset image_name=$(get_env_file_entry $key_name_image $env_file)
 typeset port_be=$(get_env_file_entry $key_name_port_be $env_file)
 typeset port_fe=$(get_env_file_entry $key_name_port_fe $env_file)
 typeset create_image=0
+export DOCKER_CLI_HINTS=false
 
 (($rc == 0)) && cd $gitroot &&
     {
@@ -63,7 +64,7 @@ typeset create_image=0
                     logger 1 "Found running container \"$container_id\""
                     rc=0
 
-                    [[ -n "$(eval $docker_exec -it $container_id bash -c 'grep RESOURCE_GROUP_NAME /app/.env 2>/dev/null')" ]] &&
+                    eval $docker_exec -it $container_id bash -c \'grep RESOURCE_GROUP_NAME /app/.env \>/dev/null 2\>\&1\' &&
                         {
                             cmd="setup_launch.sh"
                             msg="to restart foodvibes-ai"
