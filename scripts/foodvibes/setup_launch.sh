@@ -3,6 +3,8 @@ typeset slug="Start the back-end and front-end services"
 . $(cd ${0%$(basename $0)} && pwd)/common.sh "${1}" "${2}" 0 "$slug"
 
 (($rc == 0)) &&
+    database_check_if_exists "$resource_group_name" "$database_server" "$database_name" 0 &&
+    database_update_firewall_rules "$resource_group_name" "$database_server" &&
     {
         rc=1
         typeset pid_be=0
