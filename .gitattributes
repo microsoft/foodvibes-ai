@@ -1,0 +1,11 @@
+# Handle text files (note: do not apply text=lf to all as it corrupts binary files such as images)
+* text=auto
+
+# Explicitly set line endings for specific text files
+*.txt text eol=lf
+*.sh text eol=lf
+*.py text eol=lf
+*.js text eol=lf
+*.jsx text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf

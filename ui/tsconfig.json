@@ -1,0 +1,35 @@
+{
+    "compilerOptions": {
+        "target": "ESNext",
+        "useDefineForClassFields": true,
+        "lib": ["DOM", "DOM.Iterable", "ESNext"],
+        "allowJs": false,
+        "skipLibCheck": true,
+        "esModuleInterop": false,
+        "allowSyntheticDefaultImports": true,
+        "strict": true,
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "noEmit": true,
+        "jsx": "react-jsx",
+        "types": ["vitest/globals", "node"],
+        "rootDir": "./",
+        "sourceMap": true,
+        "declaration": false,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "importHelpers": true,
+        "noImplicitAny": false,
+        "skipDefaultLibCheck": true
+    },
+    "extends": "./tsconfig.paths.json",
+    "references": [
+        {
+            "path": "./tsconfig.node.json"
+        }
+    ],
+    "compileOnSave": false,
+    "exclude": ["node_modules", "tmp"]
+}
