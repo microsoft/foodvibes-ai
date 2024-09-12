@@ -3,8 +3,9 @@
 Clone this repo to a local folder and run
 ```
     cd foodvibes.ai
-    ./scripts/setup/foodvibes/setup_docker.sh # and follow prompts
+    ./scripts/setup/foodvibes/setup_docker.sh
 ```
+and follow prompts
 
 # Introduction
 

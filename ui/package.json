@@ -6,7 +6,7 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "start": "vite --host",
+        "start": "vite --clearScreen false --host",
         "build": "tsc && vite build",
         "preview": "vite preview",
         "test": "vitest run",

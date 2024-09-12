@@ -135,6 +135,65 @@ set_env_file_entry() {
     return 0
 }
 
+database_check_if_exists() {
+    local resource_group_name="$1"
+    local database_server="$2"
+    local database_name="$3"
+    local silent=${4:-1}
+    local rc=1
+
+    # Check if the SQL Database exists
+    databaseExists=$(az sql db list --resource-group $resource_group_name --server $database_server --query "[?name=='$database_name'] | length(@)")
+
+    (($databaseExists == 1)) &&
+    {
+        logger 1 "SQL Database \"$database_name\" exists on server \"$database_server\" in resource group \"$resource_group_name\""
+        rc=0
+    }
+
+    (($rc != 0 && $silent == 0)) &&
+        logger 2 "SQL Database \"$database_name\" NOT found exists on server \"$database_server\" in resource group \"$resource_group_name\""
+
+    return $rc
+}
+
+database_update_firewall_rules() {
+    local resource_group_name="$1"
+    local database_server="$2"
+    local ipaddr="$(curl -4 ifconfig.me 2>/dev/null)"
+    local rc=1
+
+    if [[ -z $ipaddr ]]; then
+        logger 2 "IP address could not be found"
+    else
+        local rule_name="AllowYourIP_${ipaddr}"
+
+        logger 0 "Checking firewall for rule \"$rule_name\"..."
+        ((log_level < 0)) && set -xv
+        az sql server firewall-rule show --resource-group $resource_group_name --server $database_server --name $rule_name >/dev/null 2>&1
+        rc=$?
+        set +xv
+
+        (($rc != 0)) &&
+            {
+                logger 0 "Creating firewall rule for IP address ${ipaddr}..."
+
+                ((log_level < 0)) && set -xv
+                az sql server firewall-rule create --resource-group $resource_group_name --server $database_server --name $rule_name --start-ip-address $ipaddr --end-ip-address $ipaddr
+                rc=$?
+                set +xv
+            }
+
+        if (($rc == 0)); then
+            logger 1 "Firewall rule \"$rule_name\" has been verified"
+        else
+            logger 2 "Firewall rule \"$rule_name\" has NOT been verified"
+        fi
+    fi
+
+    return $rc
+}
+
 get_entra_id_app_id() {
     local app_name=$1
 
@@ -449,8 +508,6 @@ typeset bingmaps_api_key=""
 typeset foodvibes_app_insights_instrumentation_key=""
 typeset database_username=""
 typeset database_password=""
-typeset database_ip_addr_start_0=""
-typeset database_ip_addr_end_0=""
 
 if (($fast_track == 1)); then
     rc=0
@@ -488,15 +545,12 @@ else
                 [[ -n "$resource_group_location" ]] && (($main_script == 1)) && (($(get_value_boolean n "Update all config entries? (y/n)") == 0)) && update_all=0
 
                 typeset suffix=$(get_unique_id)
-                typeset ipaddr_base="$(curl -4 ifconfig.me 2>/dev/null | cut -d. -f1-3)."
 
                 get_set_file_entry RESOURCE_GROUP_LOCATION resource_group_location $env_file "West US" "Resource Group location" $update_all &&
                     get_set_file_entry RESOURCE_GROUP_NAME resource_group_name $env_file "foodvibes-rg-${suffix}" &&
                     get_set_file_entry ENTRA_ID_APP_NAME entra_id_app_name $env_file "fv-app-${suffix}" &&
                     get_set_file_entry KEY_VAULT_NAME key_vault_name $env_file $(truncate_unique_id "fv-kv-${suffix}") &&
                     get_set_file_entry DATABASE_SERVER database_server $env_file "fv-dbsrv-${suffix}" &&
-                    get_set_file_entry DATABASE_IP_ADDR_START_0 database_ip_addr_start_0 $env_file "${ipaddr_base}0" &&
-                    get_set_file_entry DATABASE_IP_ADDR_END_0 database_ip_addr_end_0 $env_file "${ipaddr_base}255" &&
                     get_set_file_entry BLOB_STORAGE_ACCT blob_storage_acct $env_file $(truncate_unique_id "fvssa${suffix}") &&
                     get_set_file_entry FARMVIBES_URL farmvibes_url $env_file "" "FarmVibes.ai URL" $update_all &&
                     get_set_file_entry BINGMAPS_API_KEY bingmaps_api_key $env_file "" "Bing Maps API Key" $update_all 1 &&
