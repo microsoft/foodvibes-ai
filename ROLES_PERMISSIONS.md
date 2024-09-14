@@ -1,4 +1,4 @@
-# FoodVibes Roles & Permissions Overview
+# foodvibes-ai Roles & Permissions Overview
 
 ## Entity definition
 
@@ -6,9 +6,9 @@
 
 | **Entity**                 | **Description**                                                                                                                                                                                                                                                                                     |
 | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Product (P)**            | A unique FoodVibes record that represents a food item (e.g. coffee) or an aggregation of food items (e.g. bag of potatoes). It answers WHAT question.                                                                                                                                               |
+| **Product (P)**            | A unique foodvibes-ai record that represents a food item (e.g. coffee) or an aggregation of food items (e.g. bag of potatoes). It answers WHAT question.                                                                                                                                               |
 | **Geotrack (G)**           | A unique location where a Product is created, processed, stored, transported or consumed. It answers the WHERE question.                                                                                                                                                                            |
-| **Tracking Products (TP)** | A logical FoodVibes record that traces a food from farm to table. This record’s history of changes (ledger) represents Supply Chain (SC) activity related to the original Product and Geotrack combination all the way to the final Product and Geotrack combination. It answers the WHEN question. |
+| **Tracking Products (TP)** | A logical foodvibes-ai record that traces a food from farm to table. This record’s history of changes (ledger) represents Supply Chain (SC) activity related to the original Product and Geotrack combination all the way to the final Product and Geotrack combination. It answers the WHEN question. |
 
 ### Security-data entities
 
@@ -26,7 +26,7 @@
 
 <insert slide showing how Product, Geotrack & Tracking Products relate to one another>
 
-Externally, FoodVibes accesses ADMA for farm boundary information and FarmVibes.ai for images of farms falling within ADMA-provided boundaries.
+Externally, foodvibes-ai accesses ADMA for farm boundary information and FarmVibes.ai for images of farms falling within ADMA-provided boundaries.
 
 ## Roles & Permissions
 
