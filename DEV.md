@@ -1,17 +1,17 @@
 # DEV
 
 We recommend the usage of the provided devcontainer with VSCode to develop
-FoodVibes.
+foodvibes-ai.
 
-## Step-by-step guide
+## 1. Step-by-step guide
 
-### 1- Clone the repository and open it in a managed device
+### 1.1- Clone the repository and open it in a managed device
 
 Once you cloned the repository, open the folder using a Microsoft
 managed machine (windows or WSL). You will also need to have docker installed on
 your system.
 
-### 2- Install devcontainer extension
+### 1.2- Install devcontainer extension
 
 [Here](https://code.visualstudio.com/docs/devcontainers/containers) you will find instructions on how to install devcontainers on VSCode.
 
@@ -20,15 +20,27 @@ Containers: Open Folder in Container` and select the repository root.
 
 Once you do it, VSCode will create the dev container to you.
 
-### 3- Install/update your FoodVibes installation and start services (first-time only for a newly cloned repo)
+### 1.3- Create Docker image, spin a container and configure foodvibes-ai
 
-Open the terminal and cd to your repository's root folder and enter
+The process of Docker image creation, spining up that image in a container and configuring foodvibe-ai running inside that container is done by open a bash terminal and cd to your repository's root folder and entering
 
 ```bash
-./scripts/foodvibes/setup.sh
+./scripts/foodvibes/setup_docker.sh
 ```
 
-this will log you in Azure (if needed) and then will prompt for a number of installation-specific parameters such as
+This will 
+
+1- Create a new Docker image
+2- Sping that new Docker image in a container
+3- Start an interactive bash shell in that container
+
+Once inside the container, use
+
+```bash
+setup.sh
+```
+
+to configure and start foodvibes-ai. The setup process will log you in Azure (if needed) and then will prompt for a number of installation-specific parameters such as
 
 1- Azure location
 2- FarmVibes.ai URL
@@ -50,29 +62,100 @@ Once all information has been gathered it will
 
 The frontend UI will be avaialble under http://localhost:3000 and the backend OpenAPI interface will be under http://localhost:7478
 
-### 4- Start services (after first-time installation)
+Note: To stop the foodvibes-ai simply hit CTL-C.
 
-Open the terminal and cd to your repository's root folder and enter
-
+To restart foodvibes-ai use
 ```bash
-./scripts/foodvibes/setup_launch.sh
+setup_launch.sh
 ```
 
-this will log you in Azure (if needed) and then will
-
-- Start both backend API and fontend UI
-
-The frontend UI will be avaialble under http://localhost:3000 and the backend OpenAPI interface will be under http://localhost:7478
-
-### 5- Create a turnkey Docker image
-
-To create a turnkey Docker image  that could be used as a self-contained FoodVibes "box" (both backend API and frontend UI),
-open the terminal and cd to your repository's root folder and enter
-
+To reconfigure and restart foodvibes-ai use
 ```bash
-./scripts/foodvibes/setup_docker.sh
+setup.sh
 ```
 
-and follow prompts and instructions presented. This creates a new Docker image and spin up a container using that image.
-In a newly created container, the setup steps (see #3 above) will configure FoodVibes within the container. The container
-will then be used as a persistent instance of FoodVibes.
+### 1.4- Scripts and details (optional information)
+
+The foodvibes.ai/scripts/foodvibes/ folder contains a number of scripts that may be run inidividually to install/update various componets of the system. They are:
+
+#### setup.sh
+This is the umbrella script that invokes others in sequence.
+
+Note: This script (as well as all others accepts an optional argument as follows)
+```bash
+setup.sh # For normal setup or
+setup.sh -1 # For verbose/debug-enabled setup
+```
+This setup script may be run multiple times to update configuration values and or to retry failed steps. It is recommended to initially accept all default values when prompted.
+
+#### setup_key_vault.sh
+This script is the first set of actions that creates/update resources needed by most other scripts. It may be run to update foodvibes-ai configuration.
+
+#### setup_api.sh
+This script will set up the api component of foodvibes-ai.
+
+#### setup_ui.sh
+This script will set up the ui component of foodvibes-ai.
+
+#### setup_database.sh
+This script will set up the foodvibes-ai database. If database configuration has changed (under setup_key_vault.sh) then this script needs to be rerun to ensure database can be accessed.
+
+#### setup_launch.sh
+This script will start both api and ui components of foodvibes-ai.
+
+#### setup_farmvibes.sh
+This is a standalone script that will create and start a local instance of farmvibes-ai which is used to pull deforestation images to overlay in foodvibes-ai maps. Please note that farmvibes-ai works in conjunction with ADMA.
+
+Note: For FarmVibes.ai additional information please refer to [this document](https://github.com/microsoft/farmvibes-ai/blob/main/README.md)
+
+#### setup_docker.sh
+This is a standalone script that is used to create a Docker image and to spin up a Docker container using that image. The Docker container is where setup.sh will be used to configure and start foodvibes-ai. 
+
+
+## 2. Software dependencies
+
+All dependencies should be resolved withing Docker image created by setup_docker.sh script in the previous section
+
+## 3. Latest releases
+
+Release 1.0.0
+
+## 4. API references
+
+WepAPI interactive reference may be found by starting this foodvibes-ai and going to [/docs page](https://localhost:7478/docs)
+
+# Build and Test
+
+All build and test operations are automatically performed by setup.sh script described above.
+
+# Contribute
+
+TBD
+
+# Appendix A
+
+Instructions on how to install pyodbc and odbc
+
+## This code works for linux
+
+### Import the public repository GPG keys
+
+curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+
+### Register the Microsoft Ubuntu repository
+
+sudo add-apt-repository "$(curl https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list)"
+
+### Update the package list and install the ODBC driver
+
+sudo apt-get update
+sudo apt-get install -y msodbcsql18
+
+## Verify the installation
+
+odbcinst -j
+odbcinst -q -d -n "ODBC Driver 18 for SQL Server
+
+--
+Change log:
+Sep. 12, 2024 -- C. Kasra v-cyruskasra@microsoft.com -- Initial release
