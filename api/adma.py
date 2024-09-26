@@ -34,6 +34,11 @@ def get_geometry_from_lat_lon(lat: float, lon: float) -> BaseGeometry:
 @config.app.get("/adma/")
 @access_check(check_for_roles=True)
 async def adma_call(request: Request, id: str, lat: float, lon: float):
+    if ADMA_CLIENT is None:
+        return {
+            "status": "option=off",
+            "geojson": {},
+        }
     status = "success"
     geometry: BaseGeometry = BaseGeometry()
 

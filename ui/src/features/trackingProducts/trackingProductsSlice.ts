@@ -2,7 +2,7 @@ import { IPublicClientApplication } from "@azure/msal-browser";
 import { createAppSlice } from "@foodvibes/app/createAppSlice";
 import { actionSetAccessToken } from "@foodvibes/app/mainSlice";
 import { RefreshAccessTokenIfNeeded } from "@foodvibes/services/authCommon";
-import { KApiStatusFulfilled, KApiStatusLoaded, KApiStatusLoading, KApiStatusPending, KApiStatusPreloaded, KApiStatusRejected, KStorageKeyDeforestationAbovePct, KStorageKeyGraphCompactMode, KStorageKeyGraphDirection, KStorageKeyHistoryTabIndex, KStorageKeyLegendState, KStorageKeyOpacityPercent, KStorageKeyZoomPercent } from "@foodvibes/utils/commonConstants";
+import { KApiStatusFulfilled, KApiStatusLoaded, KApiStatusLoading, KApiStatusLocked, KApiStatusPending, KApiStatusPreloaded, KApiStatusRejected, KStorageKeyDeforestationAbovePct, KStorageKeyGraphCompactMode, KStorageKeyGraphDirection, KStorageKeyHistoryTabIndex, KStorageKeyLegendState, KStorageKeyOpacityPercent, KStorageKeyZoomPercent } from "@foodvibes/utils/commonConstants";
 import {
     DetailLevelStorageSet,
     GetFeatureInitialStateExt as GetFeatureInitialStateTrackingProducts,
@@ -31,6 +31,7 @@ import {
     postForestMap,
     putTrackingProducts,
 } from "./trackingProductsAPI";
+import { act } from "react";
 
 const name: string = "trackingProducts";
 const initialState: FeatureSliceStateTrackingProducts<TrackingProductsType> =
@@ -284,15 +285,28 @@ export const trackingProductsSlice = createAppSlice({
                 },
                 fulfilled: (state, action) => {
                     state.status = KApiStatusFulfilled;
-                    state.forestMapRequestDict[action.meta.arg.ledgerId] = {
-                        ...state.forestMapRequestDict[action.meta.arg.ledgerId],
-                        geojson: {
-                            type: "Feature",
-                            geometry: action.payload.geojson,
-                            properties: {},
-                        },
-                        status: KApiStatusPreloaded,
-                    };
+
+                    if (action.payload.status === "option=off") {
+                        state.forestMapRequestDict[action.meta.arg.ledgerId] = {
+                            ...state.forestMapRequestDict[action.meta.arg.ledgerId],
+                            geojson: {
+                                type: "Feature",
+                                geometry: action.payload.geojson,
+                                properties: {},
+                            },
+                            status: KApiStatusLocked,
+                        };
+                    } else {
+                        state.forestMapRequestDict[action.meta.arg.ledgerId] = {
+                            ...state.forestMapRequestDict[action.meta.arg.ledgerId],
+                            geojson: {
+                                type: "Feature",
+                                geometry: action.payload.geojson,
+                                properties: {},
+                            },
+                            status: KApiStatusPreloaded,
+                        };
+                    }
                     state.loading = false;
                 },
                 rejected: (state, action) => {
@@ -350,6 +364,19 @@ export const trackingProductsSlice = createAppSlice({
                         state.forestMapRequestDict[
                             action.meta.arg.forestMapRequest.id
                         ].status = KApiStatusRejected;
+                    } else if (action.payload.image_url == "option=off") {
+                        state.forestMapRequestDict[
+                            action.meta.arg.forestMapRequest.id
+                        ].imageUrl = "";
+                        state.forestMapRequestDict[
+                            action.meta.arg.forestMapRequest.id
+                        ].forestPixels = {};
+                        state.forestMapRequestDict[
+                            action.meta.arg.forestMapRequest.id
+                        ].deforestationPct = 0;
+                        state.forestMapRequestDict[
+                            action.meta.arg.forestMapRequest.id
+                        ].status = KApiStatusLocked;
                     } else {
                         state.forestMapRequestDict[
                             action.meta.arg.forestMapRequest.id

@@ -34,5 +34,9 @@ class RunStatus:
         pass
 
 
-def create_farmvibes_client() -> FarmvibesAiClient:
-    return FarmvibesAiClient(config.farmvibes_url)
+def create_farmvibes_client() -> FarmvibesAiClient | None:
+    return (
+        FarmvibesAiClient(config.farmvibes_url)
+        if len(f"{config.farmvibes_url}".strip()) > 0
+        else None
+    )

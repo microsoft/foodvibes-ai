@@ -75,7 +75,11 @@ class FarmVibesForestRequester:
         self,
         forest_request: FarmVibesForestRequest,
     ) -> str:
-        logger.info(f"Running forest map workflow for year {forest_request.forest_year}")
+        if CLIENT is None:
+            raise RuntimeError("Farmvibes client not found.")
+        logger.info(
+            f"Running forest map workflow for year {forest_request.forest_year}"
+        )
         # GeoJSON data
         geometry: BaseGeometry = shpg.shape(forest_request.geojson["geometry"])
         time_range = (
@@ -94,7 +98,9 @@ class FarmVibesForestRequester:
         run.block_until_complete()
 
         if run.status != RunStatus.done:
-            raise ValueError(f"Workflow failed with status {run.status} and reason {run.reason}")
+            raise ValueError(
+                f"Workflow failed with status {run.status} and reason {run.reason}"
+            )
 
         # Read the data from the run
         merged_raster = cast(
@@ -136,7 +142,9 @@ class FarmVibesForestRequester:
         ax.axis("off")
 
         colors = [
-            color_dict[color] for color in np.unique(list(data.flatten())) if color in color_dict
+            color_dict[color]
+            for color in np.unique(list(data.flatten()))
+            if color in color_dict
         ]
         cmap = ListedColormap(colors)
 
@@ -151,7 +159,9 @@ class FarmVibesForestRequester:
         fpath = os.path.join(self.tmp_dir.name, f"{uuid()}.svg")
 
         # Save the figure in SVG format
-        plt.savefig(fpath, format="svg", bbox_inches="tight", pad_inches=0, transparent=True)
+        plt.savefig(
+            fpath, format="svg", bbox_inches="tight", pad_inches=0, transparent=True
+        )
 
         logger.info(f"Image saved to {fpath}")
 
@@ -170,7 +180,9 @@ class FarmVibesForestRequester:
 
         return pixels_path
 
-    def get_forest_map_image(self, forest_request: FarmVibesForestRequest) -> Tuple[str, str]:
+    def get_forest_map_image(
+        self, forest_request: FarmVibesForestRequest
+    ) -> Tuple[str, str]:
         local_path = self.run_forest_map_workflow(forest_request)
         geom_data: Any = shpg.shape(forest_request.geojson["geometry"])
         data = self.read_forest_map_data(local_path, geom_data)
@@ -191,7 +203,9 @@ def cache_forest_map_image(forest_request: FarmVibesForestRequest):
         FARMVIBES_IMAGE_STORAGE.check_item_exists_by_id(id_to_use)
         and FARMVIBES_PIXELS_STORAGE.check_item_exists_by_id(id_to_use)
     ):
-        image_path, forest_pixels_path = FARMVIBES_REQUESTER.get_forest_map_image(forest_request)
+        image_path, forest_pixels_path = FARMVIBES_REQUESTER.get_forest_map_image(
+            forest_request
+        )
 
         FARMVIBES_IMAGE_STORAGE.store_file_by_id(id_to_use, image_path)
         FARMVIBES_PIXELS_STORAGE.store_file_by_id(id_to_use, forest_pixels_path)
@@ -207,8 +221,12 @@ def read_pixels_from_item_id(item_id: str) -> dict:
 
 def calculate_deforestation_pct(forest_pixels_path: dict) -> float:
     forest_cover_no_data = forest_pixels_path.get("No data", 0)
-    forest_cover_above_90 = forest_pixels_path.get("Forest (>90 percent canopy cover)", 0)
-    forest_cover_below_90 = forest_pixels_path.get("Forest (10-90 percent canopy cover)", 0)
+    forest_cover_above_90 = forest_pixels_path.get(
+        "Forest (>90 percent canopy cover)", 0
+    )
+    forest_cover_below_90 = forest_pixels_path.get(
+        "Forest (10-90 percent canopy cover)", 0
+    )
     forest_cover_non_forest = forest_pixels_path.get("Non-forest", 0)
     forest_cover_water = forest_pixels_path.get("Water", 0)
     return round(
@@ -227,8 +245,17 @@ def calculate_deforestation_pct(forest_pixels_path: dict) -> float:
 
 @config.app.post("/forest_map/", response_model=None)
 @access_check(check_for_roles=True)
-async def call_farmvibes_forest_map(request: Request, forest_request: FarmVibesForestRequest):
+async def call_farmvibes_forest_map(
+    request: Request, forest_request: FarmVibesForestRequest
+):
     """Endpoint for forest map integration"""
+
+    if CLIENT is None:
+        return {
+            "image_url": "option=off",
+            "forest_pixels": {},
+            "deforestation_pct": 0,
+        }
 
     try:
         if "geometry" not in forest_request.geojson:
@@ -247,4 +274,8 @@ async def call_farmvibes_forest_map(request: Request, forest_request: FarmVibesF
             "deforestation_pct": deforestation_pct,
         }
     except Exception as error:
-        return (CommonError(error_level=CommonError.ErrorLevel.ERROR, code=1, msessage=str(error)),)
+        return (
+            CommonError(
+                error_level=CommonError.ErrorLevel.ERROR, code=1, msessage=str(error)
+            ),
+        )

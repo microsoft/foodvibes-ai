@@ -146,10 +146,10 @@ database_check_if_exists() {
     databaseExists=$(az sql db list --resource-group $resource_group_name --server $database_server --query "[?name=='$database_name'] | length(@)")
 
     (($databaseExists == 1)) &&
-    {
-        logger 1 "SQL Database \"$database_name\" exists on server \"$database_server\" in resource group \"$resource_group_name\""
-        rc=0
-    }
+        {
+            logger 1 "SQL Database \"$database_name\" exists on server \"$database_server\" in resource group \"$resource_group_name\""
+            rc=0
+        }
 
     (($rc != 0 && $silent == 0)) &&
         logger 2 "SQL Database \"$database_name\" NOT found exists on server \"$database_server\" in resource group \"$resource_group_name\""
@@ -289,12 +289,19 @@ get_set_file_entry() {
     local tag="$5"
     local prompt=${6:-0}
     local mask_flag=${7:-0}
+    local prompt_space_for_blank=${8:-0}
     local value_in_envfile=0
+    local prompt_suffx=""
 
     eval local value=\"\$$var_name\"
 
     [[ -z "$value" ]] && value=$(get_env_file_entry "$key" "$env_file" "$default_value")
-    [[ -n "$tag" ]] && (($prompt == 1)) && value="$(get_value "$value" "$mask_flag" "Enter ${tag}")"
+
+    (($prompt_space_for_blank == 1)) && [[ -n "$value" ]] && prompt_suffx=' (enter SPACE to skip value)'
+
+    [[ -n "$tag" ]] && (($prompt == 1)) && value="$(get_value "$value" "$mask_flag" "Enter ${tag}${prompt_suffx}")"
+    [[ -n "$value" ]] && value_in_envfile=1
+    [[ -n "$value" && -z "$value" ]] && value="$default_value"
 
     eval $var_name=\"$value\"
     set_env_file_entry "$key" "$value" $env_file
@@ -552,9 +559,8 @@ else
                     get_set_file_entry KEY_VAULT_NAME key_vault_name $env_file $(truncate_unique_id "fv-kv-${suffix}") &&
                     get_set_file_entry DATABASE_SERVER database_server $env_file "fv-dbsrv-${suffix}" &&
                     get_set_file_entry BLOB_STORAGE_ACCT blob_storage_acct $env_file $(truncate_unique_id "fvssa${suffix}") &&
-                    get_set_file_entry FARMVIBES_URL farmvibes_url $env_file "" "FarmVibes.ai URL" $update_all &&
                     get_set_file_entry BINGMAPS_API_KEY bingmaps_api_key $env_file "" "Bing Maps API Key" $update_all 1 &&
-                    get_set_file_entry APP_INSIGHTS_INSTRUMENTATION_KEY foodvibes_app_insights_instrumentation_key $env_file "" "AppInsights instrumentation key" $update_all 1 &&
+                    get_set_file_entry APP_INSIGHTS_INSTRUMENTATION_KEY foodvibes_app_insights_instrumentation_key $env_file "" "AppInsights instrumentation key" $update_all 1 1 &&
                     {
                         database_password=$(get_env_file_entry DATABASE_PASSWORD $env_file $(generate_password))
                         typeset token_based_db_access=0
@@ -588,20 +594,38 @@ else
                 (($rc == 0)) &&
                     {
                         rc=1
-                        get_set_file_entry ADMA_BASE_URL adma_base_url $env_file "" "ADMA base URL" $update_all &&
-                            get_set_file_entry ADMA_PARTY_ID adma_party_id $env_file "" "ADMA party ID (the ID of client in ADMA)" $update_all &&
-                            {
-                                typeset adma_authority=$(get_env_file_entry ADMA_AUTHORITY $env_file)
-                                typeset get_adma_credentials=0
+                        get_set_file_entry FARMVIBES_URL farmvibes_url $env_file "" "FarmVibes.ai URL" $update_all 0 1 && {
+                            if [[ -z $farmvibes_url ]]; then
+                                logger 1 "FarmVibes.ai & ADMA are skipped"
 
-                                [[ -z "$adma_authority" ]] && (($update_all == 1)) &&
-                                    (($(get_value_boolean n "Use APP registration (not Entra ID) to connect to ADMA? (y/n)") == 1)) && get_adma_credentials=1
+                                adma_base_url=""
+                                adma_party_id=""
+                                adma_authority=""
+                                adma_client_id=""
+                                adma_client_secret=""
+                                set_env_file_entry "ADMA_BASE_URL" " " $env_file
+                                set_env_file_entry "ADMA_PARTY_ID" " " $env_file
+                                set_env_file_entry "ADMA_AUTHORITY" " " $env_file
+                                set_env_file_entry "ADMA_CLIENT_ID" " " $env_file
+                                set_env_file_entry "ADMA_CLIENT_SECRET" " " $env_file
 
-                                get_set_file_entry ADMA_AUTHORITY adma_authority $env_file "" "ADMA authority" $get_adma_credentials &&
-                                    get_set_file_entry ADMA_CLIENT_ID adma_client_id $env_file "" "ADMA client ID (blank if using Azure Authentication to connect to ADMA)" $get_adma_credentials &&
-                                    get_set_file_entry ADMA_CLIENT_SECRET adma_client_secret $env_file "" "ADMA client secret (blank if using Azure Authentication to connect to ADMA)" $get_adma_credentials
+                                rc=0
+                            else
+                                get_set_file_entry ADMA_BASE_URL adma_base_url $env_file "" "ADMA base URL" $update_all 0 1 &&
+                                    get_set_file_entry ADMA_PARTY_ID adma_party_id $env_file "" "ADMA party ID (the ID of client in ADMA)" $update_all 0 1 &&
+                                    {
+                                        typeset adma_authority=$(get_env_file_entry ADMA_AUTHORITY $env_file)
+                                        typeset get_adma_credentials=0
 
-                            }
+                                        [[ -z "$adma_authority" ]] && (($update_all == 1)) &&
+                                            (($(get_value_boolean n "Use APP registration (not Entra ID) to connect to ADMA? (y/n)") == 1)) && get_adma_credentials=1
+
+                                        get_set_file_entry ADMA_AUTHORITY adma_authority $env_file "" "ADMA authority" $get_adma_credentials 0 1 &&
+                                            get_set_file_entry ADMA_CLIENT_ID adma_client_id $env_file "" "ADMA client ID (blank if using Azure Authentication to connect to ADMA)" $get_adma_credentials 0 1 &&
+                                            get_set_file_entry ADMA_CLIENT_SECRET adma_client_secret $env_file "" "ADMA client secret (blank if using Azure Authentication to connect to ADMA)" $get_adma_credentials 0 1
+                                    }
+                            fi
+                        }
                     }
             }
 
