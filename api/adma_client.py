@@ -58,12 +58,16 @@ class AdmaClient:
 
     def get_adma_aad_token(self):
         app = msal.ConfidentialClientApplication(
-            client_id=self.client_id, client_credential=self.client_secret, authority=self.authority
+            client_id=self.client_id,
+            client_credential=self.client_secret,
+            authority=self.authority,
         )
 
         app.acquire_token_silent(scopes=[self.default_scope], account=None)
 
-        token_result = cast(Dict[str, Any], app.acquire_token_for_client(scopes=self.default_scope))
+        token_result = cast(
+            Dict[str, Any], app.acquire_token_for_client(scopes=self.default_scope)
+        )
         if "access_token" in token_result:
             return token_result["access_token"]
         else:
@@ -84,7 +88,12 @@ class AdmaClient:
         return header
 
     def _try_request(
-        self, method: str, endpoint: str, data: Dict[str, Any] = {}, *args: Any, **kwargs: Any
+        self,
+        method: str,
+        endpoint: str,
+        data: Dict[str, Any] = {},
+        *args: Any,
+        **kwargs: Any,
     ) -> Any:
         resp = self.session.request(
             method, urljoin(self.base_url, endpoint), *args, **kwargs, json=data
@@ -102,7 +111,12 @@ class AdmaClient:
         return cast(Any, r)
 
     def _request(
-        self, method: str, endpoint: str, data: Dict[str, Any] = {}, *args: Any, **kwargs: Any
+        self,
+        method: str,
+        endpoint: str,
+        data: Dict[str, Any] = {},
+        *args: Any,
+        **kwargs: Any,
     ):
         try:
             return self._try_request(method, endpoint, data, *args, **kwargs)
@@ -121,7 +135,9 @@ class AdmaClient:
         next_link_index = 0
         while next_link:
             if next_link in visited_next_links:
-                raise RuntimeError(f"Repeated nextLink {next_link} in ADMAg get request")
+                raise RuntimeError(
+                    f"Repeated nextLink {next_link} in ADMAg get request"
+                )
 
             if next_link_index >= self.NEXT_PAGES_LIMIT:
                 raise RuntimeError(f"Next pages limit {self.NEXT_PAGES_LIMIT} exceded")
@@ -131,10 +147,14 @@ class AdmaClient:
                 timeout=self.DEFAULT_TIMEOUT,
             )
             if self.CONTENT_TAG in tmp_response:
-                composed_response[self.CONTENT_TAG].extend(tmp_response[self.CONTENT_TAG])
+                composed_response[self.CONTENT_TAG].extend(
+                    tmp_response[self.CONTENT_TAG]
+                )
             visited_next_links.add(next_link)
             next_link_index = next_link_index + 1
-            next_link = "" if self.LINK_TAG not in tmp_response else tmp_response[self.LINK_TAG]
+            next_link = (
+                "" if self.LINK_TAG not in tmp_response else tmp_response[self.LINK_TAG]
+            )
         response = composed_response
         return response
 
@@ -159,7 +179,11 @@ class AdmaClient:
         request_params = {"api-version": self.api_version, "maxPageSize": 1000}
         request_params.update(params)
         response = self._request(
-            "POST", endpoint, params=request_params, timeout=self.DEFAULT_TIMEOUT, data=data
+            "POST",
+            endpoint,
+            params=request_params,
+            timeout=self.DEFAULT_TIMEOUT,
+            data=data,
         )
 
         if self.CONTENT_TAG in response:
@@ -172,7 +196,11 @@ class AdmaClient:
         request_params = {"api-version": self.api_version}
         request_params.update(params)
         response = self._request(
-            "PATCH", endpoint, params=request_params, timeout=self.DEFAULT_TIMEOUT, data=data
+            "PATCH",
+            endpoint,
+            params=request_params,
+            timeout=self.DEFAULT_TIMEOUT,
+            data=data,
         )
         return response
 
@@ -193,7 +221,11 @@ class AdmaClient:
         status: str = "",
     ) -> Dict[str, Any]:
         endpoint = f"/parties/{party_id}"
-        data = {"name": party_name, "description": party_description, "properties": properties}
+        data = {
+            "name": party_name,
+            "description": party_description,
+            "properties": properties,
+        }
 
         if source:
             data["source"] = source
@@ -221,7 +253,11 @@ class AdmaClient:
         status: str = "",
     ) -> Dict[str, Any]:
         endpoint = f"/parties/{party_id}/farms/{farm_id}"
-        data = {"name": farm_name, "description": farm_description, "properties": properties}
+        data = {
+            "name": farm_name,
+            "description": farm_description,
+            "properties": properties,
+        }
         if source:
             data["source"] = source
         if status:
@@ -277,13 +313,17 @@ class AdmaClient:
 
 def create_adma_client(config: ConfigSingletonClass):
     try:
-        return AdmaClient(
-            base_url=config.adma_base_url,
-            client_id=config.adma_client_id,
-            client_secret=config.adma_client_secret,
-            authority=config.adma_authority,
-            default_scope=config.adma_scope,
-        )
+        return (
+            AdmaClient(
+                base_url=config.adma_base_url,
+                client_id=config.adma_client_id,
+                client_secret=config.adma_client_secret,
+                authority=config.adma_authority,
+                default_scope=config.adma_scope,
+            )
+            if len(f"{config.farmvibes_url}".strip()) > 0
+            else None
+        )  # No ADMA if there's not farmvibes URL
     except Exception as err:
         logger.error(f"Error creating ADMA client: {err}")
         return None
