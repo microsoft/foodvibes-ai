@@ -291,15 +291,15 @@ get_set_file_entry() {
     local mask_flag=${7:-0}
     local prompt_space_for_blank=${8:-0}
     local value_in_envfile=0
-    local prompt_suffx=""
+    local prompt_suffix=""
 
     eval local value=\"\$$var_name\"
 
     [[ -z "$value" ]] && value=$(get_env_file_entry "$key" "$env_file" "$default_value")
 
-    (($prompt_space_for_blank == 1)) && [[ -n "$value" ]] && prompt_suffx=' (enter SPACE to skip value)'
+    (($prompt_space_for_blank == 1)) && prompt_suffix=' (enter SPACE to skip value)'
 
-    [[ -n "$tag" ]] && (($prompt == 1)) && value="$(get_value "$value" "$mask_flag" "Enter ${tag}${prompt_suffx}")"
+    [[ -n "$tag" ]] && (($prompt == 1)) && value="$(get_value "$value" "$mask_flag" "Enter ${tag}${prompt_suffix}")"
     [[ -n "$value" ]] && value_in_envfile=1
     [[ -n "$value" && -z "$value" ]] && value="$default_value"
 
