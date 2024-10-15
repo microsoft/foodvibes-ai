@@ -7,6 +7,8 @@ Clone this repo to a local folder and run
 ```
 and follow prompts to configure and start up the system. For detailed instruction see [SETUP.md](SETUP.md).
 
+[Quick start video](./Quick-Start.mp4)
+
 # Introduction
 
 # foodvibes-ai Supply Chain Traceability
@@ -50,6 +52,29 @@ The features that foodvibes-ai enables are:
 
 For an overview of Roles & Permissions in foodvibes-ai, see [ROLES_PERMISSION.md](ROLES_PERMISSIONS.md).
 
+## Disclaimers
+
+<div style="padding: 10px;">
+  <h3>FoodVibes architecture showcasing the options to connect with ADMA for geolocation and information tracking and connection to FarmVibes.ai for geolocation based remote sensing insights</h3>
+  <img src="./ui/src/assets/Architecture.png" alt="Architecture" />
+</div>
+
+<p>
+This project welcomes contributions and suggestions. Most contributions require you to agree to a Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us the rights to use your contribution. For details, visit <a href="https://cla.opensource.microsoft.com">https://cla.opensource.microsoft.com</a>.
+</p>
+
+<p>
+When you submit a pull request, a CLA bot will automatically determine whether you need to provide a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions provided by the bot. You will only need to do this once across all repos using our CLA.
+</p>
+
+<p>
+This project has adopted the <a href="https://opensource.microsoft.com/codeofconduct/">Microsoft Open Source Code of Conduct</a>. For more information see the <a href="https://opensource.microsoft.com/codeofconduct/faq/">Code of Conduct FAQ</a> or contact <a href="mailto:opencode@microsoft.com">opencode@microsoft.com</a> with any additional questions or comments.
+</p>
+
+</p>
+<b>Trademarks</b><br>
+This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft trademarks or logos is subject to and must follow <a href="https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general">Microsoft's Trademark & Brand Guidelines</a>. Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship. Any use of third-party trademarks or logos are subject to those third-party's policies.
+</p>
 --
 Change log:
 Feb. 28, 2024 -- C. Kasra v-cyruskasra@microsoft.com -- Initial release
@@ -58,3 +83,4 @@ Mar. 23, 2024 -- C. Kasra -- Addition of support for recorded_at and is_history 
 Aug. 9, 2024 -- C. Kasra -- Addition of Open Source Software setup scripts
 Aug. 16, 2024 -- C. Kasra -- Incorporated information from Bruno Silva regarding enhancements including links and additional libraries and tools installations
 Sep. 12, 2024 -- C. Kasra -- Moved setup details to SETUP.md
+Oct. 15, 2024 -- C. Kasra -- Added disclaimers and images to README.md
