@@ -7,7 +7,13 @@ Clone this repo to a local folder and run
 ```
 and follow prompts to configure and start up the system. For detailed instruction see [SETUP.md](SETUP.md).
 
-<a href="./Quick-Start.mp4" target="_video">Quick start video</a>
+
+<h4>Quick start video</h4>
+<video width="600" controls>
+  <source src="./Quick-Start.mp4" type="video/mp4">
+  Your browser does not support the video tag. Use this instead <a href="./Quick-Start.mp4" target="_video">Quick start video</a>.
+</video>
+
 
 # Introduction
 
@@ -70,6 +76,7 @@ This project has adopted the <a href="https://opensource.microsoft.com/codeofcon
 <b>Trademarks</b><br>
 This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft trademarks or logos is subject to and must follow <a href="https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general">Microsoft's Trademark & Brand Guidelines</a>. Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship. Any use of third-party trademarks or logos are subject to those third-party's policies.
 </p>
+<pre>
 --
 Change log:
 Feb. 28, 2024 -- C. Kasra v-cyruskasra@microsoft.com -- Initial release
@@ -79,3 +86,4 @@ Aug. 9, 2024 -- C. Kasra -- Addition of Open Source Software setup scripts
 Aug. 16, 2024 -- C. Kasra -- Incorporated information from Bruno Silva regarding enhancements including links and additional libraries and tools installations
 Sep. 12, 2024 -- C. Kasra -- Moved setup details to SETUP.md
 Oct. 15, 2024 -- C. Kasra -- Added disclaimers and images to README.md
+</pre>
