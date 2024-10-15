@@ -7,7 +7,7 @@ Clone this repo to a local folder and run
 ```
 and follow prompts to configure and start up the system. For detailed instruction see [SETUP.md](SETUP.md).
 
-[Quick start video](./Quick-Start.mp4)
+<a href="./Quick-Start.mp4" target="_video">Quick start video</a>
 
 # Introduction
 
