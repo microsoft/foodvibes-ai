@@ -11,7 +11,7 @@ your system.
 
 ### 1.2- Create Docker image, spin a container and configure foodvibes-ai
 
-The process of Docker image creation, spining up that image in a container and configuring foodvibe-ai running inside that container is done by open a bash terminal and cd to your repository's root folder and entering
+The process of Docker image creation, spinning up that image in a container and configuring foodvibes-ai running inside that container is done by opening a bash terminal, cd/enter into your repository's root folder and entering the command
 
 ```bash
 ./scripts/foodvibes/setup_docker.sh
