@@ -5,7 +5,7 @@ Clone this repo to a local folder and run
     cd foodvibes-ai
     ./scripts/setup/foodvibes/setup_docker.sh
 ```
-and follow prompts to consfigure and start up the system. For detailed instruction see [DEV.md](DEV.md).
+and follow prompts to consfigure and start up the system. For detailed instruction see [SETUP.md](SETUP.md).
 
 # Introduction
 
@@ -48,4 +48,4 @@ Mar. 1, 2024 -- C. Kasra -- Addition of FastAPI to make dabase schema accessible
 Mar. 23, 2024 -- C. Kasra -- Addition of support for recorded_at and is_history columns
 Aug. 9, 2024 -- C. Kasra -- Addition of Open Source Software setup scripts
 Aug. 16, 2024 -- C. Kasra -- Incorporated information from Bruno Silva regarding enhancements including links and additional libraries and tools installations
-Sep. 12, 2024 -- C. Kasra -- Moved setup details to DEV.md
+Sep. 12, 2024 -- C. Kasra -- Moved setup details to SETUP.md
