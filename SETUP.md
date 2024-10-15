@@ -1,28 +1,17 @@
 # DEV
 
-We recommend the usage of the provided devcontainer with VSCode to develop
-foodvibes-ai.
-
 ## 1. Step-by-step guide
+
+[Quick start video](./Quick-Start.mp4)
 
 ### 1.1- Clone the repository and open it in a managed device
 
-Once you cloned the repository, open the folder using a Microsoft
-managed machine (windows or WSL). You will also need to have docker installed on
+Once you clone the repository, open the folder using a linux-based terminal (e.g, WSL). You will also need to have docker installed on
 your system.
 
-### 1.2- Install devcontainer extension
+### 1.2- Create Docker image, spin a container and configure foodvibes-ai
 
-[Here](https://code.visualstudio.com/docs/devcontainers/containers) you will find instructions on how to install devcontainers on VSCode.
-
-Usually you only need to search the Dev Containers extension on the extensions pane and install it. Once the extension is installed, you can open the VSCode command pallete `Ctrl` + `Shift` + `P`, type `Dev
-Containers: Open Folder in Container` and select the repository root.
-
-Once you do it, VSCode will create the dev container to you.
-
-### 1.3- Create Docker image, spin a container and configure foodvibes-ai
-
-The process of Docker image creation, spining up that image in a container and configuring foodvibe-ai running inside that container is done by open a bash terminal and cd to your repository's root folder and entering
+The process of Docker image creation, spinning up that image in a container and configuring foodvibes-ai running inside that container is done by opening a bash terminal, cd/enter into your repository's root folder and entering the command
 
 ```bash
 ./scripts/foodvibes/setup_docker.sh
@@ -74,7 +63,7 @@ To reconfigure and restart foodvibes-ai use
 setup.sh
 ```
 
-### 1.4- Scripts and details (optional information)
+### 1.3- Scripts and details (optional information)
 
 The foodvibes.ai/scripts/foodvibes/ folder contains a number of scripts that may be run inidividually to install/update various componets of the system. They are:
 
