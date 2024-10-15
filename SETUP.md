@@ -4,7 +4,7 @@
 
 Quick start video
 
-<video width="600" controls> <source src="Quick-Start.mp4" type="video/mp4"> Your browser does not support the video tag. </video>
+<video width="600" controls> <source src="https://github.com/microsoft/foodvibes-ai/raw/refs/heads/main/Quick-Start.mp4" type="video/mp4"> Your browser does not support the video tag. </video>
 
 ### 1.1- Clone the repository and open it in a managed device
 
