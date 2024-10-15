@@ -70,14 +70,3 @@ This project has adopted the <a href="https://opensource.microsoft.com/codeofcon
 <b>Trademarks</b><br>
 This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft trademarks or logos is subject to and must follow <a href="https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general">Microsoft's Trademark & Brand Guidelines</a>. Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship. Any use of third-party trademarks or logos are subject to those third-party's policies.
 </p>
-<pre>
---
-Change log:
-Feb. 28, 2024 -- C. Kasra v-cyruskasra@microsoft.com -- Initial release
-Mar. 1, 2024 -- C. Kasra -- Addition of FastAPI to make dabase schema accessible for CRUD operations
-Mar. 23, 2024 -- C. Kasra -- Addition of support for recorded_at and is_history columns
-Aug. 9, 2024 -- C. Kasra -- Addition of Open Source Software setup scripts
-Aug. 16, 2024 -- C. Kasra -- Incorporated information from Bruno Silva regarding enhancements including links and additional libraries and tools installations
-Sep. 12, 2024 -- C. Kasra -- Moved setup details to SETUP.md
-Oct. 15, 2024 -- C. Kasra -- Added disclaimers and images to README.md
-</pre>
