@@ -37,11 +37,11 @@ The features that foodvibes-ai enables are:
 - **Remote sensing insights:** It also connects with FarmVibes.ai, which is an opensourced satellite-based geospatial insight generation tool. This is helpful for gaining macro insights associated with locations that the product travels through. We demonstrate the example of analyzing deforestation at supply chain locations through satellite-based maps. A few other examples include understanding the weather during harvest, rainfall, built environment and land degradation associated with the supply chain locations. These insights can also help with risk assessment.
 
 <div style="background-color: white; padding: 10px;">
-  <h3>Deforested vs Deforestaion-free Coffee</h3>
+  <h3>Example use of FoodVibes with the EUDR to enable geolocation and time tracking with products to identify deforestation-free coffee</h3>
   <img src="./ui/src/assets/CoffeeExample.png" alt="Deforested vs Deforestaion-free Coffee" />
 </div>
 <div style="background-color: white; padding: 10px;">
-  <h3>Architecture</h3>
+  <h3>FoodVibes architecture showcasing the options to connect with ADMA for geolocation and information tracking and connection to FarmVibes.ai for geolocation based remote sensing insights</h3>
   <img src="./ui/src/assets/Architecture.png" alt="Architecture" />
 </div>
 
