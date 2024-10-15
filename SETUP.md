@@ -6,7 +6,7 @@
 
 ### 1.1- Clone the repository and open it in a managed device
 
-Once you cloned the repository, open the folder using a linux-based terminal (e.g, WSL). You will also need to have docker installed on
+Once you clone the repository, open the folder using a linux-based terminal (e.g, WSL). You will also need to have docker installed on
 your system.
 
 ### 1.2- Create Docker image, spin a container and configure foodvibes-ai
