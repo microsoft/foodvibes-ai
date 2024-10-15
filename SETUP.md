@@ -144,7 +144,3 @@ sudo apt-get install -y msodbcsql18
 
 odbcinst -j
 odbcinst -q -d -n "ODBC Driver 18 for SQL Server
-
---
-Change log:
-Sep. 12, 2024 -- C. Kasra v-cyruskasra@microsoft.com -- Initial release
