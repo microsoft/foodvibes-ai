@@ -7,13 +7,7 @@ Clone this repo to a local folder and run
 ```
 and follow prompts to configure and start up the system. For detailed instruction see [SETUP.md](SETUP.md).
 
-
-<h4>Quick start video</h4>
-<video width="600" controls>
-  <source src="./Quick-Start.mp4" type="video/mp4">
-  Your browser does not support the video tag. Use this instead <a href="./Quick-Start.mp4" target="_video">Quick start video</a>.
-</video>
-
+[Quick start video](./Quick-Start.mp4)
 
 # Introduction
 
