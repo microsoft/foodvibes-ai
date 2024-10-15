@@ -15,7 +15,6 @@ and follow prompts to configure and start up the system. For detailed instructio
 
 Supply Chain Tracking platform for the European Union’s Deforestation-free product regulation (EUDR), the FDA’s Food Safety and Modernization Act (FSMA) and other Food Supply Chain Regulations that mandate tracking products together with Geo-location and their relevant compliance insights all the way back to the origin of the product.
 
-
 ## Example
 
 Example to understand the ability to track deforestation and deforestation-free coffee from its origin through multiple transformations.
@@ -36,6 +35,9 @@ The features that foodvibes-ai enables are:
 - **Role-based information access:** foodvibes-ai also defines a preliminary role-based access approach. It is understood that not all information is visible to every supply chain entity. Data Visibility is indicated by the roles and their association with other stakeholder users. This is further limited by the product level association through Product Tracking Ledger.
 - **Geo-location and related information tracking:** foodvibes-ai provides a means to connect Geotrack ledger entries with location coordinates, geopolygons and location-indexed information that can be defined for each entity in tools like the Azure Data Manager for Agriculture (ADMA). This provides a means to not only track the product, but also its relevant information from each location and time (like storage temperature, certifications) along with it.
 - **Remote sensing insights:** It also connects with FarmVibes.ai, which is an opensourced satellite-based geospatial insight generation tool. This is helpful for gaining macro insights associated with locations that the product travels through. We demonstrate the example of analyzing deforestation at supply chain locations through satellite-based maps. A few other examples include understanding the weather during harvest, rainfall, built environment and land degradation associated with the supply chain locations. These insights can also help with risk assessment.
+
+![Deforested vs Deforestaion-free](.ui/src/assets/CoffeeExample.png)
+![Architecture](./ui/src/assets/Architecture.png)
 
 ## Roles & Permissions
 
