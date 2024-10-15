@@ -54,11 +54,6 @@ For an overview of Roles & Permissions in foodvibes-ai, see [ROLES_PERMISSION.md
 
 ## Disclaimers
 
-<div style="padding: 10px;">
-  <h3>FoodVibes architecture showcasing the options to connect with ADMA for geolocation and information tracking and connection to FarmVibes.ai for geolocation based remote sensing insights</h3>
-  <img src="./ui/src/assets/Architecture.png" alt="Architecture" />
-</div>
-
 <p>
 This project welcomes contributions and suggestions. Most contributions require you to agree to a Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us the rights to use your contribution. For details, visit <a href="https://cla.opensource.microsoft.com">https://cla.opensource.microsoft.com</a>.
 </p>
