@@ -36,7 +36,7 @@ The features that foodvibes-ai enables are:
 - **Geo-location and related information tracking:** foodvibes-ai provides a means to connect Geotrack ledger entries with location coordinates, geopolygons and location-indexed information that can be defined for each entity in tools like the Azure Data Manager for Agriculture (ADMA). This provides a means to not only track the product, but also its relevant information from each location and time (like storage temperature, certifications) along with it.
 - **Remote sensing insights:** It also connects with FarmVibes.ai, which is an opensourced satellite-based geospatial insight generation tool. This is helpful for gaining macro insights associated with locations that the product travels through. We demonstrate the example of analyzing deforestation at supply chain locations through satellite-based maps. A few other examples include understanding the weather during harvest, rainfall, built environment and land degradation associated with the supply chain locations. These insights can also help with risk assessment.
 
-![Deforested vs Deforestaion-free](.ui/src/assets/CoffeeExample.png)
+![Deforested vs Deforestaion-free](./ui/src/assets/CoffeeExample.png)
 ![Architecture](./ui/src/assets/Architecture.png)
 
 ## Roles & Permissions
