@@ -5,7 +5,7 @@ Clone this repo to a local folder and run
     cd foodvibes-ai
     ./scripts/setup/foodvibes/setup_docker.sh
 ```
-and follow prompts to consfigure and start up the system. For detailed instruction see [SETUP.md](SETUP.md).
+and follow prompts to configure and start up the system. For detailed instruction see [SETUP.md](SETUP.md).
 
 # Introduction
 
