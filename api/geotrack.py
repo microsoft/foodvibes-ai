@@ -1,6 +1,6 @@
 """geotrack.py
 
-Provides endpoint for CRUD operations on foodvibes_geotrack table
+Provides endpoint for CRUD operations on SBS Document_geotrack table
 
 20240301 Cyrus Kasra -- v-cyruskasra@microsoft.com -- Initial release
 

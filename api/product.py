@@ -1,6 +1,6 @@
 """product.py
 
-Provides endpoint for CRUD operations on foodvibes_product table
+Provides endpoint for CRUD operations on SBS Document_product table
 
 20240301 Cyrus Kasra -- v-cyruskasra@microsoft.com -- Initial release
 

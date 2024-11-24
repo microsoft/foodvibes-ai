@@ -111,7 +111,9 @@ class CommonQueryParams:
     column_filters: List[CommonQueryParamsColFilter]
     sorting: List[CommonQueryParamsColSorting]
     pagination: CommonQueryParamsPagination
-    impersonated_user: str | None  # Added for impersonation in non-production environments
+    impersonated_user: (
+        str | None
+    )  # Added for impersonation in non-production environments
     group_id: int | None
     db_session: Session  # Updated by check_access()
     active_access_mask: int = 0  # Updated by check_access()
@@ -147,9 +149,11 @@ class CommonQueryParams:
         self.global_filter = global_filter or ""
 
         if self.global_filter:
-            self.global_filter = f"%{self.global_filter}%"
+            self.global_filter = self.global_filter
 
-        self.column_filters = CommonQueryParamsColFilter.load_from_json(column_filters or "[]")
+        self.column_filters = CommonQueryParamsColFilter.load_from_json(
+            column_filters or "[]"
+        )
         self.sorting = CommonQueryParamsColSorting.load_from_json(sorting or "[]")
         self.pagination = CommonQueryParamsPagination.load_from_json(
             pagination or "{" + f'"page_index":0,"page_size":{FETCH_PAGE_SIZE}' + "}"
@@ -209,6 +213,77 @@ class MetadataType(Enum):
     FARMVIBES_PIXELS = 1
     PRODUCT_IMAGE = 2
     GEOTRACK_IMAGE = 3
+
+
+class sbs_session:
+    def __init__(
+        self,
+        path: str,
+    ):
+        self.path = path
+
+    def to_dict(self):
+        return {
+            "path": self.path
+        }
+
+    def __repr__(self) -> str:
+        return (
+            f"sbs_session(path={self.path})"
+        )
+
+
+class sbs_fact:
+    def __init__(
+        self,
+        session_id: int,
+        main_clause: str,
+        subclause_id: str,
+        subclause: str,
+        content: str,
+        score_completeness: int,
+        explanation_completeness: str,
+        draft_id: str,
+        content_id: str,
+        document_text_reference: str,
+        draft: str,
+    ):
+        self.session_id = session_id
+        self.main_clause = main_clause
+        self.subclause_id = subclause_id
+        self.subclause = subclause
+        self.content = content
+        self.score_completeness = score_completeness
+        self.explanation_completeness = explanation_completeness
+        self.draft_id = draft_id
+        self.content_id = content_id
+        self.document_text_reference = document_text_reference
+        self.draft = draft
+
+    def to_dict(self):
+        return {
+            "session_id": self.session_id,
+            "main_clause": self.main_clause,
+            "subclause_id": self.subclause_id,
+            "subclause": self.subclause,
+            "content": self.content,
+            "score_completeness": self.score_completeness,
+            "explanation_completeness": self.explanation_completeness,
+            "draft_id": self.draft_id,
+            "content_id": self.content_id,
+            "document_text_reference": self.document_text_reference,
+            "draft": self.draft
+        }
+
+    def __repr__(self) -> str:
+        return (
+            f"sbs_fact(session_id={self.session_id}, main_clause={self.main_clause}, "
+            f"subclause_id={self.subclause_id}, subclause={self.subclause}, "
+            f"content={self.content}, score_completeness={self.score_completeness}, "
+            f"explanation_completeness={self.explanation_completeness}, draft_id={self.draft_id}, "
+            f"content_id={self.content_id}, "
+            f"document_text_reference={self.document_text_reference}, draft={self.draft})"
+        )
 
 
 config = ConfigSingletonClass()

@@ -33,8 +33,8 @@ from api.common.types import (
 )
 
 ROOT_PATH_BLOB_STORAGE = StorageManager(
-    config.images_blob_service_url,
-    config.images_blob_container_name,
+    config.images_blob_service_url or "",
+    config.images_blob_container_name or "",
 )
 
 

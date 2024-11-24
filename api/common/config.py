@@ -15,7 +15,8 @@ import time
 import pyodbc
 from azure.identity import AzureCliCredential, ManagedIdentityCredential
 from azure.keyvault.secrets import SecretClient
-from azure.monitor.opentelemetry import configure_azure_monitor
+
+# from azure.monitor.opentelemetry import configure_azure_monitor
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine, event
@@ -38,7 +39,7 @@ from api.config_variables import (
     DEFAULT_KEY_VAULT_URL,
 )
 
-title = "FoodVibes API"
+title = "SBS Documents API"
 logger = logging.getLogger(title)
 use_db_token = False
 
@@ -87,7 +88,9 @@ class ConfigSingletonClass(object):
                 logger.info("Acquired Azure CLI credential")
                 return credential
             except Exception as err:
-                raise RuntimeError("Unable to get Azure CLI credential") from err
+                logger.error("Unable to get Azure CLI credential with error %s", err)
+                # raise RuntimeError("Unable to get Azure CLI credential") from err
+                return credential
 
     @classmethod
     def fetch_secret(cls, client: SecretClient, secret_name: str) -> str:
@@ -218,22 +221,25 @@ class ConfigSingletonClass(object):
 
     def __init__(self):
         origins = ["*"]
-        try:
-            self.fetch_key_vault_secrets()
-        except Exception as err:
-            raise RuntimeError(
-                f"Unable to fetch key vault secrets using {DEFAULT_KEY_VAULT_URL}"
-            ) from err
+        self.images_blob_service_url = ""
+        self.images_blob_container_name = ""
 
-        if len(self.app_insights_instrumentation_key):
-            configure_azure_monitor(
-                connection_string=self.app_insights_instrumentation_key
-            )
+        # try:
+        #     self.fetch_key_vault_secrets()
+        # except Exception as err:
+        #     raise RuntimeError(
+        #         f"Unable to fetch key vault secrets using {DEFAULT_KEY_VAULT_URL}"
+        #     ) from err
+
+        # if len(self.app_insights_instrumentation_key):
+        #     configure_azure_monitor(
+        #         connection_string=self.app_insights_instrumentation_key
+        #     )
         self.app = FastAPI(
             swagger_ui_parameters={"syntaxHighlight": False},  # type: ignore
-            title="FoodVibes API",
-            summary="FoodVibes API to perform CRUD operations",
-            description="This API performs CRUD operations on FoodVibes database",
+            title="SBS Document API",
+            summary="SBS Document to perform CRUD operations",
+            description="This API performs CRUD operations on SBS Document database",
             version="0.0.1",
             license_info={
                 "name": "Apache 2.0",

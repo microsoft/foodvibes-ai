@@ -16,7 +16,7 @@ from tempfile import TemporaryDirectory
 from azure.storage.blob import (
     BlobClient,
     BlobSasPermissions,
-    BlobServiceClient,
+    # BlobServiceClient,
     ContentSettings,
     generate_blob_sas,
 )
@@ -59,13 +59,13 @@ class BlobStorage:
         self.images_blob_service_url = images_blob_service_url
         self.images_blob_container_name = images_blob_container_name
         self.credential = config.acquire_credential()
-        self.blob_service_client = BlobServiceClient(
-            account_url=self.images_blob_service_url,
-            credential=self.credential,
-        )
-        self.container_client = self.blob_service_client.get_container_client(
-            self.images_blob_container_name
-        )
+        # self.blob_service_client = BlobServiceClient(
+        #     account_url=self.images_blob_service_url,
+        #     credential=self.credential,
+        # )
+        # self.container_client = self.blob_service_client.get_container_client(
+        #     self.images_blob_container_name
+        # )
         self.user_delegation_key = None
         self.next_refresh_time = None
         self.next_expiration_time = None
