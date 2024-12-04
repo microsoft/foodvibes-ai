@@ -9,7 +9,12 @@ Returns:
 """
 
 from api.common.config import logger
-from api.common.types import sbs_fact, sbs_session
+from api.common.types import (
+    CommonQueryParamsPagination,
+    SbsReviewRequest,
+    sbs_fact,
+    sbs_session,
+)
 import json
 import sqlite3
 
@@ -71,7 +76,9 @@ class SbsSqlite:
             content_id TEXT NOT NULL,
             document_text_reference TEXT NULL,
             draft TEXT NULL,
-            score INTEGER NULL
+            score INTEGER NULL,
+            reviewer TEXT NULL,
+            review_date TEXT NULL
         )
         """
         )
@@ -154,16 +161,77 @@ class SbsSqlite:
         return inserted_id
 
     # Query the database
-    def db_get_sbs_fact_list(self, session_id: int):
+    def db_get_sbs_fact_list(
+        self, session_id: int, id_to_fetch: int, pagination: CommonQueryParamsPagination
+    ):
         self.enter()
-        # Query data
-        self.cursor.execute(
-            """
-            SELECT B.path, A.* FROM sbs_fact A left join sbs_session B on A.session_id = B.id
-            WHERE B.id = ?
-            """,
-            (session_id,),
-        )
+
+        if id_to_fetch > 0:
+            total_count = 0
+            self.cursor.execute(
+                """
+                SELECT
+                    B.path,
+                    A.id,
+                    A.session_id,
+                    A.main_clause,
+                    A.subclause_id,
+                    A.subclause,
+                    A.content,
+                    A.score_completeness,
+                    A.explanation_completeness,
+                    A.draft_id,
+                    A.content_id,
+                    A.document_text_reference,
+                    A.draft,
+                    A.score,
+                    A.reviewer,
+                    A.review_date
+                FROM sbs_fact A
+                LEFT JOIN sbs_session B ON A.session_id = B.id
+                WHERE B.id = ? and A.id = ?
+                """,
+                (session_id, id_to_fetch),
+            )
+        else:
+            # Query to get the total record count
+            self.cursor.execute(
+                """
+                SELECT COUNT(*) FROM sbs_fact A
+                LEFT JOIN sbs_session B ON A.session_id = B.id
+                WHERE B.id = ?
+                """,
+                (session_id,),
+            )
+            total_count = self.cursor.fetchone()[0]
+            # Query data
+            self.cursor.execute(
+                f"""
+                SELECT
+                    B.path,
+                    A.id,
+                    A.session_id,
+                    A.main_clause,
+                    A.subclause_id,
+                    A.subclause,
+                    A.content,
+                    A.score_completeness,
+                    A.explanation_completeness,
+                    A.draft_id,
+                    A.content_id,
+                    SUBSTR(A.document_text_reference, 1, 100) as document_text_reference,
+                    SUBSTR(A.draft, 1, 100) as draft,
+                    A.score,
+                    A.reviewer,
+                    A.review_date
+                FROM sbs_fact A
+                LEFT JOIN sbs_session B ON A.session_id = B.id
+                WHERE B.id = ?
+                LIMIT {pagination.page_size} OFFSET {pagination.page_index * pagination.page_size}
+                """,
+                (session_id,),
+            )
+
         rows = self.cursor.fetchall()
 
         # Get column names from the cursor description
@@ -184,4 +252,18 @@ class SbsSqlite:
 
         self.exit()
 
-        return data
+        return data, total_count
+
+    # Update the sbs_fact table
+    def db_update_sbs_fact(self, fact_id: int, item: SbsReviewRequest):
+        self.enter()
+        # Convert the SbsReviewRequest object to a dictionary
+        update_data = item.__dict__
+
+        # Generate the SQL update statement
+        set_clause = ", ".join([f"{key} = ?" for key in update_data.keys()])
+        sql = f"UPDATE sbs_fact SET {set_clause} WHERE id = ?"
+
+        # Execute the update statement
+        self.cursor.execute(sql, (*update_data.values(), fact_id))
+        self.exit()

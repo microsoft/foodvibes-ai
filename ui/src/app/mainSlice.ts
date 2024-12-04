@@ -8,7 +8,7 @@ import type {
     CommonScCircleType,
     EditFieldsType,
     GeotrackType,
-    ProductType,
+    ISbsFactType,
     ScCircleType,
     ScGroupType,
     ScUserType,
@@ -31,7 +31,7 @@ export interface MainSliceState extends BaseSliceState {
     bookmarkedScGroup: ScGroupType | null;
     bookmarkedScCircle: ScCircleType | null;
     bookmarkedGeotrack: GeotrackType | null;
-    bookmarkedProduct: ProductType | null;
+    bookmarkedProduct: ISbsFactType | null;
     bookmarkedTrackingProducts: TrackingProductsType | null;
     commonErrors: CommonError[];
     editorOpen: boolean | null;
@@ -178,20 +178,6 @@ export const mainSlice = createAppSlice({
                             0,
                             CommonErrorLevel.information,
                             `Bookmarked GeoTrack ID "${action.payload?.geotrack_id}"`,
-                        ),
-                    );
-                }
-            },
-        ),
-        actionSetBookmarkedProduct: create.reducer(
-            (state, action: PayloadAction<ProductType | null>) => {
-                state.bookmarkedProduct = action.payload;
-                if (action.payload) {
-                    state.commonErrors.push(
-                        MakeErrorPayload(
-                            0,
-                            CommonErrorLevel.information,
-                            `Bookmarked Product ID "${action.payload?.product_id}"`,
                         ),
                     );
                 }
@@ -489,7 +475,6 @@ export const {
     actionSetBookmarkedScGroup,
     actionSetBookmarkedScCircle,
     actionSetBookmarkedGeotrack,
-    actionSetBookmarkedProduct,
     actionSetBookmarkedTrackingProducts,
     actionSetCommonError,
     actionClearCommonError,

@@ -1,29 +1,24 @@
-import { KLedgerTypeProduct } from "@foodvibes/utils/commonConstants";
 import { ComposeHttpHeaders, ComposeUrl, HaveError } from "@foodvibes/utils/commonFunctions";
 import {
-    ProductPutType,
-    ProductType,
+    ISbsFactPutType,
+    ISbsFactType,
     QueryParamsType,
     QueryResponseApiType,
 } from "@foodvibes/utils/commonTypes";
 import axios from "axios";
 
-const composeUrl = (queryParams: QueryParamsType): string =>
-    ComposeUrl(KLedgerTypeProduct, queryParams);
-
-export const getProductRows = async (queryParams: QueryParamsType, accessToken: string | null) =>
-    await axios.get(composeUrl(queryParams), ComposeHttpHeaders(accessToken)).then(res => {
-        return res.data as QueryResponseApiType<ProductType>;
+export const getProductRows = async (queryParams: QueryParamsType) =>
+    await axios.get(ComposeUrl("sbs_document", queryParams), ComposeHttpHeaders()).then(res => {
+        return res.data as QueryResponseApiType<ISbsFactType>;
         // Ignore .catch() here to allow slice rejected() handle errors
     });
 
 export const putProduct = async (
     queryParams: QueryParamsType,
-    dataNew: ProductPutType,
-    accessToken: string | null,
+    dataNew: ISbsFactPutType,
 ) =>
-    await axios.put(composeUrl(queryParams), dataNew, ComposeHttpHeaders(accessToken)).then(res => {
-        const results: QueryResponseApiType<ProductType> = res.data;
+    await axios.put(ComposeUrl(`sbs_fact/${dataNew.id}`, queryParams), dataNew, ComposeHttpHeaders()).then(res => {
+        const results: QueryResponseApiType<ISbsFactType> = res.data;
 
         if (HaveError(results.error)) {
             throw results.error;

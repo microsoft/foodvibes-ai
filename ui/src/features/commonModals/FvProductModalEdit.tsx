@@ -10,7 +10,7 @@ import {
     CommonDetailLevel,
     CommonEditFieldType,
     EditFieldsType,
-    ProductType,
+    ISbsFactType,
     UploadImageType
 } from "@foodvibes/utils/commonTypes";
 import {
@@ -35,7 +35,7 @@ export const FvProductModalEdit = ({
     uploadedFileUrlReset,
     uploadImage
 }: {
-    bookmarkedProduct: ProductType | null;
+    bookmarkedProduct: ISbsFactType | null;
     editFields: EditFieldsType | null;
     isClean: boolean;
     isEditorOpen: boolean;

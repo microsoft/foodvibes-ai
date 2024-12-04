@@ -6,6 +6,7 @@ import {
     MRT_SortingState,
 } from "material-react-table";
 import { KApiStatusFulfilled, KApiStatusLoaded, KApiStatusLoading, KApiStatusLocked, KApiStatusPending, KApiStatusPreloaded, KApiStatusRejected, KApiStatusUndefined } from "./commonConstants";
+import { RefObject } from "react";
 
 export interface ApiStatusType {
     status?:
@@ -102,29 +103,26 @@ export interface CommonError {
     timestamp: string;
 }
 
+export interface IPagination {
+    pageIndex: number;
+    pageSize: number;
+}
+
 export interface QueryParamsType {
+    idToFetch: number;
     includeDetails: boolean;
-    reportMode: boolean;
     globalFilter: string;
-    columnFilters: MRT_ColumnFiltersState;
-    sorting: MRT_SortingState;
-    pagination: MRT_PaginationState;
-    impersonatedUser: string;
-    groupId: number;
+    pagination: IPagination;
 }
 
 export interface QueryParamsApiType {
+    id_to_fetch?: number;
     include_details?: boolean;
-    report_mode?: boolean;
     global_filter?: string;
-    column_filters: MRT_ColumnFiltersState;
-    sorting: MRT_SortingState;
-    pagination: {
+    pagination?: {
         page_index: number;
         page_size: number;
     };
-    impersonated_user: string;
-    group_id: number;
 }
 
 export interface QueryResponseApiType<T> {
@@ -171,6 +169,7 @@ export interface FeatureSliceState<T> extends BaseSliceState {
     queryParams: QueryParamsType;
     queryResponse: QueryResponseType<T>;
     lastId: number;
+    pagingIncreasing: boolean;
     detailLevelA: CommonDetailLevel;
     detailLevelB: CommonDetailLevel;
     historyTabIndex: number;
@@ -294,34 +293,38 @@ export interface ScCirclePutType {
     username: string;
 }
 
-export interface ProductType {
-    orm_id: number;
-    is_history: boolean;
-    product_ledger_id: number;
-    product_tx_id: number;
-    product_id: string;
-    description: string;
-    quantity: number;
-    storage_tier: number;
-    recorded_at: string;
-    properties: string;
-    operation_name: string;
-    created_at: string;
-    username: string;
-    image_id: string;
-    image_url: string;
+export interface ILayoutTracker {
+    ref: RefObject<HTMLDivElement>;
+    isOverflow: boolean;
+    top: number;
+    left: number;
+    width: number;
+    height: number;
 }
 
-export interface ProductPutType {
-    ledger_id: number;
-    product_id: string;
-    description: string;
-    image_id: string;
-    quantity: number;
-    properties: string;
-    recorded_at: string;
-    storage_tier: number;
-    username: string;
+export interface ISbsFactType {
+    id: number;
+    session_id: number;
+    main_clause?: string;
+    subclause_id?: string;
+    subclause?: string;
+    content?: string;
+    score_completeness?: number;
+    explanation_completeness?: string;
+    draft_id?: string;
+    content_id?: string;
+    document_text_reference?: string;
+    draft?: string;
+    score?: number;
+    reviewer?: string;
+    review_date?: string;
+}
+
+export interface ISbsFactPutType {
+    id: number;
+    score?: number;
+    reviewer?: string;
+    review_date?: string;
 }
 
 export interface GeotrackType extends CommonCoordinates {

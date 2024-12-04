@@ -10,7 +10,7 @@ import {
     CommonDetailLevel,
     CommonGridSizes,
     GeotrackType,
-    ProductType,
+    ISbsFactType,
     TrackingProductsType,
 } from "@foodvibes/utils/commonTypes";
 import FvCardGeotrack from "./FvCardGeotrack";
@@ -74,7 +74,7 @@ const getGridSize = (
 
 const populateProductFromTrackingProducts = (
     r: TrackingProductsType,
-): ProductType =>
+): ISbsFactType =>
     ({
         orm_id: 0,
         is_history: r.product_is_history ? true : false,
@@ -91,7 +91,7 @@ const populateProductFromTrackingProducts = (
         username: r.product_username,
         image_id: r.product_image_id,
         image_url: r.product_image_url,
-    }) as ProductType;
+    }) as ISbsFactType;
 
 const populateGeotrackFromTrackingProducts = (
     r: TrackingProductsType,

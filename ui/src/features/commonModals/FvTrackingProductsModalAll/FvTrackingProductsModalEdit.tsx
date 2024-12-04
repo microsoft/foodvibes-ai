@@ -24,7 +24,7 @@ import {
     EditFieldsPayloadType,
     EditFieldsType,
     GeotrackType,
-    ProductType,
+    ISbsFactType,
     TrackingProductsType
 } from "@foodvibes/utils/commonTypes";
 import InfoIcon from "@mui/icons-material/Info";
@@ -203,7 +203,7 @@ export const FvTrackingProductsModalEdit = ({
     bannerHeight,
 }: {
     bookmarkedGeotrack: GeotrackType | null;
-    bookmarkedProduct: ProductType | null;
+    bookmarkedProduct: ISbsFactType | null;
     isClean: boolean | null;
     data: TrackingProductsType[];
     detailLevelB: CommonDetailLevel;
@@ -380,7 +380,7 @@ export const FvTrackingProductsModalEdit = ({
                                     <Grid item xs={12}>
                                         <FvCardProduct
                                             data={
-                                                bookmarkedProduct as ProductType
+                                                bookmarkedProduct as ISbsFactType
                                             }
                                             detailLevel={CommonDetailLevel.max}
                                             headerContentCb={(

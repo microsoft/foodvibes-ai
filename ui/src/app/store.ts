@@ -1,9 +1,4 @@
-import { geotrackSlice } from "@foodvibes/features/geotrack/geotrackSlice";
 import { productSlice } from "@foodvibes/features/product/productSlice";
-import { scCircleSlice } from "@foodvibes/features/scCircle/scCircleSlice";
-import { scGroupSlice } from "@foodvibes/features/scGroup/scGroupSlice";
-import { scUserSlice } from "@foodvibes/features/scUser/scUserSlice";
-import { trackingProductsSlice } from "@foodvibes/features/trackingProducts/trackingProductsSlice";
 import type { Action, ThunkAction } from "@reduxjs/toolkit";
 import { combineSlices, configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
@@ -14,12 +9,7 @@ import { mainSlice } from "./mainSlice";
 // their `reducerPath`s, therefore we no longer need to call `combineReducers`.
 const rootReducer = combineSlices(
     mainSlice,
-    scUserSlice,
-    scGroupSlice,
-    scCircleSlice,
-    geotrackSlice,
     productSlice,
-    trackingProductsSlice,
 );
 // Infer the `RootState` type from the root reducer
 export type RootState = ReturnType<typeof rootReducer>;

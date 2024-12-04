@@ -87,54 +87,7 @@ export const MenuItems: MenuItemType[] = [
     {
         label: KMenuLabelProduct,
         icon: iconProduct,
-        accessMask: KRoleGlobalOwner | KRoleSupplyChainViewer | KRoleSupplyChainOwner | KRoleProductOwner,
-    },
-    {
-        label: KMenuLabelGeotrack,
-        icon: iconGeotrack,
-        accessMask: KRoleGlobalOwner | KRoleSupplyChainViewer | KRoleSupplyChainOwner | KRoleGeotrackOwner,
-    },
-    {
-        label: KMenuLabelTrackingProducts,
-        icon: iconTrackingProducts,
-        accessMask: KRoleAll,
-    },
-    {
-        label: KMenuLabelImpersonate,
-        icon: iconPermissions,
-        isAlt: true,
-        accessMask: KRoleGlobalOwner | KRoleSupplyChainOwner,
-    },
-    {
-        label: KMenuLabelUserManagement,
-        icon: iconScUser,
-        isAlt: true,
-        accessMask: KRoleGlobalOwner | KRoleSupplyChainOwner,
-    },
-    {
-        label: KMenuLabelGroupManagement,
-        icon: iconScGroup,
-        isAlt: true,
-        accessMask: KRoleGlobalOwner | KRoleSupplyChainOwner,
-    },
-    {
-        label: KMenuLabelCircleConfiguration,
-        icon: iconScCircle,
-        isAlt: true,
-        accessMask: KRoleGlobalOwner | KRoleSupplyChainOwner,
-    },
-    {
-        label: KMenuLabelLogOut,
-        icon: iconLogout,
-        isAlt: true,
         accessMask: KRoleNone,
-        showIfAuthenticated: true,
+        alwaysShow: true,
     },
-    {
-        label: KMenuLabelLogIn,
-        icon: iconLogin,
-        isAlt: true,
-        accessMask: KRoleNone,
-        showIfUnauthenticated: true,
-    }
 ];

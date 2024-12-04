@@ -16,17 +16,18 @@ import {
     CommonDetailLevel,
     CommonErrorLevel,
     FeatureSliceState,
-    ProductPutType,
-    ProductType,
+    ISbsFactPutType,
+    ISbsFactType,
     QueryParamsType,
+    QueryResponseApiType,
     QueryResponseType,
 } from "@foodvibes/utils/commonTypes";
 import { PayloadAction } from "@reduxjs/toolkit";
 import { getProductRows, putProduct } from "./productAPI";
 
 const name: string = KLedgerTypeProduct;
-const initialState: FeatureSliceState<ProductType> =
-    GetFeatureInitialState<ProductType>(name);
+const initialState: FeatureSliceState<ISbsFactType> =
+    GetFeatureInitialState<ISbsFactType>(name);
 
 export const productSlice = createAppSlice({
     name,
@@ -35,7 +36,7 @@ export const productSlice = createAppSlice({
         actionResetDataProduct: create.reducer(state => {
             state.queryParams = QueryParamsInit({}),
                 state.lastId = 0,
-                state.queryResponse = {} as QueryResponseType<ProductType>;
+                state.queryResponse = {} as QueryResponseType<ISbsFactType>;
         }),
         setClearStateResponse: create.reducer(state => {
             state.queryResponse.error = MakeErrorPayload();
@@ -43,6 +44,11 @@ export const productSlice = createAppSlice({
         actionSetLastId: create.reducer(
             (state, action: PayloadAction<number>) => {
                 state.lastId = action.payload;
+            },
+        ),
+        actionSetPagingIncreasing: create.reducer(
+            (state, action: PayloadAction<boolean>) => {
+                state.pagingIncreasing = action.payload;
             },
         ),
         actionSetDetailLevelA: create.reducer(
@@ -72,23 +78,34 @@ export const productSlice = createAppSlice({
             },
         ),
         actionSelectProduct: create.asyncThunk(
-            async ({ queryParams, accessToken, instance }: { queryParams: QueryParamsType; accessToken: string | null; instance: IPublicClientApplication; }, { dispatch }) => {
-                const acccessTokenToUse = await RefreshAccessTokenIfNeeded(accessToken, instance);
-
-                if (acccessTokenToUse !== accessToken) {
-                    dispatch(actionSetAccessToken(acccessTokenToUse));
-                }
-
-                const response = await getProductRows(queryParams, acccessTokenToUse);
+            async ({ queryParams }: { queryParams: QueryParamsType; }, { }) => {
+                const response = await getProductRows(queryParams);
 
                 return response;
             },
             {
                 pending: (state, payload) => {
                     SetFeatureThunkStatePending(state, payload);
+                    state.queryParams = payload.meta.arg.queryParams;
                 },
                 fulfilled: (state, action) => {
-                    SetFeatureThunkStateFulfilled(state, action.payload);
+                    // const pageSize = state.queryParams.pagination?.pageSize ?? 10;
+                    // const pageIndexOld = state.queryParams.pagination?.pageIndex ?? 0;
+                    // const pageIndexNew = action.payload.meta?.query_params?.pagination?.page_index ?? 0;
+                    // const pagingIncreasing: boolean = pageIndexOld > pageIndexNew;
+                    // const dataOld: ISbsFactType[] = (state.queryResponse.data as ISbsFactType[]) ?? [];
+                    // const dataNew: ISbsFactType[] = (action.payload.data as ISbsFactType[]) ?? [];
+                    // const data: ISbsFactType[] = pagingIncreasing ?
+                    //     [...dataOld.slice(-pageSize), ...dataNew] :
+                    //     [...dataNew, ...dataOld.slice(0, pageSize)];
+
+                    const dataOld: ISbsFactType[] = (state.queryResponse.data as ISbsFactType[]) ?? [];
+                    const dataNew: ISbsFactType[] = (action.payload.data as ISbsFactType[]) ?? [];
+                    const payload: QueryResponseApiType<ISbsFactType> = {
+                        ...action.payload,
+                        data: [...dataOld, ...dataNew],
+                    };
+                    SetFeatureThunkStateFulfilled(state, payload);
                 },
                 rejected: (state, action) => {
                     SetFeatureThunkStateRejected(state, action);
@@ -99,20 +116,11 @@ export const productSlice = createAppSlice({
             async ({
                 queryParams,
                 rowToUpsert,
-                accessToken,
-                instance,
             }: {
                 queryParams: QueryParamsType;
-                rowToUpsert: ProductPutType;
-                accessToken: string | null;
-                instance: IPublicClientApplication;
-            }, { dispatch }) => {
-                const acccessTokenToUse = await RefreshAccessTokenIfNeeded(accessToken, instance);
-
-                if (acccessTokenToUse !== accessToken) {
-                    dispatch(actionSetAccessToken(acccessTokenToUse));
-                }
-                const response = await putProduct(queryParams, rowToUpsert, acccessTokenToUse);
+                rowToUpsert: ISbsFactPutType;
+            }, { }) => {
+                const response = await putProduct(queryParams, rowToUpsert);
                 return response;
             },
             {
@@ -137,6 +145,7 @@ export const productSlice = createAppSlice({
         selectDetailLevelB: state => state.detailLevelB,
         selectGetQueryParams: state => state.queryParams,
         selectLastIdProduct: state => state.lastId,
+        selectPagingIncreasing: state => state.pagingIncreasing,
         selectProductResponse: state => state.queryResponse,
     },
 });
@@ -145,6 +154,7 @@ export const {
     actionResetDataProduct,
     setClearStateResponse,
     actionSetLastId,
+    actionSetPagingIncreasing,
     actionSetDetailLevelA,
     actionSetDetailLevelB,
     actionSetQueryParams,
@@ -158,5 +168,6 @@ export const {
     selectDetailLevelB,
     selectGetQueryParams,
     selectLastIdProduct,
+    selectPagingIncreasing,
     selectProductResponse,
 } = productSlice.selectors;

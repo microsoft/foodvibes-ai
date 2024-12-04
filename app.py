@@ -30,4 +30,4 @@ def hello():
 
 
 if __name__ == "__main__":
-    uvicorn.run(config.app, port=7778, host="0.0.0.0")
+    uvicorn.run(config.app, port=7478, host="0.0.0.0")

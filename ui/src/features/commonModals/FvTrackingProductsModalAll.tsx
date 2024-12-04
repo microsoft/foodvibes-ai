@@ -62,7 +62,7 @@ import type {
     EditFieldsType,
     ForestMapRequestType,
     GeotrackType,
-    ProductType,
+    ISbsFactType,
     QueryResponseType,
     TrackingProductsType,
 } from "@foodvibes/utils/commonTypes";
@@ -88,7 +88,7 @@ export const FvTrackingProductsModalAll = ({
     const accessToken: string | null = useAppSelector(selectAccessToken);
     const assumedAccessMask: number | null = useAppSelector(selectAssumedAccessMask);
     const bookmarkedGeotrack: GeotrackType | null = useAppSelector(selectBookmarkedGeotrack,);
-    const bookmarkedProduct: ProductType | null = useAppSelector(selectBookmarkedProduct,);
+    const bookmarkedProduct: ISbsFactType | null = useAppSelector(selectBookmarkedProduct,);
     const bookmarkedTrackingProducts: TrackingProductsType | null = useAppSelector(selectBookmarkedTrackingProducts);
     const centerIdx: number = useAppSelector(selectCenterIdx);
     const centerCount: number | null = useAppSelector(selectCenterCount);

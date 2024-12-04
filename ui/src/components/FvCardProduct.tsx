@@ -12,7 +12,7 @@ import {
 import {
     CommonCallBack,
     CommonDetailLevel,
-    ProductType,
+    ISbsFactType,
 } from "@foodvibes/utils/commonTypes";
 import { Grid } from "@mui/material";
 import Typography from "@mui/material/Typography";
@@ -26,7 +26,7 @@ export default function FvCardProduct({
     canEdit,
     headerContentCb,
 }: {
-    data: ProductType | null;
+    data: ISbsFactType | null;
     detailLevel?: CommonDetailLevel;
     isModal?: boolean;
     isTile?: boolean;

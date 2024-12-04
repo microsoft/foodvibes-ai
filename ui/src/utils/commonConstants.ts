@@ -1,5 +1,5 @@
-export const KAppTitle = "FoodVibes";
-export const KAppVersion = "20240807.0";
+export const KAppTitle = "Side-By-Side Document Viewer";
+export const KAppVersion = "20241107.0";
 export const KLedgerIdSearchTokenPrefix = "/ledger_id=";
 export const KLedgerIdSearchTokenSuffix = "/";
 export const KLedgerIdAltSearchTokenPrefix = "/ledger_id_alt=";

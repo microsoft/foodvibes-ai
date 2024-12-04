@@ -1,6 +1,5 @@
 import {
     actionSetBookmarkedGeotrack,
-    actionSetBookmarkedProduct,
     actionSetBookmarkedScCircle,
     actionSetBookmarkedScGroup,
     actionSetBookmarkedScUser,
@@ -31,17 +30,13 @@ import {
 
 export const QueryParamsInit = (payload: Partial<QueryParamsType>): QueryParamsType =>
 ({
-    columnFilters: [],
+    idToFetch: 0,
     pagination: {
         pageIndex: 0,
         pageSize: 10,
     },
-    sorting: [],
     globalFilter: "",
     includeDetails: false,
-    reportMode: false,
-    impersonatedUser: "",
-    groupId: 0,
     ...payload,
 });
 
@@ -49,17 +44,13 @@ export const QueryParamsInitFromQueryParams = (
     queryParamsApi: QueryParamsApiType,
 ): QueryParamsType =>
 ({
-    columnFilters: queryParamsApi?.column_filters,
-    pagination: {
-        pageIndex: queryParamsApi?.pagination?.page_index,
-        pageSize: queryParamsApi?.pagination?.page_size,
-    },
-    sorting: queryParamsApi?.sorting,
+    idToFetch: queryParamsApi?.id_to_fetch ?? 0,
     globalFilter: queryParamsApi?.global_filter ?? "",
     includeDetails: queryParamsApi?.include_details ?? false,
-    reportMode: queryParamsApi?.report_mode ?? false,
-    impersonatedUser: queryParamsApi?.impersonated_user,
-    groupId: queryParamsApi?.group_id,
+    pagination: {
+        pageIndex: queryParamsApi?.pagination?.page_index ?? 0,
+        pageSize: queryParamsApi?.pagination?.page_size ?? 10,
+    },
 });
 
 export const QueryParamsCompareToQueryParamsApi = (
@@ -68,20 +59,13 @@ export const QueryParamsCompareToQueryParamsApi = (
 ): boolean =>
     queryParams &&
     queryParamsApi &&
-    JSON.stringify(queryParams.columnFilters) ===
-    JSON.stringify(queryParamsApi.column_filters) &&
     JSON.stringify(queryParams.pagination) ===
     JSON.stringify({
         pageIndex: queryParamsApi.pagination?.page_index,
         pageSize: queryParamsApi.pagination?.page_size,
     }) &&
-    JSON.stringify(queryParams.sorting) ===
-    JSON.stringify(queryParamsApi.sorting) &&
     queryParams.globalFilter === queryParamsApi.global_filter &&
-    queryParams.includeDetails === queryParamsApi.include_details &&
-    queryParams.reportMode === queryParamsApi.report_mode &&
-    queryParams.impersonatedUser === queryParamsApi.impersonated_user &&
-    queryParams.groupId === queryParamsApi.group_id;
+    queryParams.includeDetails === queryParamsApi.include_details;
 
 export const QueryParamsCompareToQueryParams = (
     queryParamsA: QueryParamsType,
@@ -89,18 +73,13 @@ export const QueryParamsCompareToQueryParams = (
 ): boolean =>
     queryParamsA &&
     queryParamsB &&
-    JSON.stringify(queryParamsA.columnFilters) ===
-    JSON.stringify(queryParamsB.columnFilters) &&
     JSON.stringify(queryParamsA.pagination) ===
     JSON.stringify({
         pageIndex: queryParamsB.pagination?.pageIndex,
         pageSize: queryParamsB.pagination?.pageSize,
     }) &&
-    JSON.stringify(queryParamsA.sorting) ===
-    JSON.stringify(queryParamsB.sorting) &&
     queryParamsA.globalFilter === queryParamsB.globalFilter &&
-    queryParamsA.includeDetails === queryParamsB.includeDetails &&
-    queryParamsA.reportMode === queryParamsB.reportMode;
+    queryParamsA.includeDetails === queryParamsB.includeDetails;
 
 export const ComposeIdKey = (
     ledgerId: number = 0,
@@ -156,6 +135,7 @@ export const GetFeatureInitialState = <T>(
     queryParams: QueryParamsInit({}),
     queryResponse: {} as QueryResponseType<T>,
     lastId: 0,
+    pagingIncreasing: false,
     detailLevelA: DetailLevelStorageGet(0, suffix),
     detailLevelB: DetailLevelStorageGet(1, suffix),
     historyTabIndex: JSON.parse(
@@ -211,19 +191,15 @@ export const SetFeatureThunkStatePending = <T>(
     state.queryResponse.error = MakeErrorPayload();
 
     if (
-        payload?.meta?.arg?.queryParams &&
-        !payload.meta.arg.queryParams.reportMode
+        payload?.meta?.arg?.queryParams
     ) {
         state.queryParams = QueryParamsInitFromQueryParams({
-            column_filters: payload.meta.arg.queryParams.columnFilters,
             pagination: {
                 page_index: payload.meta.arg.queryParams.pagination.pageIndex,
                 page_size: payload.meta.arg.queryParams.pagination.pageSize,
             },
-            sorting: payload.meta.arg.queryParams.sorting,
             global_filter: payload.meta.arg.queryParams.globalFilter,
             include_details: payload.meta.arg.queryParams.includeDetails,
-            report_mode: payload.meta.arg.queryParams.reportMode,
         } as QueryParamsApiType);
     }
 };
@@ -236,30 +212,14 @@ export const SetFeatureThunkStateFulfilled = <T>(
         payload as QueryResponseApiType<T>;
     state.status = KApiStatusFulfilled;
 
-    if (payloadApi?.meta?.query_params?.report_mode) {
-        state.queryResponse = {
-            ...state.queryResponse,
-            reportData: payloadApi?.data,
-        };
-
-        if (!state.queryResponse.data?.length && payloadApi?.data?.length) {
-            // Cover cases where we have report data and no matching grid data
-            state.queryResponse = {
-                ...state.queryResponse,
-                data: [payloadApi.data[0]],
-            };
-        }
-    } else {
-        state.queryResponse = {
-            ...state.queryResponse,
-            ...payloadApi,
-        };
-        state.queryParams = QueryParamsInitFromQueryParams(
-            payloadApi?.meta?.query_params as QueryParamsApiType,
-        );
-        state.lastId = payloadApi.meta?.last_id ?? 0;
-    }
-
+    state.queryResponse = {
+        ...state.queryResponse,
+        ...payloadApi,
+    };
+    state.queryParams = QueryParamsInitFromQueryParams(
+        payloadApi?.meta?.query_params as QueryParamsApiType,
+    );
+    state.lastId = payloadApi.meta?.last_id ?? 0;
     state.loading = false;
 };
 
@@ -314,12 +274,6 @@ export const BookmarkGeotrack = (dispatch: any, row: any) => {
     }
 };
 
-export const BookmarkProduct = (dispatch: any, row: any) => {
-    if (dispatch) {
-        dispatch(actionSetBookmarkedProduct(row ? { ...row } : null));
-    }
-};
-
 export const FormatTimestamp = (
     inval?: string | moment.Moment,
     spaceDelimited: boolean = false,
@@ -356,16 +310,11 @@ export const ComposeUrl = (
     const params: string = queryParams
         ? [
             `include_details=${queryParams.includeDetails}`,
-            `report_mode=${queryParams.reportMode}`,
             `global_filter=${queryParams.globalFilter?.trim()?.length ? queryParams.globalFilter : ""}`,
-            `column_filters=${JSON.stringify(queryParams.columnFilters ?? "")}`,
-            `sorting=${JSON.stringify(queryParams.sorting ?? "")}`,
             `pagination=${JSON.stringify(queryParams.pagination ? {
                 page_index: queryParams.pagination.pageIndex,
                 page_size: queryParams.pagination.pageSize,
             } : "")}`,
-            `impersonated_user=${queryParams.impersonatedUser}`,
-            `group_id=${queryParams.groupId ?? 0}`,
         ].join("&")
         : "";
 
@@ -402,9 +351,8 @@ export const ComposeUrlImage = (
     return GetEffectiveApiUrl(path, paramsFlds.join("&"));
 };
 
-export const ComposeHttpHeaders = (accessToken: string | null): { headers: { [key: string]: string } } => ({
+export const ComposeHttpHeaders = (accessToken?: string | null): { headers: { [key: string]: string } } => ({
     headers: {
-        Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
     },
 });

@@ -11,8 +11,8 @@ Returns:
 import json
 import os
 from enum import Enum
-from typing import List, Union
-from sqlalchemy.orm import Session
+from typing import Union
+from pydantic import BaseModel
 
 from api.common.config import ConfigSingletonClass
 from api.common.models import (
@@ -24,7 +24,6 @@ from api.common.models import (
     FoodvibesScUserLedgerView,
     FoodvibesTrackingProductsLedgerView,
 )
-from api.common.utils import is_production
 
 ROLE_PRODUCT_OWNER = 0b00001
 ROLE_GEOTRACK_OWNER = 0b00010
@@ -105,61 +104,36 @@ class CommonQueryParamsRole:
 class CommonQueryParams:
     """Common query parameters helper class"""
 
+    id_to_fetch: int
     include_details: bool
-    report_mode: bool
     global_filter: str
-    column_filters: List[CommonQueryParamsColFilter]
-    sorting: List[CommonQueryParamsColSorting]
     pagination: CommonQueryParamsPagination
-    impersonated_user: (
-        str | None
-    )  # Added for impersonation in non-production environments
-    group_id: int | None
-    db_session: Session  # Updated by check_access()
-    active_access_mask: int = 0  # Updated by check_access()
-    username_list: List[str] = []  # Updated by check_access()
-    privacy_on: bool = False  # Updated by check_access()
-    bypass_mode_on: bool = False  # Updated by check_access()
 
     def __init__(
         self,
+        id_to_fetch: int = 0,
         include_details: bool | None = None,
-        report_mode: bool | None = None,
         global_filter: str | None = None,
-        column_filters: str | None = None,
-        sorting: str | None = None,
         pagination: str | None = None,
-        impersonated_user: str | None = None,
-        group_id: int | None = None,
     ):
         """_summary_
 
         Args:
+            id_to_fetch (int, optional): _description_. Defaults to 0.
             include_details (bool | None, optional): _description_. Defaults to None.
-            report_mode (bool | None, optional): _description_. Defaults to None.
             global_filter (str | None, optional): _description_. Defaults to None.
-            column_filters (str | None, optional): _description_. Defaults to None.
-            sorting (str | None, optional): _description_. Defaults to None.
             pagination (str | None, optional): _description_. Defaults to None.
-            impersonated_user (str | None, optional): _description_. Defaults to None.
-            group_id (int | None, optional): _description_. Defaults to None.
         """
+        self.id_to_fetch = id_to_fetch or 0
         self.include_details = include_details or False
-        self.report_mode = report_mode or False
         self.global_filter = global_filter or ""
 
         if self.global_filter:
             self.global_filter = self.global_filter
 
-        self.column_filters = CommonQueryParamsColFilter.load_from_json(
-            column_filters or "[]"
-        )
-        self.sorting = CommonQueryParamsColSorting.load_from_json(sorting or "[]")
         self.pagination = CommonQueryParamsPagination.load_from_json(
             pagination or "{" + f'"page_index":0,"page_size":{FETCH_PAGE_SIZE}' + "}"
         )
-        self.group_id = group_id
-        self.impersonated_user = None if is_production() else impersonated_user
 
 
 class CommonQueryResponseMeta:
@@ -284,6 +258,12 @@ class sbs_fact:
             f"content_id={self.content_id}, "
             f"document_text_reference={self.document_text_reference}, draft={self.draft})"
         )
+
+
+class SbsReviewRequest(BaseModel):
+    score: int
+    reviewer: str
+    review_date: str
 
 
 config = ConfigSingletonClass()
