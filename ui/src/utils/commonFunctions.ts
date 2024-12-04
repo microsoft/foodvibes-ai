@@ -206,20 +206,24 @@ export const SetFeatureThunkStatePending = <T>(
 
 export const SetFeatureThunkStateFulfilled = <T>(
     state: FeatureSliceState<T>,
-    payload: QueryResponseApiType<T> | QueryResponseApiType<TrackingProductsType> | QueryResponseApiType<ScCircleType> | CommonError,
+    payload: QueryResponseApiType<T> | QueryResponseApiType<TrackingProductsType> | QueryResponseApiType<ScCircleType> | CommonError | null,
 ) => {
-    const payloadApi: QueryResponseApiType<T> =
-        payload as QueryResponseApiType<T>;
     state.status = KApiStatusFulfilled;
 
-    state.queryResponse = {
-        ...state.queryResponse,
-        ...payloadApi,
-    };
-    state.queryParams = QueryParamsInitFromQueryParams(
-        payloadApi?.meta?.query_params as QueryParamsApiType,
-    );
-    state.lastId = payloadApi.meta?.last_id ?? 0;
+    if (payload) {
+        const payloadApi: QueryResponseApiType<T> =
+            payload as QueryResponseApiType<T>;
+
+        state.queryResponse = {
+            ...state.queryResponse,
+            ...payloadApi,
+        };
+        state.queryParams = QueryParamsInitFromQueryParams(
+            payloadApi?.meta?.query_params as QueryParamsApiType,
+        );
+        state.lastId = payloadApi.meta?.last_id ?? 0;
+    }
+
     state.loading = false;
 };
 
@@ -300,7 +304,7 @@ export const NowTimestamp = (): string => FormatTimestamp(moment(), true);
 
 export const GetEffectiveApiUrl = (path: string, params?: string): string => {
     const apiUrl = `${import.meta.env.VITE_ENDPOINT_URL}/${path}`;
-    return params ? `${apiUrl}/?${params}` : apiUrl;
+    return params ? `${apiUrl}/?${encodeURI(params)}` : apiUrl;
 };
 
 export const ComposeUrl = (

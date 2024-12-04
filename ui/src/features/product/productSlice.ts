@@ -128,7 +128,8 @@ export const productSlice = createAppSlice({
                     SetFeatureThunkStatePending(state, payload);
                 },
                 fulfilled: (state, action) => {
-                    SetFeatureThunkStateFulfilled(state, action.payload);
+                    console.log('action.payload', action.payload);
+                    SetFeatureThunkStateFulfilled(state, null);
                     state.upsertState = CommonErrorLevel.success;
                 },
                 rejected: (state, action) => {

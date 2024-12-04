@@ -2,6 +2,7 @@ import { useAppDispatch, useAppSelector } from "@foodvibes/app/hooks";
 import styles from "@foodvibes/components/FvCommon.module.css";
 import { useEffect, useState } from "react";
 import {
+    NowTimestamp,
     QueryParamsCompareToQueryParamsApi,
     QueryParamsInit
 } from "@foodvibes/utils/commonFunctions";
@@ -152,8 +153,10 @@ export const Product = () => {
                 {queryResponse?.data?.map((fact: ISbsFactType, idx: number) => (
                     <SbsFact key={`fact${idx}`} sbsFact={fact} scoreChangeCb={(newScore: number) => {
                         const rowToUpsert: ISbsFactPutType = {
-                            ...fact,
+                            id: fact.id,
                             score: newScore,
+                            reviewer: "Reviewer Name",
+                            review_date: NowTimestamp(),
                         };
 
                         upsertProduct(queryParams, rowToUpsert);
