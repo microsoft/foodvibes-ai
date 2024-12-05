@@ -129,6 +129,25 @@ const MainContent = () => {
                                 </Box>
                             </a>
                         </Box>
+                        {productIsLoading ? (
+                            <div style={{
+                                borderRadius: "12px 0 0 0",
+                                backgroundColor: "gainsboro",
+                                color: "darkblue",
+                                zIndex: 110,
+                                position: "absolute",
+                                top: "calc(100vh - 28px)",
+                                right: "0px",
+                                overflow: "hidden",
+                                padding: "4px 12px",
+                            }}>
+                                <span style={{ margin: "0 8px 0 0", whiteSpace: "nowrap", }}>
+                                    <CircularProgress color="inherit" style={{ width: "12px", height: "12px", margin: "0 8px 0 0", }} />
+                                    <span style={{ position: "relative", top: "-1px", }}>
+                                        Loading...
+                                    </span>
+                                </span>
+                            </div>) : null}
                         <Tooltip title={"Profile, roles & permissions"}>
                             <IconButton
                                 size="large"

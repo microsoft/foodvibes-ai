@@ -164,10 +164,13 @@ class SbsSqlite:
     def db_get_sbs_fact_list(
         self, session_id: int, id_to_fetch: int, pagination: CommonQueryParamsPagination
     ):
+        total_count = 0
+        data_size_limit = 100
+
         self.enter()
 
         if id_to_fetch > 0:
-            total_count = 0
+            data_size_limit = 50000
             self.cursor.execute(
                 """
                 SELECT
@@ -182,7 +185,8 @@ class SbsSqlite:
                     A.explanation_completeness,
                     A.draft_id,
                     A.content_id,
-                    A.document_text_reference,
+                    SUBSTR(A.document_text_reference, 1, {data_size_limit})
+                        as document_text_reference,
                     A.draft,
                     A.score,
                     A.reviewer,
@@ -219,8 +223,9 @@ class SbsSqlite:
                     A.explanation_completeness,
                     A.draft_id,
                     A.content_id,
-                    SUBSTR(A.document_text_reference, 1, 100) as document_text_reference,
-                    SUBSTR(A.draft, 1, 100) as draft,
+                    SUBSTR(A.document_text_reference, 1, {data_size_limit})
+                        as document_text_reference,
+                    A.draft,
                     A.score,
                     A.reviewer,
                     A.review_date
@@ -240,6 +245,18 @@ class SbsSqlite:
         # Convert rows to a list of dictionaries
         data = [dict(zip(column_names, row)) for row in rows]
 
+        # Pretty print the JSON in the 'details' column
+        for item in data:
+            if "draft" in item:
+                try:
+                    # Parse the JSON string
+                    json_data = json.loads(item["draft"])
+                    # Pretty print the JSON and Split the pretty-printed JSON into lines
+                    pretty_json_lines = json.dumps(json_data, indent=4).split("\n")
+                    # Update the item with the limited pretty-printed JSON
+                    item["draft"] = ("\n".join(pretty_json_lines))[:data_size_limit]
+                except json.JSONDecodeError:
+                    print(f"Invalid JSON in row: {item}")
         # Convert the list of dictionaries to a JSON string
         # json_data = json.dumps(data, indent=4)
 

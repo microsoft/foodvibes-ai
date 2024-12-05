@@ -20,10 +20,11 @@ export default function FvMessageShow({
                     e =>
                         !(
                             e.error_level === CommonErrorLevel.information ||
-                            (e.error_level === CommonErrorLevel.success &&
-                                e.message.includes("fetched") &&
-                                !e.message.includes(" updated ") &&
-                                !e.message.includes(" added "))
+                            (e.error_level === CommonErrorLevel.success //&&
+                                // e.message.includes("fetched") &&
+                                // !e.message.includes(" updated ") &&
+                                // !e.message.includes(" added ")
+                            )
                         ),
                 )
                 .forEach(e => {
