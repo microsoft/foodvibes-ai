@@ -11,12 +11,14 @@ Returns:
 from api.common.config import logger
 from api.common.types import (
     CommonQueryParamsPagination,
-    SbsReviewRequest,
+    SbsFactReviewRequest,
+    SbsSessionUpdateRequest,
     sbs_fact,
     sbs_session,
 )
 import json
 import sqlite3
+from typing import List
 
 
 class SbsSqlite:
@@ -51,94 +53,272 @@ class SbsSqlite:
                 truncated_obj[key] = value
         return truncated_obj
 
-    def db_create(self):
-        self.enter()
-        self.cursor.execute(
+    @classmethod
+    def print_truncated_values(cls, data):
+        # Print the data
+        for index, row in enumerate(data, start=0):
+            if index % 250 == 0:
+                truncated_obj = SbsSqlite.truncate_values(row)
+
+                logger.info(f"Row {index + 1}: {json.dumps(truncated_obj, indent=4)}")
+
+    @classmethod
+    def fetch_row_count(cls, cursor, sql_from_expr) -> int:
+        # Query to get the total record count
+        cursor.execute(
+            f"""
+            SELECT COUNT(*) FROM {sql_from_expr}
             """
-        CREATE TABLE IF NOT EXISTS sbs_session (
-            id INTEGER PRIMARY KEY,
-            path TEXT NOT NULL
         )
-        """
+
+        return cursor.fetchone()[0]
+
+    @classmethod
+    def fetch_data(
+        cls,
+        cursor,
+        sql_epxr,
+        pagination: CommonQueryParamsPagination = None,
+        columns_to_truncate: List[str] = [],
+        data_size_limit: int = 100,
+    ):
+        pagination_to_use = (
+            ""
+            if pagination is None
+            else f"""
+                LIMIT {pagination.page_size} OFFSET {pagination.page_index * pagination.page_size}
+                """
         )
-        self.cursor.execute(
+        # Query data
+        cursor.execute(
+            f"""
+            {sql_epxr}
+            {pagination_to_use}
             """
-        CREATE TABLE IF NOT EXISTS sbs_fact (
-            id INTEGER PRIMARY KEY,
-            session_id INTEGER NOT NULL,
-            main_clause TEXT NOT NULL,
-            subclause_id TEXT NULL,
-            subclause TEXT NULL,
-            content TEXT NOT NULL,
-            score_completeness INTEGER NULL,
-            explanation_completeness TEXT NULL,
-            draft_id TEXT NOT NULL,
-            content_id TEXT NOT NULL,
-            document_text_reference TEXT NULL,
-            draft TEXT NULL,
-            score INTEGER NULL,
-            reviewer TEXT NULL,
-            review_date TEXT NULL
-        )
-        """
-        )
-        self.exit()
-
-    from typing import Tuple
-
-    def db_populate_sbs_session(self, row: sbs_session):
-        self.enter()
-        self.cursor.execute(
-            """
-            SELECT id FROM sbs_session
-            WHERE path = ?
-            """,
-            (row.path,),
         )
 
-        inserted_id: int = 0
-        is_new: bool = False
-        rows = self.cursor.fetchall()
-
+        rows = cursor.fetchall()
         # Get column names from the cursor description
-        column_names = [description[0] for description in self.cursor.description]
-
+        column_names = [description[0] for description in cursor.description]
         # Convert rows to a list of dictionaries
         data = [dict(zip(column_names, row)) for row in rows]
 
-        if len(data) > 0:
-            logger.info(f"Session already exists: {data}")
+        if len(columns_to_truncate) > 0:
+            for item in data:
+                for column in columns_to_truncate:
+                    if column in item:
+                        try:
+                            # Parse the JSON string
+                            json_data = json.loads(item[column])
+                            # Pretty print the JSON and Split the pretty-printed JSON into lines
+                            pretty_json_lines = json.dumps(json_data, indent=4).split(
+                                "\n"
+                            )
+                            # Update the item with the limited pretty-printed JSON
+                            item[column] = ("\n".join(pretty_json_lines))[
+                                :data_size_limit
+                            ]
+                        except json.JSONDecodeError:
+                            print(f"Invalid JSON in row: {item}")
 
-            inserted_id = data[0]["id"] or 0
-        else:
-            logger.info(f"Creating new session for {row.path}")
-            # Insert data
-            self.cursor.execute(
-                """
-            INSERT INTO sbs_session (
-                path)
-            VALUES (?)
-            """,
-                (row.path,),
+        SbsSqlite.print_truncated_values(data)
+
+        return data
+
+    @classmethod
+    def db_update_common(
+        cls,
+        cursor,
+        table_name: str,
+        where_expr: str,
+        item: SbsSessionUpdateRequest | SbsFactReviewRequest,
+    ):
+        # Convert the item object to a dictionary
+        update_data = item.__dict__
+
+        # Generate the SQL update statement
+        set_clause = ", ".join([f"{key} = ?" for key in update_data.keys()])
+        sql = f"UPDATE {table_name} SET {set_clause} WHERE {where_expr}"
+
+        # Execute the update statement
+        cursor.execute(sql, (*update_data.values(),))
+
+    def db_create_sessions_table(self):
+        self.enter()
+        self.cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS sbs_session (
+                id INTEGER PRIMARY KEY,
+                fact_count INTEGER DEFAULT 0,
+                path TEXT NOT NULL,
+                reviewer TEXT NULL,
+                review_date TEXT NULL
+            )
+            """
+        )
+        self.exit()
+
+    def db_create_fact_table(self):
+        self.enter()
+        self.cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS sbs_fact (
+                id INTEGER PRIMARY KEY,
+                session_id INTEGER NOT NULL,
+                main_clause TEXT NOT NULL,
+                subclause_id TEXT NULL,
+                subclause TEXT NULL,
+                content TEXT NOT NULL,
+                score_completeness INTEGER NULL,
+                explanation_completeness TEXT NULL,
+                draft_id TEXT NOT NULL,
+                content_id TEXT NOT NULL,
+                document_text_reference TEXT NULL,
+                draft TEXT NULL,
+                score INTEGER NULL,
+                reviewer TEXT NULL,
+                review_date TEXT NULL
+            )
+            """
+        )
+        self.exit()
+
+    def db_upsert_sbs_sessions(self, paths: List[sbs_session]) -> int:
+        total_count = 0
+        self.enter()
+
+        for path in paths:
+            count = SbsSqlite.fetch_row_count(
+                self.cursor, f"sbs_session WHERE path = '{path.path}'"
             )
 
-            inserted_id = self.cursor.lastrowid or 0
-            is_new = True
+            if count > 0:
+                logger.info(f"Session already exists for {path.path}")
+            else:
+                logger.info(f"Creating new session for {path.path}")
+                # Insert data
+                self.cursor.execute(
+                    """
+                    INSERT INTO sbs_session (path)
+                    VALUES (?)
+                    """,
+                    (path.path,),
+                )
+
+                id = self.cursor.lastrowid or 0
+
+                logger.info(f"Session {id} added for {path.path}")
+
+            total_count += 1
 
         self.exit()
 
-        return inserted_id, is_new
+        return total_count
+
+    def db_sbs_session_list(
+        self,
+        session_id_to_fetch: int = 0,
+        pagination: CommonQueryParamsPagination = None,
+    ):
+        self.enter()
+
+        sql_expr_suffix = (
+            f"WHERE id = {session_id_to_fetch}" if session_id_to_fetch > 0 else ""
+        )
+        total_count = (
+            SbsSqlite.fetch_row_count(self.cursor, "sbs_session")
+            if session_id_to_fetch == 0
+            else 1
+        )
+        data = SbsSqlite.fetch_data(
+            self.cursor,
+            f"""
+            SELECT
+                id,
+                fact_count,
+                path,
+                reviewer,
+                review_date
+            FROM sbs_session
+            {sql_expr_suffix}
+            """,
+            pagination,
+        )
+
+        self.exit()
+
+        return data, total_count
+
+    # Query the database
+    def db_get_sbs_fact_list(
+        self,
+        session_id_to_fetch: int,
+        fact_id_to_fetch: int = 0,
+        pagination: CommonQueryParamsPagination = None,
+    ):
+        self.enter()
+
+        if fact_id_to_fetch > 0:
+            sql_expr_suffix = f" and id = {fact_id_to_fetch}"
+            pagination_to_use = None
+            column_to_truncate = []
+            data_size_limit = 50000
+            total_count = 0
+        else:
+            sql_expr_suffix = ""
+            pagination_to_use = pagination
+            column_to_truncate = ["draft"]
+            data_size_limit = 100
+            total_count = SbsSqlite.fetch_row_count(
+                self.cursor,
+                f"""
+                sbs_fact
+                WHERE session_id = {session_id_to_fetch}
+                """,
+            )
+
+        data = SbsSqlite.fetch_data(
+            self.cursor,
+            f"""
+            SELECT
+                id,
+                session_id,
+                main_clause,
+                subclause_id,
+                subclause,
+                content,
+                score_completeness,
+                explanation_completeness,
+                draft_id,
+                content_id,
+                SUBSTR(document_text_reference, 1, {data_size_limit})
+                    as document_text_reference,
+                draft,
+                score,
+                reviewer,
+                review_date
+            FROM sbs_fact
+            WHERE session_id = {session_id_to_fetch} {sql_expr_suffix}
+            """,
+            pagination_to_use,
+            column_to_truncate,
+            data_size_limit,
+        )
+
+        self.exit()
+
+        return data, total_count
 
     def db_populate_sbs_fact(self, row: sbs_fact) -> int:
         self.enter()
         # Insert data
         self.cursor.execute(
             """
-        INSERT INTO sbs_fact (
-            session_id, main_clause, subclause_id, subclause, content, score_completeness,
-            explanation_completeness, draft_id, content_id, document_text_reference, draft)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """,
+            INSERT INTO sbs_fact (
+                session_id, main_clause, subclause_id, subclause, content, score_completeness,
+                explanation_completeness, draft_id, content_id, document_text_reference, draft)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
             (
                 row.session_id,
                 row.main_clause,
@@ -160,127 +340,18 @@ class SbsSqlite:
 
         return inserted_id
 
-    # Query the database
-    def db_get_sbs_fact_list(
-        self, session_id: int, id_to_fetch: int, pagination: CommonQueryParamsPagination
-    ):
-        total_count = 0
-        data_size_limit = 100
-
+    # Patch the sbs_session table
+    def db_patch_sbs_session(self, session_id: int, item: SbsSessionUpdateRequest):
         self.enter()
-
-        if id_to_fetch > 0:
-            data_size_limit = 50000
-            self.cursor.execute(
-                """
-                SELECT
-                    B.path,
-                    A.id,
-                    A.session_id,
-                    A.main_clause,
-                    A.subclause_id,
-                    A.subclause,
-                    A.content,
-                    A.score_completeness,
-                    A.explanation_completeness,
-                    A.draft_id,
-                    A.content_id,
-                    SUBSTR(A.document_text_reference, 1, {data_size_limit})
-                        as document_text_reference,
-                    A.draft,
-                    A.score,
-                    A.reviewer,
-                    A.review_date
-                FROM sbs_fact A
-                LEFT JOIN sbs_session B ON A.session_id = B.id
-                WHERE B.id = ? and A.id = ?
-                """,
-                (session_id, id_to_fetch),
-            )
-        else:
-            # Query to get the total record count
-            self.cursor.execute(
-                """
-                SELECT COUNT(*) FROM sbs_fact A
-                LEFT JOIN sbs_session B ON A.session_id = B.id
-                WHERE B.id = ?
-                """,
-                (session_id,),
-            )
-            total_count = self.cursor.fetchone()[0]
-            # Query data
-            self.cursor.execute(
-                f"""
-                SELECT
-                    B.path,
-                    A.id,
-                    A.session_id,
-                    A.main_clause,
-                    A.subclause_id,
-                    A.subclause,
-                    A.content,
-                    A.score_completeness,
-                    A.explanation_completeness,
-                    A.draft_id,
-                    A.content_id,
-                    SUBSTR(A.document_text_reference, 1, {data_size_limit})
-                        as document_text_reference,
-                    A.draft,
-                    A.score,
-                    A.reviewer,
-                    A.review_date
-                FROM sbs_fact A
-                LEFT JOIN sbs_session B ON A.session_id = B.id
-                WHERE B.id = ?
-                LIMIT {pagination.page_size} OFFSET {pagination.page_index * pagination.page_size}
-                """,
-                (session_id,),
-            )
-
-        rows = self.cursor.fetchall()
-
-        # Get column names from the cursor description
-        column_names = [description[0] for description in self.cursor.description]
-
-        # Convert rows to a list of dictionaries
-        data = [dict(zip(column_names, row)) for row in rows]
-
-        # Pretty print the JSON in the 'details' column
-        for item in data:
-            if "draft" in item:
-                try:
-                    # Parse the JSON string
-                    json_data = json.loads(item["draft"])
-                    # Pretty print the JSON and Split the pretty-printed JSON into lines
-                    pretty_json_lines = json.dumps(json_data, indent=4).split("\n")
-                    # Update the item with the limited pretty-printed JSON
-                    item["draft"] = ("\n".join(pretty_json_lines))[:data_size_limit]
-                except json.JSONDecodeError:
-                    print(f"Invalid JSON in row: {item}")
-        # Convert the list of dictionaries to a JSON string
-        # json_data = json.dumps(data, indent=4)
-
-        # Print the data
-        for index, row in enumerate(data, start=1):
-            if index % 250 == 0:
-                truncated_obj = SbsSqlite.truncate_values(row)
-
-                logger.info(f"Row {index}: {json.dumps(truncated_obj, indent=4)}")
-
+        SbsSqlite.db_update_common(self.cursor, "sbs_session", f"id={session_id}", item)
         self.exit()
 
-        return data, total_count
-
-    # Update the sbs_fact table
-    def db_update_sbs_fact(self, fact_id: int, item: SbsReviewRequest):
+    # Patch the sbs_fact table
+    def db_patch_sbs_fact(
+        self, session_id: int, fact_id: int, item: SbsFactReviewRequest
+    ):
         self.enter()
-        # Convert the SbsReviewRequest object to a dictionary
-        update_data = item.__dict__
-
-        # Generate the SQL update statement
-        set_clause = ", ".join([f"{key} = ?" for key in update_data.keys()])
-        sql = f"UPDATE sbs_fact SET {set_clause} WHERE id = ?"
-
-        # Execute the update statement
-        self.cursor.execute(sql, (*update_data.values(), fact_id))
+        SbsSqlite.db_update_common(
+            self.cursor, "sbs_fact", f"id={fact_id} and session_id={session_id}", item
+        )
         self.exit()

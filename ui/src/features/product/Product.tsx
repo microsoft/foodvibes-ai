@@ -14,64 +14,88 @@ import {
     ILayoutTracker,
     ISbsFactPutType,
     ISbsFactType,
+    ISbsSessionType,
     QueryParamsType,
     QueryResponseType
 } from "@foodvibes/utils/commonTypes";
 import { Box, Button, Stack, TextField } from "@mui/material";
 import {
-    actionSelectProduct,
-    actionSetPagingIncreasing,
-    actionSetQueryParams,
-    actionUpsertProduct,
+    actionSelectCurrFacts,
+    actionSetPagingIncreasingFacts,
+    actionSetQueryParamsFacts,
+    actionPatchProduct,
     selectPagingIncreasing,
-    selectGetQueryParams,
+    selectGetQueryParamsCurrFacts,
     selectProductIsLoading,
-    selectProductResponse,
-    setClearStateResponse,
+    selectResponseCurrFacts,
+    actionSetClearStateResponse,
+    actionSelectCurrSessions,
+    selectResponseCurrFactZoomed,
+    selectResponseCurrSessions,
+    actionSetQueryParamsSessions,
+    actionResetFacts,
+    selectLastIdFacts,
+    selectLastIdFactZoomed,
+    selectLastIdSessions,
 } from "./productSlice";
-import SbsFact from "@foodvibes/components/sbsFact";
 import { useOutletContext } from "react-router";
 import FvBoundaryMarker from "@foodvibes/components/FvBoundaryMarker";
+import SbsSessions from "@foodvibes/components/sbsSessions";
+import SbsFacts from "@foodvibes/components/sbsFacts";
 
 export const Product = () => {
     const context = useOutletContext<{ outletTracker: ILayoutTracker, titleTracker: ILayoutTracker, bodyTracker: ILayoutTracker }>();
     const dispatch = useAppDispatch();
     // const isLoading: boolean = useAppSelector(selectProductIsLoading);
     // const pagingIncreasing: boolean = useAppSelector(selectPagingIncreasing);
-    const queryParams: QueryParamsType = useAppSelector(selectGetQueryParams);
+    const lastIdSessions: number = useAppSelector(selectLastIdSessions);
+    const lastIdFacts: number = useAppSelector(selectLastIdFacts);
+    const lastIdFactZoomed: number = useAppSelector(selectLastIdFactZoomed);
+    const queryParamsCurrFacts: QueryParamsType = useAppSelector(selectGetQueryParamsCurrFacts);
     // const setPagingIncreasing: (doLoad: boolean) => void = (doLoad: boolean) => dispatch(actionSetPagingIncreasing(doLoad));
-    const setQueryParams = (payload: Partial<QueryParamsType>) => dispatch(actionSetQueryParams(payload));
-    const queryResponse: QueryResponseType<ISbsFactType> = useAppSelector(selectProductResponse,);
-    const selectProduct = (queryParams: QueryParamsType) => dispatch(actionSelectProduct({ queryParams }));
-    const upsertProduct = (queryParams: QueryParamsType, rowToUpsert: ISbsFactPutType) => dispatch(actionUpsertProduct({ queryParams, rowToUpsert }));
-    const [textValue, setTextValue] = useState<string>('data/cfca7fd0-a03f-4305-b48d-fd2ace8bb332.jsonl');
-    const [pagingState, setPagingState] = useState<number>(0);
-    const [doLoad, setDoLoad] = useState<boolean>(false);
-    const handleButtonClick = () => {
-        if (textValue.trim().length) {
-            setPagingState(0);
-            setDoLoad(false);
-            selectProduct(QueryParamsInit({
-                globalFilter: textValue,
-                includeDetails: false,
-                pagination: {
-                    pageIndex: 0,
-                    pageSize: 10,
-                },
-            }));
-        }
+    const resetFacts = () => dispatch(actionResetFacts());
+    const setQueryParamsCurrSessions = (payload: Partial<QueryParamsType>) => dispatch(actionSetQueryParamsSessions(payload));
+    const setQueryParamsCurrFacts = (payload: Partial<QueryParamsType>) => dispatch(actionSetQueryParamsFacts(payload));
+    const queryResponseCurrSessions: QueryResponseType<ISbsSessionType> = useAppSelector(selectResponseCurrSessions);
+    const queryResponseCurrFacts: QueryResponseType<ISbsFactType> = useAppSelector(selectResponseCurrFacts);
+    const queryResponseCurrFactZoomed: QueryResponseType<ISbsFactType> = useAppSelector(selectResponseCurrFactZoomed);
+    const selectCurrSessions = (queryParams: QueryParamsType) => dispatch(actionSelectCurrSessions({ queryParams }));
+    const selectCurrFacts = (queryParams: QueryParamsType) => dispatch(actionSelectCurrFacts({ queryParams }));
+    const patchFact = (queryParams: QueryParamsType, rowToUpsert: ISbsFactPutType) => dispatch(actionPatchProduct({ queryParams, rowToUpsert }));
+    const [pagingStateSessions, setPagingStateSessions] = useState<number>(0);
+    const [pagingStateFacts, setPagingStateFacts] = useState<number>(0);
+    const [doLoadSessions, setDoLoadSessions] = useState<boolean>(false);
+    const [doLoadFacts, setDoLoadFacts] = useState<boolean>(false);
+    const handleSessionSelection = (idToFetch: number) => {
+        setPagingStateFacts(0);
+        setDoLoadFacts(false);
+        selectCurrFacts(QueryParamsInit({
+            idToFetch,
+            id2ToFetch: 0,
+            globalFilter: "",
+            includeDetails: false,
+            pagination: {
+                pageIndex: 0,
+                pageSize: 10,
+            },
+        }));
     };
     const handlePageChange = (increasing: boolean) => {
+        if (!queryResponseCurrFacts?.meta?.row_count) {
+            return;
+        }
+
         const pageIndex = increasing ?
             Math.min(
-                Math.round((queryResponse.meta?.row_count ?? 0) / (queryResponse.meta?.query_params?.pagination?.page_size ?? 1)),
-                (queryResponse.meta?.query_params?.pagination?.page_index ?? 0) + 1) :
-            Math.max(0, (queryResponse.meta?.query_params?.pagination?.page_index ?? 0) - 1);
+                Math.round((queryResponseCurrFacts.meta?.row_count ?? 0) / (queryResponseCurrFacts.meta?.query_params?.pagination?.page_size ?? 1)),
+                (queryResponseCurrFacts.meta?.query_params?.pagination?.page_index ?? 0) + 1) :
+            Math.max(0, (queryResponseCurrFacts.meta?.query_params?.pagination?.page_index ?? 0) - 1);
 
-        selectProduct({
-            ...queryParams,
+        selectCurrFacts({
+            ...queryParamsCurrFacts,
+            id2ToFetch: 0,
             pagination: {
-                ...queryParams.pagination,
+                ...queryParamsCurrFacts.pagination,
                 pageIndex,
             },
         });
@@ -80,96 +104,112 @@ export const Product = () => {
     useEffect(() => {
         // Component dismount hook to clean the state's response error
         return () => {
-            dispatch(setClearStateResponse());
+            dispatch(actionSetClearStateResponse());
         };
     }, []);
     useEffect(() => {
-        if (!queryResponse?.error?.message?.length) {
+        if (!queryResponseCurrFacts?.error?.message?.length) {
             return;
         }
 
-        CommonMessageSend(dispatch, queryResponse?.error as CommonError);
-    }, [queryResponse?.error]);
+        CommonMessageSend(dispatch, queryResponseCurrFacts?.error as CommonError);
+    }, [queryResponseCurrFacts?.error]);
     useEffect(() => {
-        setQueryParams({
-            globalFilter: queryResponse?.meta?.query_params?.global_filter,
-            includeDetails: queryResponse?.meta?.query_params?.include_details,
+        setQueryParamsCurrFacts({
+            globalFilter: queryResponseCurrFacts?.meta?.query_params?.global_filter,
+            includeDetails: queryResponseCurrFacts?.meta?.query_params?.include_details,
             pagination: {
-                pageIndex: queryResponse?.meta?.query_params?.pagination?.page_index ?? 0,
-                pageSize: queryResponse?.meta?.query_params?.pagination?.page_size ?? 10,
+                pageIndex: queryResponseCurrFacts?.meta?.query_params?.pagination?.page_index ?? 0,
+                pageSize: queryResponseCurrFacts?.meta?.query_params?.pagination?.page_size ?? 10,
             },
         });
-    }, [queryResponse?.data, queryResponse?.meta?.query_params]);
+    }, [queryResponseCurrFacts?.data, queryResponseCurrFacts?.meta?.query_params]);
     useEffect(() => {
-        if (pagingState === 0 || !queryResponse?.meta?.row_count) {
+        if (pagingStateSessions === 0 || !queryResponseCurrSessions?.meta?.row_count) {
             return;
         }
 
-        if (!doLoad) {
-            setDoLoad(true);
+        if (!doLoadSessions) {
+            setDoLoadSessions(true);
         } else {
-            handlePageChange(pagingState > 0);
-            setPagingState(0);
+            handlePageChange(pagingStateSessions > 0);
+            setPagingStateSessions(0);
         }
-    }, [doLoad, pagingState, queryResponse?.meta?.row_count]);
+    }, [doLoadSessions, pagingStateSessions, queryResponseCurrSessions?.meta?.row_count]);
+    useEffect(() => {
+        if (pagingStateFacts === 0 || !queryResponseCurrFacts?.meta?.row_count) {
+            return;
+        }
+
+        if (!doLoadFacts) {
+            setDoLoadFacts(true);
+        } else {
+            handlePageChange(pagingStateFacts > 0);
+            setPagingStateFacts(0);
+        }
+    }, [doLoadFacts, pagingStateFacts, queryResponseCurrFacts?.meta?.row_count]);
+    useEffect(() => {
+        setPagingStateSessions(0);
+        setDoLoadSessions(false);
+        selectCurrSessions(QueryParamsInit({
+            idToFetch: 0,
+            id2ToFetch: 0,
+            globalFilter: "",
+            includeDetails: false,
+            pagination: {
+                pageIndex: 0,
+                pageSize: 10,
+            },
+        }));
+    }, []);
 
     return (
         <>
-            <Box ref={context.titleTracker.ref} className={styles.row} style={{ padding: '9px 0 0 0' }}
-            >
-                <TextField
-                    label="Enter text"
-                    fullWidth
-                    value={textValue}
-                    onChange={(e) => {
-                        setDoLoad(false);
-                        setTextValue(e.target.value);
+            {queryResponseCurrFacts?.data ?
+                <SbsFacts
+                    ref={context.bodyTracker.ref}
+                    height={`${context.outletTracker.height}px`}
+                    showSessions={() => {
+                        resetFacts();
                     }}
-                />
-                <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={handleButtonClick}
-                >
-                    Review
-                </Button>
-            </Box>
-            <Stack ref={context.bodyTracker.ref} spacing={2}
-                style={{
-                    maxHeight: `${context.outletTracker.height - context.titleTracker.height - 1}px`,
-                    minHeight: `${context.outletTracker.height - context.titleTracker.height - 1}px`,
-                    width: "100%",
-                    overflow: 'auto',
-                    padding: '6px 0 0 0'
-                }}
-            >
-                {/* <FvBoundaryMarker hasComeIntoViewCb={(isInView: boolean) => {
-                    console.info('isInViewTop', isInView);
-
-                    if (isInView && pagingState === 0) {
-                        setPagingState(-1);
-                    }
-                }} /> */}
-                {queryResponse?.data?.map((fact: ISbsFactType, idx: number) => (
-                    <SbsFact key={`fact${idx}`} sbsFact={fact} scoreChangeCb={(newScore: number) => {
+                    currFacts={queryResponseCurrFacts} scoreChangeCb={(id: number, score: number): void => {
                         const rowToUpsert: ISbsFactPutType = {
-                            id: fact.id,
-                            score: newScore,
+                            score,
                             reviewer: "Reviewer Name",
                             review_date: NowTimestamp(),
                         };
 
-                        upsertProduct(queryParams, rowToUpsert);
-                    }} />
-                ))}
-                <FvBoundaryMarker hasComeIntoViewCb={(isInView: boolean) => {
-                    console.info('isInViewBottom', isInView);
-
-                    if (isInView && pagingState === 0) {
-                        setPagingState(1);
-                    }
-                }} />
-            </Stack>
+                        patchFact(QueryParamsInit({
+                            idToFetch: lastIdSessions,
+                            id2ToFetch: id,
+                            globalFilter: "",
+                            includeDetails: false,
+                            pagination: {
+                                pageIndex: 0,
+                                pageSize: 10,
+                            },
+                        }), rowToUpsert);
+                    }}
+                    currSessionZoomed={queryResponseCurrSessions?.data?.find(e => e.id === lastIdSessions)}
+                    pagingState={0}
+                    setPagingState={(value: number): void => {
+                        setPagingStateFacts(value);
+                    }}
+                />
+                :
+                <SbsSessions
+                    ref={context.titleTracker.ref}
+                    height={`${context.outletTracker.height}px`}
+                    currSession={queryResponseCurrSessions}
+                    pagingState={0}
+                    setPagingState={(value: number): void => {
+                        setPagingStateSessions(value);
+                    }}
+                    selectCb={(id: number) => {
+                        handleSessionSelection(id);
+                    }}
+                />
+            }
         </>
     );
 };

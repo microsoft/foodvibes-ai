@@ -1,36 +1,23 @@
-import {
-    actionSetBookmarkedGeotrack,
-    actionSetBookmarkedScCircle,
-    actionSetBookmarkedScGroup,
-    actionSetBookmarkedScUser,
-} from "@foodvibes/app/mainSlice";
-import iconAggrDisaggr from "@foodvibes/assets/aggr-disaggr.png";
-import iconAggregation from "@foodvibes/assets/aggregation.png";
-import iconDisaggregation from "@foodvibes/assets/disaggregation.png";
-import iconMovement from "@foodvibes/assets/movement.png";
 import { PayloadAction, SerializedError } from "@reduxjs/toolkit";
 import moment from "moment";
-import { KApiStatusFulfilled, KApiStatusPending, KApiStatusRejected, KStorageKeyDeforestationAbovePct, KStorageKeyGraphCompactMode, KStorageKeyGraphDirection, KStorageKeyHistoryTabIndex, KStorageKeyLegendState, KStorageKeyOpacityPercent, KStorageKeyZoomPercent } from "./commonConstants";
+import { KApiStatusFulfilled, KApiStatusPending, KApiStatusRejected } from "./commonConstants";
 import { RoleChoices } from "./commonLookups";
 import {
     CommonCheckListType,
-    CommonCoordinates,
     CommonDetailLevel,
     CommonError,
     CommonErrorLevel,
     FeatureSliceState,
-    FeatureSliceStateTrackingProducts,
     QueryParamsApiType,
     QueryParamsType,
     QueryResponseApiType,
     QueryResponseType,
-    ScCircleType,
-    TrackingProductsType
-} from "./commonTypes";
+    SubFeature} from "./commonTypes";
 
 export const QueryParamsInit = (payload: Partial<QueryParamsType>): QueryParamsType =>
 ({
     idToFetch: 0,
+    id2ToFetch: 0,
     pagination: {
         pageIndex: 0,
         pageSize: 10,
@@ -45,6 +32,7 @@ export const QueryParamsInitFromQueryParams = (
 ): QueryParamsType =>
 ({
     idToFetch: queryParamsApi?.id_to_fetch ?? 0,
+    id2ToFetch: queryParamsApi?.id2_to_fetch ?? 0,
     globalFilter: queryParamsApi?.global_filter ?? "",
     includeDetails: queryParamsApi?.include_details ?? false,
     pagination: {
@@ -127,53 +115,28 @@ export const MakeErrorPayload = (
     message = "",
 ): CommonError => ({ code, error_level, message, timestamp: NowTimestamp() });
 
-export const GetFeatureInitialState = <T>(
-    suffix: string,
-): FeatureSliceState<T> => ({
-    loading: false,
-    status: KApiStatusFulfilled,
+export const InitSubFeature = <T>(): SubFeature<T> => ({
     queryParams: QueryParamsInit({}),
     queryResponse: {} as QueryResponseType<T>,
     lastId: 0,
     pagingIncreasing: false,
-    detailLevelA: DetailLevelStorageGet(0, suffix),
-    detailLevelB: DetailLevelStorageGet(1, suffix),
-    historyTabIndex: JSON.parse(
-        localStorage.getItem(KStorageKeyHistoryTabIndex) ?? "0",
-    ),
-    legendState: JSON.parse(
-        localStorage.getItem(KStorageKeyLegendState) ?? "false",
-    ),
-    graphCompactMode: JSON.parse(
-        localStorage.getItem(KStorageKeyGraphCompactMode) ?? "false",
-    ) === true,
-    graphDirection: JSON.parse(
-        localStorage.getItem(KStorageKeyGraphDirection) ?? "false",
-    ) === true,
-    opacityPercent: Number(
-        localStorage.getItem(KStorageKeyOpacityPercent) ?? "50",
-    ),
-    deforestationAbovePct: Number(
-        localStorage.getItem(KStorageKeyDeforestationAbovePct) ?? "10",
-    ),
     upsertState: CommonErrorLevel.information,
-    zoomPercent: Number(
-        localStorage.getItem(KStorageKeyZoomPercent) ?? "100",
-    ),
+    detailLevel: CommonDetailLevel.min,
+    opacityPercent: 100,
+    zoomPercent: 100,
 });
 
-export const GetFeatureInitialStateExt = <T>(
-    suffix: string,
-): FeatureSliceStateTrackingProducts<T> => ({
-    ...GetFeatureInitialState<T>(suffix),
-    centerIdx: 0,
-    centerCount: 0,
-    centerCycle: false,
-    forestMapRequestDict: {},
+export const GetFeatureInitialState = <T1, T2>(): FeatureSliceState<T1, T2> => ({
+    loading: false,
+    status: KApiStatusFulfilled,
+    currSessions: InitSubFeature<T1>(),
+    currFacts: InitSubFeature<T2>(),
+    currFactZoomed: InitSubFeature<T2>(),
 });
 
-export const SetFeatureThunkStatePending = <T>(
-    state: FeatureSliceState<T>,
+export const SetFeatureThunkStatePending = <T, T1, T2>(
+    state: FeatureSliceState<T1, T2>,
+    subState: SubFeature<T>,
     payload: PayloadAction<
         undefined,
         string,
@@ -187,13 +150,11 @@ export const SetFeatureThunkStatePending = <T>(
 ) => {
     state.loading = true;
     state.status = KApiStatusPending;
-    state.upsertState = CommonErrorLevel.information;
-    state.queryResponse.error = MakeErrorPayload();
+    subState.upsertState = CommonErrorLevel.information;
+    subState.queryResponse.error = MakeErrorPayload();
 
-    if (
-        payload?.meta?.arg?.queryParams
-    ) {
-        state.queryParams = QueryParamsInitFromQueryParams({
+    if (payload?.meta?.arg?.queryParams) {
+        subState.queryParams = QueryParamsInitFromQueryParams({
             pagination: {
                 page_index: payload.meta.arg.queryParams.pagination.pageIndex,
                 page_size: payload.meta.arg.queryParams.pagination.pageSize,
@@ -204,31 +165,35 @@ export const SetFeatureThunkStatePending = <T>(
     }
 };
 
-export const SetFeatureThunkStateFulfilled = <T>(
-    state: FeatureSliceState<T>,
-    payload: QueryResponseApiType<T> | QueryResponseApiType<TrackingProductsType> | QueryResponseApiType<ScCircleType> | CommonError | null,
+export const SetFeatureThunkStateFulfilled = <T, T1, T2>(
+    state: FeatureSliceState<T1, T2>,
+    subState: SubFeature<T>,
+    payload: QueryResponseApiType<T1> | QueryResponseApiType<T2> | CommonError | null,
 ) => {
     state.status = KApiStatusFulfilled;
 
     if (payload) {
-        const payloadApi: QueryResponseApiType<T> =
-            payload as QueryResponseApiType<T>;
+        const payloadApi: QueryResponseApiType<T> = payload as QueryResponseApiType<T>;
 
-        state.queryResponse = {
-            ...state.queryResponse,
-            ...payloadApi,
+        subState.queryResponse = {
+            ...subState.queryResponse as QueryResponseApiType<T>,
+            error: payloadApi.error,
+            meta: payloadApi.meta,
+            data: payloadApi.data as T[] | undefined,
         };
-        state.queryParams = QueryParamsInitFromQueryParams(
+        subState.queryParams = QueryParamsInitFromQueryParams(
             payloadApi?.meta?.query_params as QueryParamsApiType,
         );
-        state.lastId = payloadApi.meta?.last_id ?? 0;
+        subState.lastId = payloadApi.meta?.last_id ?? 0;
     }
 
+    subState.upsertState = CommonErrorLevel.success;
     state.loading = false;
 };
 
-export const SetFeatureThunkStateRejected = <T>(
-    state: FeatureSliceState<T>,
+export const SetFeatureThunkStateRejected = <T, T1, T2>(
+    state: FeatureSliceState<T1, T2>,
+    subState: SubFeature<T>,
     action: PayloadAction<
         unknown,
         string,
@@ -243,39 +208,16 @@ export const SetFeatureThunkStateRejected = <T>(
     >,
 ) => {
     state.status = KApiStatusRejected;
-    state.queryResponse = {
-        ...state.queryResponse,
+    subState.queryResponse = {
+        ...subState.queryResponse,
         error: MakeErrorPayload(
             1,
             CommonErrorLevel.error,
             action?.error.message ?? "Error",
         ),
     };
+    subState.upsertState = CommonErrorLevel.error;
     state.loading = false;
-};
-
-export const BookmarkScUser = (dispatch: any, row: any) => {
-    if (dispatch) {
-        dispatch(actionSetBookmarkedScUser(row ? { ...row } : null));
-    }
-};
-
-export const BookmarkScGroup = (dispatch: any, row: any) => {
-    if (dispatch) {
-        dispatch(actionSetBookmarkedScGroup(row ? { ...row } : null));
-    }
-};
-
-export const BookmarkScCircle = (dispatch: any, row: any) => {
-    if (dispatch) {
-        dispatch(actionSetBookmarkedScCircle(row ? { ...row } : null));
-    }
-};
-
-export const BookmarkGeotrack = (dispatch: any, row: any) => {
-    if (dispatch) {
-        dispatch(actionSetBookmarkedGeotrack(row ? { ...row } : null));
-    }
 };
 
 export const FormatTimestamp = (
@@ -314,6 +256,8 @@ export const ComposeUrl = (
     const params: string = queryParams
         ? [
             `include_details=${queryParams.includeDetails}`,
+            `id_to_fetch=${queryParams.idToFetch}`,
+            `id2_to_fetch=${queryParams.id2ToFetch}`,
             `global_filter=${queryParams.globalFilter?.trim()?.length ? queryParams.globalFilter : ""}`,
             `pagination=${JSON.stringify(queryParams.pagination ? {
                 page_index: queryParams.pagination.pageIndex,
@@ -323,21 +267,6 @@ export const ComposeUrl = (
         : "";
 
     return GetEffectiveApiUrl(path, params);
-};
-
-export const ComposeUrlGeo = (
-    path: string,
-    id?: string,
-    coordinates?: CommonCoordinates,
-): string => {
-    const paramsFlds: string[] = [`id=${id}`];
-
-    if (coordinates) {
-        paramsFlds.push(`lat=${coordinates.latitude}`);
-        paramsFlds.push(`lon=${coordinates.longitude}`);
-    }
-
-    return GetEffectiveApiUrl(path, paramsFlds.join("&"));
 };
 
 export const ComposeUrlImage = (
@@ -386,24 +315,6 @@ export const GetAggregationLabel = (
                 : blankIfNone
                     ? ""
                     : "None";
-
-export const GetAggregationIcon = (aggregationValue: number): string =>
-    aggregationValue === 2
-        ? iconAggrDisaggr
-        : aggregationValue > 0
-            ? iconAggregation
-            : aggregationValue < 0
-                ? iconDisaggregation
-                : "";
-
-export const GetMovementLabelColor = (haveMovement: number): string =>
-    haveMovement > 0 ? "lightgreen" : "lightpink";
-
-export const GetMovementLabel = (haveMovement: number): string =>
-    haveMovement > 0 ? "Movement" : "Not Movement";
-
-export const GetMovementIcon = (haveMovement: number): string =>
-    haveMovement > 0 ? iconMovement : "";
 
 export const SetAggregationIndicator = (
     haveAggregation: boolean,

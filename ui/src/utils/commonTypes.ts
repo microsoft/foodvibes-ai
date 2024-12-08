@@ -110,6 +110,7 @@ export interface IPagination {
 
 export interface QueryParamsType {
     idToFetch: number;
+    id2ToFetch: number;
     includeDetails: boolean;
     globalFilter: string;
     pagination: IPagination;
@@ -117,6 +118,7 @@ export interface QueryParamsType {
 
 export interface QueryParamsApiType {
     id_to_fetch?: number;
+    id2_to_fetch?: number;
     include_details?: boolean;
     global_filter?: string;
     pagination?: {
@@ -165,28 +167,21 @@ export interface BaseSliceState extends ApiStatusType {
     loading: boolean;
 }
 
-export interface FeatureSliceState<T> extends BaseSliceState {
+export interface SubFeature<T> {
     queryParams: QueryParamsType;
     queryResponse: QueryResponseType<T>;
     lastId: number;
     pagingIncreasing: boolean;
-    detailLevelA: CommonDetailLevel;
-    detailLevelB: CommonDetailLevel;
-    historyTabIndex: number;
-    legendState: boolean;
-    graphCompactMode: boolean;
-    graphDirection: boolean;
-    opacityPercent: number;
-    deforestationAbovePct: number;
     upsertState: CommonErrorLevel;
+    detailLevel: CommonDetailLevel;
+    opacityPercent: number;
     zoomPercent: number;
 }
 
-export interface FeatureSliceStateTrackingProducts<T> extends FeatureSliceState<T> {
-    centerIdx: number;
-    centerCount: number;
-    centerCycle: boolean;
-    forestMapRequestDict: { [id: string]: ForestMapRequestType };
+export interface FeatureSliceState<T1, T2> extends BaseSliceState {
+    currSessions: SubFeature<T1>;
+    currFacts: SubFeature<T2>;
+    currFactZoomed: SubFeature<T2>;
 }
 
 export const GetColumnsTemplate = <
@@ -302,8 +297,18 @@ export interface ILayoutTracker {
     height: number;
 }
 
-export interface ISbsFactType {
+export interface ISbsCommonType {
     id: number;
+    reviewer?: string;
+    review_date?: string;
+}
+
+export interface ISbsSessionType extends ISbsCommonType {
+    fact_count: number;
+    path: string;
+}
+
+export interface ISbsFactType extends ISbsCommonType {
     session_id: number;
     main_clause?: string;
     subclause_id?: string;
@@ -316,12 +321,9 @@ export interface ISbsFactType {
     document_text_reference?: string;
     draft?: string;
     score?: number;
-    reviewer?: string;
-    review_date?: string;
 }
 
 export interface ISbsFactPutType {
-    id: number;
     score?: number;
     reviewer?: string;
     review_date?: string;

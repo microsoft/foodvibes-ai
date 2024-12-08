@@ -51,6 +51,10 @@ const MainContent = () => {
     };
     const [windowWidth, setWindowWith] = useState(window.innerWidth);
     const [windowHeight, setWindowHeight] = useState(window.innerHeight);
+    const headerTracker: ILayoutTracker = useLayoutTracker([windowWidth, windowHeight]);
+    const outletTracker: ILayoutTracker = useLayoutTracker([windowWidth, windowHeight, headerTracker]);
+    const titleTracker: ILayoutTracker = useLayoutTracker([windowWidth, windowHeight, outletTracker]);
+    const bodyTracker: ILayoutTracker = useLayoutTracker([windowWidth, windowHeight, outletTracker, titleTracker]);
     const onResize = useCallback(() => {
         setWindowWith(window.innerWidth);
         setWindowHeight(window.innerHeight);
@@ -67,15 +71,17 @@ const MainContent = () => {
         setMainIsLoading(false); // Do this to flag ending of double mounting of this component by React
     }, []);
 
-    const headerTracker: ILayoutTracker = useLayoutTracker([windowWidth, windowHeight]);
-    const outletTracker: ILayoutTracker = useLayoutTracker([windowWidth, windowHeight]);
-    const titleTracker: ILayoutTracker = useLayoutTracker([windowWidth, windowHeight]);
-    const bodyTracker: ILayoutTracker = useLayoutTracker([windowWidth, windowHeight]);
+    // console.info('----------------------------------------');
+    // console.info('##headerTracker', headerTracker.top, headerTracker.height);
+    // console.info('##outletTracker', outletTracker.top, outletTracker.height);
+    // console.info('##titleTracker', titleTracker.top, titleTracker.height);
+    // console.info('##bodyTracker', bodyTracker.top, bodyTracker.height);
 
     return (
         <FluentProvider theme={webLightTheme}>
             <Box
-                sx={{ display: "flex" }}
+                ref={headerTracker.ref}
+                sx={{ display: "block", height: "48px", width: "100%" }}
                 className="App"
                 onClick={() => closeSnackbar()}
             >
@@ -85,7 +91,7 @@ const MainContent = () => {
                     anchorEl={anchorEl}
                     open={open}
                 />
-                <AppBar ref={headerTracker.ref} position="static" sx={{ height: "48px" }}>
+                <AppBar position="static" >
                     <Toolbar variant="dense">
                         <IconButton
                             size="large"
@@ -176,21 +182,19 @@ const MainContent = () => {
                     </Toolbar>
                 </AppBar>
             </Box >
-            <div
+            <Box
                 ref={outletTracker.ref}
                 id="detail"
-                style={{
+                sx={{
+                    display: "block",
                     backgroundColor: "white",
                     width: "100%",
-                    position: "absolute",
-                    top: `${headerTracker.height}px`,
-                    maxHeight: `calc(100vh - ${headerTracker.height}px)`,
-                    minHeight: `calc(100vh - ${headerTracker.height}px)`,
+                    height: `calc(100vh - ${headerTracker.height}px)`,
                     overflow: "hidden",
                 }}
             >
                 <Outlet context={{ outletTracker, titleTracker, bodyTracker }} />
-            </div>
+            </Box>
             <FvMessageShow
                 clearErrorsCb={clearErrorsCb}
                 commonErrors={commonErrors}

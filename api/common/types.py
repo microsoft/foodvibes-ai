@@ -13,6 +13,8 @@ import os
 from enum import Enum
 from typing import Union
 from pydantic import BaseModel
+from datetime import datetime
+import getpass
 
 from api.common.config import ConfigSingletonClass
 from api.common.models import (
@@ -105,6 +107,7 @@ class CommonQueryParams:
     """Common query parameters helper class"""
 
     id_to_fetch: int
+    id2_to_fetch: int
     include_details: bool
     global_filter: str
     pagination: CommonQueryParamsPagination
@@ -112,6 +115,7 @@ class CommonQueryParams:
     def __init__(
         self,
         id_to_fetch: int = 0,
+        id2_to_fetch: int = 0,
         include_details: bool | None = None,
         global_filter: str | None = None,
         pagination: str | None = None,
@@ -120,11 +124,13 @@ class CommonQueryParams:
 
         Args:
             id_to_fetch (int, optional): _description_. Defaults to 0.
+            id2_to_fetch (int, optional): _description_. Defaults to 0.
             include_details (bool | None, optional): _description_. Defaults to None.
             global_filter (str | None, optional): _description_. Defaults to None.
             pagination (str | None, optional): _description_. Defaults to None.
         """
         self.id_to_fetch = id_to_fetch or 0
+        self.id2_to_fetch = id2_to_fetch or 0
         self.include_details = include_details or False
         self.global_filter = global_filter or ""
 
@@ -192,19 +198,17 @@ class MetadataType(Enum):
 class sbs_session:
     def __init__(
         self,
-        path: str,
+        path: str = "",
     ):
         self.path = path
 
     def to_dict(self):
         return {
-            "path": self.path
+            "path": self.path,
         }
 
     def __repr__(self) -> str:
-        return (
-            f"sbs_session(path={self.path})"
-        )
+        return f"sbs_session(path={self.path})"
 
 
 class sbs_fact:
@@ -246,7 +250,7 @@ class sbs_fact:
             "draft_id": self.draft_id,
             "content_id": self.content_id,
             "document_text_reference": self.document_text_reference,
-            "draft": self.draft
+            "draft": self.draft,
         }
 
     def __repr__(self) -> str:
@@ -260,10 +264,28 @@ class sbs_fact:
         )
 
 
-class SbsReviewRequest(BaseModel):
-    score: int
-    reviewer: str
-    review_date: str
+class SbsBaseRequest(BaseModel):
+    reviewer: str = getpass.getuser() or "system"
+    review_date: str = datetime.now().isoformat()
+
+    def __init__(self, reviewer: str = "", review_date: str = ""):
+        super().__init__(reviewer=reviewer, review_date=review_date)
+
+
+class SbsSessionUpdateRequest(SbsBaseRequest):
+    fact_count: int = 0
+
+    def __init__(self, reviewer: str = "", review_date: str = "", fact_count: int = 0):
+        super().__init__(reviewer, review_date)
+        self.fact_count = fact_count
+
+
+class SbsFactReviewRequest(SbsBaseRequest):
+    score: int = 0
+
+    def __init__(self, reviewer: str = "", review_date: str = "", score: int = 0):
+        super().__init__(reviewer, review_date)
+        self.score = score
 
 
 config = ConfigSingletonClass()

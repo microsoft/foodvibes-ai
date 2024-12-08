@@ -1,25 +1,8 @@
-import iconGeotrack from "@foodvibes/assets/geotrack.png";
-import iconLogin from "@foodvibes/assets/login.png";
 import { default as iconHome } from "@foodvibes/assets/logo.png";
-import iconLogout from "@foodvibes/assets/logout.png";
-import iconPermissions from "@foodvibes/assets/permissions.png";
 import iconProduct from "@foodvibes/assets/product.png";
-import iconScCircle from "@foodvibes/assets/sc_circle.png";
-import iconScGroup from "@foodvibes/assets/sc_group.png";
-import iconScUser from "@foodvibes/assets/sc_user.png";
-import iconTrackingProducts from "@foodvibes/assets/tracking-products.png";
 import {
-    KMenuLabelCircleConfiguration,
-    KMenuLabelGeotrack,
-    KMenuLabelGroupManagement,
     KMenuLabelHome,
-    KMenuLabelImpersonate,
-    KMenuLabelLogIn,
-    KMenuLabelLogOut,
     KMenuLabelProduct,
-    KMenuLabelTrackingProducts,
-    KMenuLabelUserManagement,
-    KRoleAll,
     KRoleGeotrackOwner,
     KRoleGlobalOwner,
     KRoleNameGeotrackOwner,

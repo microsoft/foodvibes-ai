@@ -1,92 +1,137 @@
-import { IPublicClientApplication } from "@azure/msal-browser";
 import { createAppSlice } from "@foodvibes/app/createAppSlice";
-import { actionSetAccessToken } from "@foodvibes/app/mainSlice";
-import { RefreshAccessTokenIfNeeded } from "@foodvibes/services/authCommon";
 import { KLedgerTypeProduct } from "@foodvibes/utils/commonConstants";
 import {
     DetailLevelStorageSet,
     GetFeatureInitialState,
+    InitSubFeature,
     MakeErrorPayload,
-    QueryParamsInit,
     SetFeatureThunkStateFulfilled,
     SetFeatureThunkStatePending,
     SetFeatureThunkStateRejected,
 } from "@foodvibes/utils/commonFunctions";
 import {
     CommonDetailLevel,
-    CommonErrorLevel,
     FeatureSliceState,
     ISbsFactPutType,
     ISbsFactType,
+    ISbsSessionType,
     QueryParamsType,
     QueryResponseApiType,
-    QueryResponseType,
 } from "@foodvibes/utils/commonTypes";
 import { PayloadAction } from "@reduxjs/toolkit";
-import { getProductRows, putProduct } from "./productAPI";
+import { sbsFactGet, sbsFactPatch, sbsSessionsGet } from "./productAPI";
 
 const name: string = KLedgerTypeProduct;
-const initialState: FeatureSliceState<ISbsFactType> =
-    GetFeatureInitialState<ISbsFactType>(name);
+const initialState: FeatureSliceState<ISbsSessionType, ISbsFactType> =
+    GetFeatureInitialState<ISbsSessionType, ISbsFactType>();
 
 export const productSlice = createAppSlice({
     name,
     initialState,
     reducers: create => ({
-        actionResetDataProduct: create.reducer(state => {
-            state.queryParams = QueryParamsInit({}),
-                state.lastId = 0,
-                state.queryResponse = {} as QueryResponseType<ISbsFactType>;
+        actionResetFacts: create.reducer(state => {
+            state.currFacts = InitSubFeature<ISbsFactType>();
+            state.currFactZoomed = InitSubFeature<ISbsFactType>();
         }),
-        setClearStateResponse: create.reducer(state => {
-            state.queryResponse.error = MakeErrorPayload();
+        actionSetClearStateResponse: create.reducer(state => {
+            state.currSessions.queryResponse.error = MakeErrorPayload();
+            state.currFacts.queryResponse.error = MakeErrorPayload();
+            state.currFactZoomed.queryResponse.error = MakeErrorPayload();
         }),
-        actionSetLastId: create.reducer(
-            (state, action: PayloadAction<number>) => {
-                state.lastId = action.payload;
-            },
-        ),
-        actionSetPagingIncreasing: create.reducer(
+        // actionSetLastId: create.reducer(
+        //     (state, action: PayloadAction<number>) => {
+        //         state.lastIdFact = action.payload;
+        //     },
+        // ),
+        actionSetPagingIncreasingFacts: create.reducer(
             (state, action: PayloadAction<boolean>) => {
-                state.pagingIncreasing = action.payload;
+                state.currFacts.pagingIncreasing = action.payload;
             },
         ),
-        actionSetDetailLevelA: create.reducer(
+        actionSetDetailLevelFacts: create.reducer(
             (state, action: PayloadAction<CommonDetailLevel>) => {
-                state.detailLevelA = action.payload;
+                state.currFacts.detailLevel = action.payload;
 
                 DetailLevelStorageSet(0, name, action.payload);
             },
         ),
-        actionSetDetailLevelB: create.reducer(
-            (state, action: PayloadAction<CommonDetailLevel>) => {
-                state.detailLevelB = action.payload;
-
-                DetailLevelStorageSet(1, name, action.payload);
-            },
-        ),
-        actionSetQueryParams: create.reducer(
+        actionSetQueryParamsSessions: create.reducer(
             (state, action: PayloadAction<Partial<QueryParamsType> | null>) => {
-                state.queryParams = {
-                    ...state.queryParams,
+                state.currSessions.queryParams = {
+                    ...state.currSessions.queryParams,
                     ...(action.payload as Partial<QueryParamsType>),
                     pagination: {
-                        ...state.queryParams.pagination,
+                        ...state.currSessions.queryParams.pagination,
                         ...action.payload?.pagination,
                     },
                 };
             },
         ),
-        actionSelectProduct: create.asyncThunk(
+        actionSetQueryParamsFacts: create.reducer(
+            (state, action: PayloadAction<Partial<QueryParamsType> | null>) => {
+                state.currFacts.queryParams = {
+                    ...state.currFacts.queryParams,
+                    ...(action.payload as Partial<QueryParamsType>),
+                    pagination: {
+                        ...state.currFacts.queryParams.pagination,
+                        ...action.payload?.pagination,
+                    },
+                };
+            },
+        ),
+        actionSetQueryParamsFactZoomed: create.reducer(
+            (state, action: PayloadAction<Partial<QueryParamsType> | null>) => {
+                state.currFactZoomed.queryParams = {
+                    ...state.currFactZoomed.queryParams,
+                    ...(action.payload as Partial<QueryParamsType>),
+                    pagination: {
+                        ...state.currFactZoomed.queryParams.pagination,
+                        ...action.payload?.pagination,
+                    },
+                };
+            },
+        ),
+        actionSelectCurrSessions: create.asyncThunk(
             async ({ queryParams }: { queryParams: QueryParamsType; }, { }) => {
-                const response = await getProductRows(queryParams);
+                const response = await sbsSessionsGet(queryParams);
 
                 return response;
             },
             {
                 pending: (state, payload) => {
-                    SetFeatureThunkStatePending(state, payload);
-                    state.queryParams = payload.meta.arg.queryParams;
+                    SetFeatureThunkStatePending(state, state.currSessions, payload);
+
+                    if (state.currSessions.queryParams.pagination?.pageIndex === 0) {
+                        state.currFacts = InitSubFeature<ISbsFactType>();
+                        state.currFactZoomed = InitSubFeature<ISbsFactType>();
+                    }
+                },
+                fulfilled: (state, action) => {
+                    const dataNew: ISbsSessionType[] = (action.payload.data as ISbsSessionType[]) ?? [];
+                    const dataOld: ISbsSessionType[] = [...((state.currSessions.queryResponse.data as ISbsSessionType[]) ?? [])].filter(e =>
+                        !dataNew.find(e2 => e2.id === e.id)
+                    );
+                    const payload: QueryResponseApiType<ISbsSessionType> = {
+                        ...action.payload,
+                        data: [...dataOld, ...dataNew],
+                    };
+                    SetFeatureThunkStateFulfilled(state, state.currSessions, payload);
+                },
+                rejected: (state, action) => {
+                    SetFeatureThunkStateRejected(state, state.currSessions, action);
+                },
+            },
+        ),
+        actionSelectCurrFacts: create.asyncThunk(
+            async ({ queryParams }: { queryParams: QueryParamsType; }, { }) => {
+                const response = await sbsFactGet(queryParams);
+
+                return response;
+            },
+            {
+                pending: (state, payload) => {
+                    SetFeatureThunkStatePending(state, state.currFacts, payload);
+                    state.currSessions.lastId = payload.meta.arg.queryParams.idToFetch;
                 },
                 fulfilled: (state, action) => {
                     // const pageSize = state.queryParams.pagination?.pageSize ?? 10;
@@ -99,20 +144,40 @@ export const productSlice = createAppSlice({
                     //     [...dataOld.slice(-pageSize), ...dataNew] :
                     //     [...dataNew, ...dataOld.slice(0, pageSize)];
 
-                    const dataOld: ISbsFactType[] = (state.queryResponse.data as ISbsFactType[]) ?? [];
                     const dataNew: ISbsFactType[] = (action.payload.data as ISbsFactType[]) ?? [];
+                    const dataOld: ISbsFactType[] = [...((state.currFacts.queryResponse.data as ISbsFactType[]) ?? [])].filter(e =>
+                        !dataNew.find(e2 => e2.id === e.id)
+                    );
                     const payload: QueryResponseApiType<ISbsFactType> = {
                         ...action.payload,
                         data: [...dataOld, ...dataNew],
                     };
-                    SetFeatureThunkStateFulfilled(state, payload);
+                    SetFeatureThunkStateFulfilled(state, state.currFacts, payload);
                 },
                 rejected: (state, action) => {
-                    SetFeatureThunkStateRejected(state, action);
+                    SetFeatureThunkStateRejected(state, state.currFacts, action);
                 },
             },
         ),
-        actionUpsertProduct: create.asyncThunk(
+        actionSelectCurrFactZoomed: create.asyncThunk(
+            async ({ queryParams }: { queryParams: QueryParamsType; }, { }) => {
+                const response = await sbsFactGet(queryParams);
+
+                return response;
+            },
+            {
+                pending: (state, payload) => {
+                    SetFeatureThunkStatePending(state, state.currFactZoomed, payload);
+                },
+                fulfilled: (state, action) => {
+                    SetFeatureThunkStateFulfilled(state, state.currFactZoomed, action.payload);
+                },
+                rejected: (state, action) => {
+                    SetFeatureThunkStateRejected(state, action.meta?.arg.queryParams?.id2ToFetch ? state.currFactZoomed : state.currFacts, action);
+                },
+            },
+        ),
+        actionPatchProduct: create.asyncThunk(
             async ({
                 queryParams,
                 rowToUpsert,
@@ -120,55 +185,63 @@ export const productSlice = createAppSlice({
                 queryParams: QueryParamsType;
                 rowToUpsert: ISbsFactPutType;
             }, { }) => {
-                const response = await putProduct(queryParams, rowToUpsert);
+                const response = await sbsFactPatch(queryParams, rowToUpsert);
                 return response;
             },
             {
                 pending: (state, payload) => {
-                    SetFeatureThunkStatePending(state, payload);
+                    SetFeatureThunkStatePending(state, state.currFactZoomed, payload);
                 },
                 fulfilled: (state, action) => {
                     console.log('action.payload', action.payload);
-                    SetFeatureThunkStateFulfilled(state, null);
-                    state.upsertState = CommonErrorLevel.success;
+                    SetFeatureThunkStateFulfilled(state, state.currFactZoomed, null);
                 },
                 rejected: (state, action) => {
-                    SetFeatureThunkStateRejected(state, action);
-                    state.upsertState = CommonErrorLevel.error;
+                    SetFeatureThunkStateRejected(state, state.currFactZoomed, action);
                 },
             },
         ),
     }),
     selectors: {
-        selectUpsertState: state => state.upsertState,
+        selectUpsertState: state => state.currFactZoomed.upsertState,
         selectProductIsLoading: state => state.loading,
-        selectDetailLevelA: state => state.detailLevelA,
-        selectDetailLevelB: state => state.detailLevelB,
-        selectGetQueryParams: state => state.queryParams,
-        selectLastIdProduct: state => state.lastId,
-        selectPagingIncreasing: state => state.pagingIncreasing,
-        selectProductResponse: state => state.queryResponse,
+        // selectDetailLevelA: state => state.detailLevel,
+        selectGetQueryParamscurrSessions: state => state.currSessions.queryParams,
+        selectGetQueryParamsCurrFacts: state => state.currFacts.queryParams,
+        selectGetQueryParamscurrFactZoomed: state => state.currFactZoomed.queryParams,
+        selectLastIdSessions: state => state.currSessions.lastId,
+        selectLastIdFacts: state => state.currFacts.lastId,
+        selectLastIdFactZoomed: state => state.currFactZoomed.lastId,
+        selectPagingIncreasing: state => state.currFacts.pagingIncreasing,
+        selectResponseCurrSessions: state => state.currSessions.queryResponse,
+        selectResponseCurrFacts: state => state.currFacts.queryResponse,
+        selectResponseCurrFactZoomed: state => state.currFactZoomed.queryResponse,
     },
 });
 
 export const {
-    actionResetDataProduct,
-    setClearStateResponse,
-    actionSetLastId,
-    actionSetPagingIncreasing,
-    actionSetDetailLevelA,
-    actionSetDetailLevelB,
-    actionSetQueryParams,
-    actionSelectProduct,
-    actionUpsertProduct,
+    actionResetFacts,
+    actionSetClearStateResponse,
+    actionSetPagingIncreasingFacts,
+    actionSetDetailLevelFacts,
+    actionSetQueryParamsSessions,
+    actionSetQueryParamsFacts,
+    actionSelectCurrSessions,
+    actionSelectCurrFacts,
+    actionSelectCurrFactZoomed,
+    actionPatchProduct,
 } = productSlice.actions;
 export const {
     selectUpsertState,
     selectProductIsLoading,
-    selectDetailLevelA,
-    selectDetailLevelB,
-    selectGetQueryParams,
-    selectLastIdProduct,
+    selectGetQueryParamscurrSessions,
+    selectGetQueryParamsCurrFacts,
+    selectGetQueryParamscurrFactZoomed,
+    selectLastIdSessions,
+    selectLastIdFacts,
+    selectLastIdFactZoomed,
     selectPagingIncreasing,
-    selectProductResponse,
+    selectResponseCurrSessions,
+    selectResponseCurrFacts,
+    selectResponseCurrFactZoomed,
 } = productSlice.selectors;
