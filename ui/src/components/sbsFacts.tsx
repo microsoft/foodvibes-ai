@@ -29,7 +29,7 @@ const useStyles = makeStyles({
     },
     compactCell2: {
         padding: '4px 8px',
-        maxWidth: "360px",
+        width: "360px",
     },
     compactNumericCell: {
         padding: '4px 8px',
@@ -94,19 +94,22 @@ const ReviewTable = (
         </Table>
     </TableContainer>
 );
-const SbsSubFact = ({
-    title,
-    body,
-    zoomed,
-    rowsMax,
-    backgroundColor,
-}: {
-    title: string;
-    body: string;
-    zoomed: boolean;
-    rowsMax: number;
-    backgroundColor: string;
-}) =>
+const SbsSubFact = forwardRef((
+    {
+        title,
+        body,
+        zoomed,
+        rowsMax,
+        backgroundColor,
+    }: {
+        title: string;
+        body: string;
+        zoomed: boolean;
+        rowsMax: number;
+        backgroundColor: string;
+    }
+    , ref: react.ForwardedRef<HTMLDivElement>
+) =>
     <Box sx={{ margin: "6px 0 0", padding: "0px", border: "1px solid #ccc", borderRadius: "8px", }}>
         <FormControl fullWidth variant="outlined">
             <InputLabel
@@ -117,6 +120,7 @@ const SbsSubFact = ({
                 {title} -- Chars. {body?.length}{zoomed ? "" : " truncated"}
             </InputLabel>
             <TextField
+                ref={ref}
                 id="outlined-read-only-input"
                 multiline
                 minRows={4}
@@ -131,7 +135,8 @@ const SbsSubFact = ({
                 classes={{ root: useStyles().customOutlinedInputRoot }}
             />
         </FormControl>
-    </Box>;
+    </Box>
+);
 const isZoomed = (factId: number, currFactZoomed: QueryResponseType<ISbsFactType>): boolean =>
     factId && factId === currFactZoomed?.data?.[0].id ? true : false;
 const SbsFacts = forwardRef((
@@ -158,16 +163,13 @@ const SbsFacts = forwardRef((
         zoomed: boolean;
         zoomCb: (id: number) => void;
     }
-    , ref: react.ForwardedRef<HTMLDivElement>) => {
+    , ref: react.ForwardedRef<HTMLDivElement>
+) => {
     const classes = useStyles();
     const [rowsMax, setRowsMax] = useState<number>(4);
-    const [maxHeight, setMaxHeight] = useState<number>(height);
     const zoomRef = useRef<HTMLTableRowElement>(null);
     useEffect(() => {
-        const newMaxHeight = height - 200;
-
-        setMaxHeight(newMaxHeight);
-        setRowsMax(Math.floor((newMaxHeight) / KLineHeight));
+        setRowsMax(Math.floor((height - 200) / KLineHeight));
     }, [height]);
 
     return (
@@ -201,9 +203,10 @@ const SbsFacts = forwardRef((
                                     draft: currFactZoomed?.data[0].draft,
                                 }) : fact
                         )))?.map((fact: ISbsFactType, idx: number) => (
-                            <TableRow key={`fact${idx}`} className={classes.compactRow} ref={isZoomed(fact.id, currFactZoomed) ? zoomRef : null}>
+                            <TableRow key={`fact${idx}`} className={classes.compactRow}>
                                 <TableCell className={classes.compactCell}>
                                     <SbsSubFact
+                                        ref={isZoomed(fact.id, currFactZoomed) ? zoomRef : null}
                                         title={`Reference: ${fact.id}`}
                                         zoomed={isZoomed(fact.id, currFactZoomed)}
                                         body={fact.document_text_reference as string}
@@ -260,7 +263,7 @@ const SbsFacts = forwardRef((
                                                         zoomCb(arg as number);
 
                                                         // if (zoomRef.current) {
-                                                        //     zoomRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                                        //     zoomRef.current.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
                                                         // }
                                                     } else {
                                                         zoomCb(0);
