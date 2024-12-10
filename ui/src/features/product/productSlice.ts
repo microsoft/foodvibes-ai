@@ -33,16 +33,14 @@ export const productSlice = createAppSlice({
             state.currFacts = InitSubFeature<ISbsFactType>();
             state.currFactZoomed = InitSubFeature<ISbsFactType>();
         }),
+        actionResetFactZoomed: create.reducer(state => {
+            state.currFactZoomed = InitSubFeature<ISbsFactType>();
+        }),
         actionSetClearStateResponse: create.reducer(state => {
             state.currSessions.queryResponse.error = MakeErrorPayload();
             state.currFacts.queryResponse.error = MakeErrorPayload();
             state.currFactZoomed.queryResponse.error = MakeErrorPayload();
         }),
-        // actionSetLastId: create.reducer(
-        //     (state, action: PayloadAction<number>) => {
-        //         state.lastIdFact = action.payload;
-        //     },
-        // ),
         actionSetPagingIncreasingFacts: create.reducer(
             (state, action: PayloadAction<boolean>) => {
                 state.currFacts.pagingIncreasing = action.payload;
@@ -171,9 +169,11 @@ export const productSlice = createAppSlice({
                 },
                 fulfilled: (state, action) => {
                     SetFeatureThunkStateFulfilled(state, state.currFactZoomed, action.payload);
+                    state.currFactZoomed.lastId = action.meta.arg.queryParams?.id2ToFetch;
                 },
                 rejected: (state, action) => {
                     SetFeatureThunkStateRejected(state, action.meta?.arg.queryParams?.id2ToFetch ? state.currFactZoomed : state.currFacts, action);
+                    state.currFactZoomed.lastId = 0;
                 },
             },
         ),
@@ -221,6 +221,7 @@ export const productSlice = createAppSlice({
 
 export const {
     actionResetFacts,
+    actionResetFactZoomed,
     actionSetClearStateResponse,
     actionSetPagingIncreasingFacts,
     actionSetDetailLevelFacts,

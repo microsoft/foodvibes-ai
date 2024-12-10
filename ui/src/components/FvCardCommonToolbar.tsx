@@ -35,7 +35,7 @@ const marks = [
 ];
 
 const valuetext = (value: number): string =>
-    `${marks?.find(m => m.value === value)?.label}` ?? "";
+    `${marks?.find(m => m.value === value)?.label}`;
 
 export const FvCardCommonToolbar = ({
     activeDetailLevel = CommonDetailLevel.low,

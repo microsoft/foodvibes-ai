@@ -96,7 +96,7 @@ const RenderTypeTile = (
         <Box
             component="span"
             sx={{
-                backgroundColor: "paleturquoise",
+                backgroundColor: "lavenderblush",
                 border: "1px solid lightgray",
                 lineHeight: "0",
                 color: "black",

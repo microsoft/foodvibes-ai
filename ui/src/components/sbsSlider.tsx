@@ -7,14 +7,12 @@ const SbsSlider = (
         max,
         step,
         style,
-        label,
         changeCb,
     }: {
         defaultValue: number;
         max: number;
         step: number;
         style: React.CSSProperties | undefined;
-        label: string;
         changeCb: (value: number) => void;
     }) => {
     const [value, setValue] = useState(defaultValue);
@@ -44,38 +42,22 @@ const SbsSlider = (
     }, [value, defaultValue]);
 
     return (
-        <Box>
-            <Typography
-                id="slider-label"
-                gutterBottom
-                style={{
-                    backgroundColor: "gainsboro",
-                    borderRadius: "4px",
-                    fontSize: "12px",
-                    margin: "8px 0 0",
-                    width: "96%",
-                    textAlign: "center",
-                }}>
-                {label}
-            </Typography>
-
-            <Slider
-                aria-labelledby="slider-label"
-                style={{
-                    width: "84%",
-                    fontSize: "12px",
-                    margin: "0",
-                    ...style,
-                }}
-                defaultValue={value}
-                onChange={handleChange}
-                valueLabelDisplay="auto"
-                step={step}
-                marks={marks}
-                min={0}
-                max={max}
-            />
-        </Box>
+        <Slider
+            aria-labelledby="slider-label"
+            style={{
+                width: "84%",
+                fontSize: "12px",
+                margin: "0",
+                ...style,
+            }}
+            defaultValue={value}
+            onChange={handleChange}
+            valueLabelDisplay="auto"
+            step={step}
+            marks={marks}
+            min={0}
+            max={max}
+        />
     );
 };
 

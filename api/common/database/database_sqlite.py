@@ -79,6 +79,7 @@ class SbsSqlite:
         cursor,
         sql_epxr,
         pagination: CommonQueryParamsPagination = None,
+        columns_to_jsonify: List[str] = [],
         columns_to_truncate: List[str] = [],
         data_size_limit: int = 100,
     ):
@@ -103,19 +104,22 @@ class SbsSqlite:
         # Convert rows to a list of dictionaries
         data = [dict(zip(column_names, row)) for row in rows]
 
-        if len(columns_to_truncate) > 0:
+        if len(columns_to_jsonify) > 0:
             for item in data:
+                for column in columns_to_jsonify:
+                    if column in item:
+                        try:
+                            # Parse the JSON string and pretty print it
+                            item[column] = json.dumps(
+                                json.loads(item[column]), indent=4
+                            )
+                        except json.JSONDecodeError:
+                            print(f"Invalid JSON in row: {item}")
+
                 for column in columns_to_truncate:
                     if column in item:
                         try:
-                            # Parse the JSON string
-                            json_data = json.loads(item[column])
-                            # Pretty print the JSON and Split the pretty-printed JSON into lines
-                            pretty_json_lines = json.dumps(json_data, indent=4).split(
-                                "\n"
-                            )
-                            # Update the item with the limited pretty-printed JSON
-                            item[column] = ("\n".join(pretty_json_lines))[
+                            item[column] = ("\n".join(item[column].split("\n")))[
                                 :data_size_limit
                             ]
                         except json.JSONDecodeError:
@@ -261,13 +265,11 @@ class SbsSqlite:
         if fact_id_to_fetch > 0:
             sql_expr_suffix = f" and id = {fact_id_to_fetch}"
             pagination_to_use = None
-            column_to_truncate = []
-            data_size_limit = 50000
-            total_count = 0
+            data_size_limit = 250000
+            total_count = 1
         else:
             sql_expr_suffix = ""
             pagination_to_use = pagination
-            column_to_truncate = ["draft"]
             data_size_limit = 100
             total_count = SbsSqlite.fetch_row_count(
                 self.cursor,
@@ -301,7 +303,8 @@ class SbsSqlite:
             WHERE session_id = {session_id_to_fetch} {sql_expr_suffix}
             """,
             pagination_to_use,
-            column_to_truncate,
+            ["draft"],
+            ["document_text_reference", "draft"],
             data_size_limit,
         )
 

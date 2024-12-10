@@ -37,6 +37,8 @@ import {
     selectLastIdFacts,
     selectLastIdFactZoomed,
     selectLastIdSessions,
+    actionSelectCurrFactZoomed,
+    actionResetFactZoomed,
 } from "./productSlice";
 import { useOutletContext } from "react-router";
 import FvBoundaryMarker from "@foodvibes/components/FvBoundaryMarker";
@@ -54,6 +56,7 @@ export const Product = () => {
     const queryParamsCurrFacts: QueryParamsType = useAppSelector(selectGetQueryParamsCurrFacts);
     // const setPagingIncreasing: (doLoad: boolean) => void = (doLoad: boolean) => dispatch(actionSetPagingIncreasing(doLoad));
     const resetFacts = () => dispatch(actionResetFacts());
+    const resetFactZoomed = () => dispatch(actionResetFactZoomed());
     const setQueryParamsCurrSessions = (payload: Partial<QueryParamsType>) => dispatch(actionSetQueryParamsSessions(payload));
     const setQueryParamsCurrFacts = (payload: Partial<QueryParamsType>) => dispatch(actionSetQueryParamsFacts(payload));
     const queryResponseCurrSessions: QueryResponseType<ISbsSessionType> = useAppSelector(selectResponseCurrSessions);
@@ -61,11 +64,13 @@ export const Product = () => {
     const queryResponseCurrFactZoomed: QueryResponseType<ISbsFactType> = useAppSelector(selectResponseCurrFactZoomed);
     const selectCurrSessions = (queryParams: QueryParamsType) => dispatch(actionSelectCurrSessions({ queryParams }));
     const selectCurrFacts = (queryParams: QueryParamsType) => dispatch(actionSelectCurrFacts({ queryParams }));
+    const selectCurrFactZoomed = (queryParams: QueryParamsType) => dispatch(actionSelectCurrFactZoomed({ queryParams }));
     const patchFact = (queryParams: QueryParamsType, rowToUpsert: ISbsFactPutType) => dispatch(actionPatchProduct({ queryParams, rowToUpsert }));
     const [pagingStateSessions, setPagingStateSessions] = useState<number>(0);
     const [pagingStateFacts, setPagingStateFacts] = useState<number>(0);
     const [doLoadSessions, setDoLoadSessions] = useState<boolean>(false);
     const [doLoadFacts, setDoLoadFacts] = useState<boolean>(false);
+    const [zoomed, setZoomed] = useState<boolean>(false);
     const handleSessionSelection = (idToFetch: number) => {
         setPagingStateFacts(0);
         setDoLoadFacts(false);
@@ -149,6 +154,10 @@ export const Product = () => {
         }
     }, [doLoadFacts, pagingStateFacts, queryResponseCurrFacts?.meta?.row_count]);
     useEffect(() => {
+        console.log("lastIdFactZoomed", lastIdFactZoomed);
+        setZoomed(lastIdFactZoomed ? true : false);
+    }, [lastIdFactZoomed]);
+    useEffect(() => {
         setPagingStateSessions(0);
         setDoLoadSessions(false);
         selectCurrSessions(QueryParamsInit({
@@ -168,11 +177,18 @@ export const Product = () => {
             {queryResponseCurrFacts?.data ?
                 <SbsFacts
                     ref={context.bodyTracker.ref}
-                    height={`${context.outletTracker.height}px`}
+                    height={context.outletTracker.height}
                     showSessions={() => {
                         resetFacts();
                     }}
-                    currFacts={queryResponseCurrFacts} scoreChangeCb={(id: number, score: number): void => {
+                    currFacts={queryResponseCurrFacts}
+                    currFactZoomed={queryResponseCurrFactZoomed}
+                    currSessionZoomed={queryResponseCurrSessions?.data?.find(e => e.id === lastIdSessions)}
+                    pagingState={0}
+                    setPagingState={(value: number): void => {
+                        setPagingStateFacts(value);
+                    }}
+                    scoreChangeCb={(id: number, score: number): void => {
                         const rowToUpsert: ISbsFactPutType = {
                             score,
                             reviewer: "Reviewer Name",
@@ -190,10 +206,22 @@ export const Product = () => {
                             },
                         }), rowToUpsert);
                     }}
-                    currSessionZoomed={queryResponseCurrSessions?.data?.find(e => e.id === lastIdSessions)}
-                    pagingState={0}
-                    setPagingState={(value: number): void => {
-                        setPagingStateFacts(value);
+                    zoomed={zoomed}
+                    zoomCb={(id: number): void => {
+                        if (id) {
+                            selectCurrFactZoomed(QueryParamsInit({
+                                idToFetch: lastIdSessions,
+                                id2ToFetch: id,
+                                globalFilter: "",
+                                includeDetails: false,
+                                pagination: {
+                                    pageIndex: 0,
+                                    pageSize: 1,
+                                },
+                            }));
+                        } else {
+                            resetFactZoomed();
+                        }
                     }}
                 />
                 :

@@ -3,6 +3,7 @@ import { ISbsSessionType, QueryResponseType } from "@foodvibes/utils/commonTypes
 import { Box, Stack } from "@mui/system";
 import FvBoundaryMarker from "./FvBoundaryMarker";
 import react, { forwardRef } from "react";
+import SbsButton from "./sbsButton";
 
 const useStyles = makeStyles({
     tableContainer: {
@@ -85,19 +86,9 @@ const SbsSessions = forwardRef((
                                 <TableCell className={classes.compactCell}>{session.reviewer}</TableCell>
                                 <TableCell className={classes.compactCell}>{session.path}</TableCell>
                                 <TableCell className={classes.compactCell}>
-                                    <button
-                                        style={{
-                                            backgroundColor: '#cacaca',
-                                            color: 'black',
-                                            padding: '4px 8px',
-                                            border: '1px solid black',
-                                            borderRadius: '4px',
-                                            cursor: 'pointer'
-                                        }}
-                                        onClick={() => selectCb(session.id)}
-                                    >
-                                        Review
-                                    </button>
+                                    <SbsButton caption="Review" clicktCb={() => {
+                                        selectCb(session.id);
+                                    }} />
                                 </TableCell>
                             </TableRow>
                         ))}
