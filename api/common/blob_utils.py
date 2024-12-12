@@ -12,6 +12,7 @@ import logging
 import os
 from datetime import datetime, timedelta, timezone
 from tempfile import TemporaryDirectory
+import subprocess
 
 from azure.storage.blob import (
     BlobClient,
@@ -99,14 +100,18 @@ class BlobStorage:
         content_settings = ContentSettings(content_type=content_type)
 
         with open(local_path, "rb") as data:
-            blob_client.upload_blob(data, overwrite=True, content_settings=content_settings)
+            blob_client.upload_blob(
+                data, overwrite=True, content_settings=content_settings
+            )
 
     def retrieve(self, remote_path: str) -> BlobRetriever:
         blob_client = self.container_client.get_blob_client(remote_path)
         return BlobRetriever(blob_client)
 
     def list_blobs(self, prefix: str):
-        return [blob for blob in self.container_client.list_blobs(name_starts_with=prefix)]
+        return [
+            blob for blob in self.container_client.list_blobs(name_starts_with=prefix)
+        ]
 
     def check_blob_exists(self, blob_name: str) -> bool:
         return self.container_client.get_blob_client(blob_name).exists()
@@ -125,3 +130,21 @@ class BlobStorage:
         )
 
         return f"{blob_client.url}?{sas_token}"
+
+
+def run_bash_script(script_path="./api/common/blob_utils.sh", blob_name=""):
+    # Open a subprocess to run the bash script
+    process = subprocess.Popen(
+        ["bash", script_path, blob_name],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+
+    # Iterate over the output lines
+    for line in iter(process.stdout.readline, ""):
+        yield line.strip()
+
+    # Ensure the process has finished
+    process.stdout.close()
+    process.wait()

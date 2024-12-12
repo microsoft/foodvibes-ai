@@ -182,7 +182,7 @@ const SbsFacts = forwardRef((
             }}
         >
             <Box sx={{ padding: "0 16px", backgroundColor: "lavenderblush" }}>
-                Session: <strong>{currSessionZoomed?.path}</strong>
+                Session: <strong>{currFacts?.meta?.query_params?.global_filter}</strong>
                 <SbsButton caption="View Session List" style={{ float: "right" }} clicktCb={showSessions} />
             </Box>
             <TableContainer component={Paper} className={classes.tableContainer} style={{ width: '100%', margin: 'auto', height: `${height}px`, }}>

@@ -179,6 +179,7 @@ export interface SubFeature<T> {
 }
 
 export interface FeatureSliceState<T1, T2> extends BaseSliceState {
+    scannedSessions: string[];
     currSessions: SubFeature<T1>;
     currFacts: SubFeature<T2>;
     currFactZoomed: SubFeature<T2>;
@@ -306,6 +307,7 @@ export interface ISbsCommonType {
 export interface ISbsSessionType extends ISbsCommonType {
     fact_count: number;
     path: string;
+    modified: string;
 }
 
 export interface ISbsFactType extends ISbsCommonType {

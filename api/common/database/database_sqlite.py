@@ -8,13 +8,13 @@ Returns:
     _type_: None
 """
 
+from azure.storage.blob import BlobServiceClient
 from api.common.config import logger
 from api.common.types import (
     CommonQueryParamsPagination,
     SbsFactReviewRequest,
     SbsSessionUpdateRequest,
     sbs_fact,
-    sbs_session,
 )
 import json
 import sqlite3
@@ -72,6 +72,19 @@ class SbsSqlite:
         )
 
         return cursor.fetchone()[0]
+
+    @classmethod
+    def fetch_id(cls, cursor, sql_from_expr) -> int:
+        # Query to get the id of the record
+        cursor.execute(
+            f"""
+            SELECT id FROM {sql_from_expr}
+            """
+        )
+
+        results = cursor.fetchone()
+
+        return results[0] if results is not None and len(results) > 0 else 0
 
     @classmethod
     def fetch_data(
@@ -187,37 +200,32 @@ class SbsSqlite:
         )
         self.exit()
 
-    def db_upsert_sbs_sessions(self, paths: List[sbs_session]) -> int:
-        total_count = 0
+    def db_upsert_sbs_session(self, path: str) -> int:
+        id = 0
         self.enter()
 
-        for path in paths:
-            count = SbsSqlite.fetch_row_count(
-                self.cursor, f"sbs_session WHERE path = '{path.path}'"
+        id = SbsSqlite.fetch_id(self.cursor, f"sbs_session WHERE path = '{path}'")
+
+        if id > 0:
+            logger.info(f"Session already exists for {path}")
+        else:
+            logger.info(f"Creating new session for {path}")
+            # Insert data
+            self.cursor.execute(
+                """
+                INSERT INTO sbs_session (path)
+                VALUES (?)
+                """,
+                (path,),
             )
 
-            if count > 0:
-                logger.info(f"Session already exists for {path.path}")
-            else:
-                logger.info(f"Creating new session for {path.path}")
-                # Insert data
-                self.cursor.execute(
-                    """
-                    INSERT INTO sbs_session (path)
-                    VALUES (?)
-                    """,
-                    (path.path,),
-                )
+            id = self.cursor.lastrowid or 0
 
-                id = self.cursor.lastrowid or 0
-
-                logger.info(f"Session {id} added for {path.path}")
-
-            total_count += 1
+            logger.info(f"Session {id} added for {path}")
 
         self.exit()
 
-        return total_count
+        return id
 
     def db_sbs_session_list(
         self,
@@ -358,3 +366,24 @@ class SbsSqlite:
             self.cursor, "sbs_fact", f"id={fact_id} and session_id={session_id}", item
         )
         self.exit()
+
+    # # Replace with your connection string
+    # connection_string = "your_connection_string"
+    # container_name = "your_container_name"
+
+    @classmethod
+    def create_blob_service_client(cls, connection_string):
+        return BlobServiceClient.from_connection_string(connection_string)
+
+    @classmethod
+    def list_blobs_in_hierarchy(cls, blob_service_client, container_name, prefix=""):
+        container_client = blob_service_client.get_container_client(container_name)
+        blobs = container_client.list_blobs(name_starts_with=prefix)
+
+        for blob in blobs:
+            print(blob.name)
+            # If the blob name ends with '/', it is a directory
+            if blob.name.endswith("/"):
+                SbsSqlite.list_blobs_in_hierarchy(
+                    blob_service_client, container_name, prefix=blob.name
+                )

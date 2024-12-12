@@ -8,14 +8,19 @@ Returns:
     _type_: None
 """
 
+import os
 from typing import Annotated, Any, List
 from fastapi import Depends, Request
+# from fastapi.responses import StreamingResponse
+
+# import asyncio
 import re
 import jsonlines
 
 # from api.common.config import logger
 
 # from sqlalchemy import insert, update
+from api.common.blob_utils import run_bash_script
 from api.common.database.common_utils import (
     make_response_payload,
 )
@@ -44,56 +49,66 @@ def get_db_path(session_id: int = 0) -> str:
     return f"data/sbs_session_id_{session_id}.db" if session_id != 0 else "data/sbs.db"
 
 
-@config.app.get("/sbs_sessions_scan/", response_model=None)
+@config.app.get("/sbs_sessions_get/", response_model=None)
 async def sbs_sessions_scan(
     request: Request,
     commons: Annotated[Any, Depends(CommonQueryParams)],
 ):
     """Endpoint for sbs_sessions_scan table query"""
     try:
-        data_obj_sessions = SbsSqlite(get_db_path())
-        data_obj_sessions.db_create_sessions_table()
+        # service_url = (
+        #     "https://farmvibesllm6285804596.blob.core.windows.net/"
+        #     + "azureml-blobstore-96d2e54b-9c8f-4ea9-b777-c74825e52a83/farmvibes-llm-pipelines/"
+        # )
+        # container_name = "azureml-blobstore-96d2e54b-9c8f-4ea9-b777-c74825e52a83"
+        # blob_prefix = "farmvibes-llm-pipelines/"
+
+        # za = BlobStorage(service_url, container_name)
+        # za.list_blobs(blob_prefix)
+
+        # blob_service_client = SbsSqlite.create_blob_service_client(connection_string)
+        # SbsSqlite.list_blobs_in_hierarchy(blob_service_client, container_name, blob_prefix)
+
+        # --
+        # async def generate_stream():
+        #     print(f"Scan argument is {commons.global_filter}")
+
+        #     if (commons.global_filter or "good").endswith(".jsonl"):
+        #         return
+
+        #     idx = 0
+
+        #     for entry in run_bash_script(blob_name=commons.global_filter):
+        #         idx += 1
+        #         print(f"{idx} - {entry}")
+        #         flds = f"{entry}\t".split("\t")
+        #         yield "|".join([flds[0], flds[1].replace("None", "")])
+        #         # await asyncio.sleep(1)
+
+        # return StreamingResponse(generate_stream(), media_type="text/event-stream")
+
         paths: List[sbs_session] = []
 
-        print("Scanning all blobs for .jsonl files")
+        print(f"Scan argument is {commons.global_filter}")
 
-        for path in [
-            "data/cfca7fd0-a03f-4305-b48d-fd2ace8bb332.jsonl",
-            "data/za.jsonl",
-        ]:
-            paths.append(sbs_session(path))
+        if (commons.global_filter or "good").endswith(".jsonl"):
+            pass
+        else:
+            print("Scanning all blobs for .jsonl files")
+            idx = 0
 
-        total_count = data_obj_sessions.db_upsert_sbs_sessions(paths)
+            for entry in run_bash_script(blob_name=commons.global_filter):
+                idx += 1
+                flds = f"{entry}\t".split("\t")
 
-        return CommonQueryResponse(
-            CommonError(0, "OK", CommonError.ErrorLevel.SUCCESS),
-            CommonQueryResponseMeta(total_count, 0, commons),
-            [],
-        )
-
-    except Exception as error:
-        return make_response_payload(str(error))
-
-
-@config.app.get("/sbs_sessions_get/", response_model=None)
-async def sbs_sessions_get(
-    request: Request,
-    commons: Annotated[Any, Depends(CommonQueryParams)],
-):
-    """Endpoint for sbs_sessions table query"""
-    try:
-        data_obj_sessions = SbsSqlite(get_db_path())
-        data_obj_sessions.db_create_sessions_table()
-        data, total_count = data_obj_sessions.db_sbs_session_list(
-            pagination=commons.pagination
-        )
+                print(f"{idx} - {entry}")
+                paths.append(sbs_session(flds[0], flds[1]))
 
         return CommonQueryResponse(
             CommonError(0, "OK", CommonError.ErrorLevel.SUCCESS),
-            CommonQueryResponseMeta(total_count, 0, commons),
-            data,
+            CommonQueryResponseMeta(len(paths), 0, commons),
+            paths,
         )
-
     except Exception as error:
         return make_response_payload(str(error))
 
@@ -111,8 +126,13 @@ async def sbs_fact_get(
 
         data_obj_sessions.db_create_sessions_table()
 
+        if commons.id_to_fetch == 0:
+            session_id = data_obj_sessions.db_upsert_sbs_session(commons.global_filter)
+        else:
+            session_id = commons.id_to_fetch
+
         session_data, total_count = data_obj_sessions.db_sbs_session_list(
-            session_id_to_fetch=commons.id_to_fetch
+            session_id_to_fetch=session_id
         )
 
         if len(session_data) == 0:
@@ -129,31 +149,43 @@ async def sbs_fact_get(
         data_obj_facts.db_create_fact_table()
 
         if fact_count == 0:
+            idx = 0
+            for line in run_bash_script(blob_name=path):
+                idx += 1
+                print(f"{idx} - {line}")
+                path = line
+
             with jsonlines.open(path) as reader:
                 for obj in reader:
-                    row: sbs_fact = sbs_fact(
-                        session_id=commons.id_to_fetch,
-                        main_clause=obj.get("main_clause"),
-                        subclause_id=obj.get("subclause_id"),
-                        subclause=obj.get("subclause"),
-                        content=obj.get("content"),
-                        score_completeness=obj.get("score_completeness"),
-                        explanation_completeness=obj.get("explanation_completeness"),
-                        draft_id=obj.get("draft_id"),
-                        content_id=obj.get("content_id"),
-                        document_text_reference=obj.get("document_text_reference"),
-                        draft=obj.get("draft"),
-                    )
+                    if obj.get("draft_id") is None:
+                        print(f"Skipped row {fact_count} due to missing draft_id")
+                    else:
+                        row: sbs_fact = sbs_fact(
+                            session_id=commons.id_to_fetch,
+                            main_clause=obj.get("main_clause"),
+                            subclause_id=obj.get("subclause_id"),
+                            subclause=obj.get("subclause"),
+                            content=obj.get("content"),
+                            score_completeness=obj.get("score_completeness"),
+                            explanation_completeness=obj.get(
+                                "explanation_completeness"
+                            ),
+                            draft_id=obj.get("draft_id"),
+                            content_id=obj.get("content_id"),
+                            document_text_reference=obj.get("document_text_reference"),
+                            draft=obj.get("draft"),
+                        )
 
-                    data_obj_facts.db_populate_sbs_fact(row)
+                        data_obj_facts.db_populate_sbs_fact(row)
 
-                    print(f"Inserted row {fact_count}")
+                        print(f"Inserted row {fact_count}")
 
-                    fact_count += 1
+                        fact_count += 1
 
-                data_obj_sessions.db_patch_sbs_session(
-                    commons.id_to_fetch, SbsSessionUpdateRequest(fact_count=fact_count)
-                )
+            data_obj_sessions.db_patch_sbs_session(
+                session_id, SbsSessionUpdateRequest(fact_count=fact_count)
+            )
+            os.remove(path)
 
         session_data, total_count = data_obj_facts.db_get_sbs_fact_list(
             commons.id_to_fetch, commons.id2_to_fetch, commons.pagination
@@ -184,7 +216,9 @@ async def sbs_fact_patch(
     """Endpoint to patch sbs_fact table"""
     try:
         data_obj_facts = SbsSqlite(get_db_path(commons.id_to_fetch))
-        data_obj_facts.db_patch_sbs_fact(commons.id_to_fetch, commons.id2_to_fetch, item)
+        data_obj_facts.db_patch_sbs_fact(
+            commons.id_to_fetch, commons.id2_to_fetch, item
+        )
 
         return CommonQueryResponse(
             CommonError(0, "OK", CommonError.ErrorLevel.SUCCESS),

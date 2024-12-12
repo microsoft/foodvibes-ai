@@ -199,16 +199,19 @@ class sbs_session:
     def __init__(
         self,
         path: str = "",
+        modified: str = "",
     ):
         self.path = path
+        self.modified = modified.replace("None", "")
 
     def to_dict(self):
         return {
             "path": self.path,
+            "modified": self.modified,
         }
 
     def __repr__(self) -> str:
-        return f"sbs_session(path={self.path})"
+        return f"sbs_session(path={self.path}, modified={self.modified})"
 
 
 class sbs_fact:

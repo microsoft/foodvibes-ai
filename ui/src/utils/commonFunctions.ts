@@ -129,6 +129,7 @@ export const InitSubFeature = <T>(): SubFeature<T> => ({
 export const GetFeatureInitialState = <T1, T2>(): FeatureSliceState<T1, T2> => ({
     loading: false,
     status: KApiStatusFulfilled,
+    scannedSessions: [],
     currSessions: InitSubFeature<T1>(),
     currFacts: InitSubFeature<T2>(),
     currFactZoomed: InitSubFeature<T2>(),

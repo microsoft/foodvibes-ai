@@ -39,11 +39,14 @@ import {
     selectLastIdSessions,
     actionSelectCurrFactZoomed,
     actionResetFactZoomed,
+    selectGetQueryParamscurrSessions,
 } from "./productSlice";
 import { useOutletContext } from "react-router";
 import FvBoundaryMarker from "@foodvibes/components/FvBoundaryMarker";
 import SbsSessions from "@foodvibes/components/sbsSessions";
 import SbsFacts from "@foodvibes/components/sbsFacts";
+import StreamData from "./SessionsScan";
+import { current } from "@reduxjs/toolkit";
 
 export const Product = () => {
     const context = useOutletContext<{ outletTracker: ILayoutTracker, titleTracker: ILayoutTracker, bodyTracker: ILayoutTracker }>();
@@ -53,6 +56,7 @@ export const Product = () => {
     const lastIdSessions: number = useAppSelector(selectLastIdSessions);
     const lastIdFacts: number = useAppSelector(selectLastIdFacts);
     const lastIdFactZoomed: number = useAppSelector(selectLastIdFactZoomed);
+    const queryParamsCurrSessions: QueryParamsType = useAppSelector(selectGetQueryParamscurrSessions);
     const queryParamsCurrFacts: QueryParamsType = useAppSelector(selectGetQueryParamsCurrFacts);
     // const setPagingIncreasing: (doLoad: boolean) => void = (doLoad: boolean) => dispatch(actionSetPagingIncreasing(doLoad));
     const resetFacts = () => dispatch(actionResetFacts());
@@ -71,13 +75,27 @@ export const Product = () => {
     const [doLoadSessions, setDoLoadSessions] = useState<boolean>(false);
     const [doLoadFacts, setDoLoadFacts] = useState<boolean>(false);
     const [zoomed, setZoomed] = useState<boolean>(false);
-    const handleSessionSelection = (idToFetch: number) => {
+    const handleSessionSelection = (path: string) => {
+        setPagingStateSessions(0);
+        setDoLoadSessions(false);
+        selectCurrSessions(QueryParamsInit({
+            idToFetch: 0,
+            id2ToFetch: 0,
+            globalFilter: path,
+            includeDetails: false,
+            pagination: {
+                pageIndex: 0,
+                pageSize: 500,
+            },
+        }));
+    };
+    const handleFactSelection = (path: string) => {
         setPagingStateFacts(0);
         setDoLoadFacts(false);
         selectCurrFacts(QueryParamsInit({
-            idToFetch,
+            idToFetch: 0,
             id2ToFetch: 0,
-            globalFilter: "",
+            globalFilter: path,
             includeDetails: false,
             pagination: {
                 pageIndex: 0,
@@ -85,25 +103,46 @@ export const Product = () => {
             },
         }));
     };
-    const handlePageChange = (increasing: boolean) => {
-        if (!queryResponseCurrFacts?.meta?.row_count) {
-            return;
+    const handlePageChangeIndex = <T,>(increasing: boolean, queryResponse: QueryResponseType<T>): number => {
+        if (!queryResponse?.meta?.row_count) {
+            return -1;
         }
 
         const pageIndex = increasing ?
             Math.min(
-                Math.round((queryResponseCurrFacts.meta?.row_count ?? 0) / (queryResponseCurrFacts.meta?.query_params?.pagination?.page_size ?? 1)),
-                (queryResponseCurrFacts.meta?.query_params?.pagination?.page_index ?? 0) + 1) :
-            Math.max(0, (queryResponseCurrFacts.meta?.query_params?.pagination?.page_index ?? 0) - 1);
+                Math.round((queryResponse.meta?.row_count ?? 0) / (queryResponse.meta?.query_params?.pagination?.page_size ?? 1)),
+                (queryResponse.meta?.query_params?.pagination?.page_index ?? 0) + 1) :
+            Math.max(0, (queryResponse.meta?.query_params?.pagination?.page_index ?? 0) - 1);
 
-        selectCurrFacts({
-            ...queryParamsCurrFacts,
-            id2ToFetch: 0,
-            pagination: {
-                ...queryParamsCurrFacts.pagination,
-                pageIndex,
-            },
-        });
+        return pageIndex;
+    };
+    const handlePageChangeSessions = (increasing: boolean) => {
+        const pageIndex = handlePageChangeIndex(increasing, queryResponseCurrSessions);
+
+        if (pageIndex > -1) {
+            selectCurrSessions({
+                ...queryParamsCurrSessions,
+                id2ToFetch: 0,
+                pagination: {
+                    ...queryParamsCurrSessions.pagination,
+                    pageIndex,
+                },
+            });
+        }
+    };
+    const handlePageChangeFacts = (increasing: boolean) => {
+        const pageIndex = handlePageChangeIndex(increasing, queryResponseCurrFacts);
+
+        if (pageIndex > -1) {
+            selectCurrFacts({
+                ...queryParamsCurrFacts,
+                id2ToFetch: 0,
+                pagination: {
+                    ...queryParamsCurrFacts.pagination,
+                    pageIndex,
+                },
+            });
+        }
     };
     // Hooks
     useEffect(() => {
@@ -137,7 +176,7 @@ export const Product = () => {
         if (!doLoadSessions) {
             setDoLoadSessions(true);
         } else {
-            handlePageChange(pagingStateSessions > 0);
+            handlePageChangeSessions(pagingStateSessions > 0);
             setPagingStateSessions(0);
         }
     }, [doLoadSessions, pagingStateSessions, queryResponseCurrSessions?.meta?.row_count]);
@@ -149,7 +188,7 @@ export const Product = () => {
         if (!doLoadFacts) {
             setDoLoadFacts(true);
         } else {
-            handlePageChange(pagingStateFacts > 0);
+            handlePageChangeFacts(pagingStateFacts > 0);
             setPagingStateFacts(0);
         }
     }, [doLoadFacts, pagingStateFacts, queryResponseCurrFacts?.meta?.row_count]);
@@ -158,18 +197,7 @@ export const Product = () => {
         setZoomed(lastIdFactZoomed ? true : false);
     }, [lastIdFactZoomed]);
     useEffect(() => {
-        setPagingStateSessions(0);
-        setDoLoadSessions(false);
-        selectCurrSessions(QueryParamsInit({
-            idToFetch: 0,
-            id2ToFetch: 0,
-            globalFilter: "",
-            includeDetails: false,
-            pagination: {
-                pageIndex: 0,
-                pageSize: 10,
-            },
-        }));
+        handleSessionSelection("");
     }, []);
 
     return (
@@ -212,7 +240,7 @@ export const Product = () => {
                             selectCurrFactZoomed(QueryParamsInit({
                                 idToFetch: lastIdSessions,
                                 id2ToFetch: id,
-                                globalFilter: "",
+                                globalFilter: queryParamsCurrFacts.globalFilter,
                                 includeDetails: false,
                                 pagination: {
                                     pageIndex: 0,
@@ -233,8 +261,15 @@ export const Product = () => {
                     setPagingState={(value: number): void => {
                         setPagingStateSessions(value);
                     }}
-                    selectCb={(id: number) => {
-                        handleSessionSelection(id);
+                    selectCb={(path: string) => {
+                        if (path.endsWith(".jsonl")) {
+                            handleFactSelection(path);
+                        } else {
+                            handleSessionSelection(path);
+                        }
+                    }}
+                    refreshCb={() => {
+                        StreamData(dispatch, "sbs_sessions_scan");
                     }}
                 />
             }

@@ -29,6 +29,25 @@ export const productSlice = createAppSlice({
     name,
     initialState,
     reducers: create => ({
+        actionScanSessionsStreamStart: create.reducer(state => {
+            state.loading = true;
+            state.scannedSessions = [];
+        }),
+        actionScanSessionsStreamSuccess: create.reducer(
+            (state, action: PayloadAction<string>) => {
+                console.log(action.payload);
+
+                state.scannedSessions = [
+                    ...state.scannedSessions,
+                    action.payload,
+                ];
+                state.loading = false;
+            }),
+        actionScanSessionsStreamError: create.reducer(
+            (state, action: PayloadAction<string>) => {
+                state.loading = false;
+                console.error(action.payload);
+            }),
         actionResetFacts: create.reducer(state => {
             state.currFacts = InitSubFeature<ISbsFactType>();
             state.currFactZoomed = InitSubFeature<ISbsFactType>();
@@ -220,6 +239,9 @@ export const productSlice = createAppSlice({
 });
 
 export const {
+    actionScanSessionsStreamStart,
+    actionScanSessionsStreamSuccess,
+    actionScanSessionsStreamError,
     actionResetFacts,
     actionResetFactZoomed,
     actionSetClearStateResponse,
