@@ -7,11 +7,13 @@ import {
 import { ComposeUrl, QueryParamsInit } from "@foodvibes/utils/commonFunctions";
 
 
-async function StreamData(dispatch: Dispatch, url: string) {
+async function StreamData(dispatch: Dispatch, url: string, globalFilter: string) {
     dispatch(actionScanSessionsStreamStart());
 
     try {
-        const response = await fetch(ComposeUrl(url, QueryParamsInit({})));
+        const response = await fetch(ComposeUrl(url, QueryParamsInit({
+            globalFilter,
+        })));
 
         if (!response.body) {
             throw new Error('ReadableStream not supported in this browser.');
@@ -34,7 +36,8 @@ async function StreamData(dispatch: Dispatch, url: string) {
         dispatch(actionScanSessionsStreamError(error.message));
     }
 
-    console.log('Stream ended.');
+    console.log('Stream ended');
+    dispatch(actionScanSessionsStreamSuccess('Stream ended'));
 };
 
 export default StreamData;

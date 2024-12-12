@@ -11,7 +11,7 @@ Returns:
 import os
 from typing import Annotated, Any, List
 from fastapi import Depends, Request
-# from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse
 
 # import asyncio
 import re
@@ -113,6 +113,94 @@ async def sbs_sessions_scan(
         return make_response_payload(str(error))
 
 
+@config.app.get("/sbs_session_load/", response_model=None)
+async def sbs_fact_load(
+    request: Request,
+    commons: Annotated[Any, Depends(CommonQueryParams)],
+):
+    """Endpoint for sbs_session_load"""
+    try:
+        print(f"Scan argument is {commons.global_filter}")
+
+        data_obj_sessions = SbsSqlite(get_db_path())
+
+        data_obj_sessions.db_create_sessions_table()
+
+        session_id = data_obj_sessions.db_upsert_sbs_session(commons.global_filter)
+
+        session_data, total_count = data_obj_sessions.db_sbs_session_list(
+            session_id_to_fetch=session_id
+        )
+
+        if len(session_data) == 0:
+            return make_response_payload("No data found")
+
+        session_id = session_data[0]["id"]
+        fact_count = session_data[0]["fact_count"]
+        path = session_data[0]["path"]
+
+        if len(path) == 0:
+            return make_response_payload("No path found")
+
+        async def generate_stream(session_id: int, path: str, fact_count: int):
+            if fact_count == 0 and (path or "good").endswith(".jsonl"):
+                idx = 0
+                path_local = ""
+                data_obj_facts = SbsSqlite(get_db_path(session_id))
+                data_obj_facts.db_create_fact_table()
+
+                yield "Loading blob..."
+
+                for line in run_bash_script(blob_name=path):
+                    idx += 1
+                    print(f"{idx} - {line}")
+                    path_local = line
+
+                with jsonlines.open(path_local) as reader:
+                    for obj in reader:
+                        if obj.get("draft_id") is None:
+                            print(f"Skipped row {fact_count} due to missing draft_id")
+                        else:
+                            row: sbs_fact = sbs_fact(
+                                session_id=session_id,
+                                main_clause=obj.get("main_clause"),
+                                subclause_id=obj.get("subclause_id"),
+                                subclause=obj.get("subclause"),
+                                content=obj.get("content"),
+                                score_completeness=obj.get("score_completeness"),
+                                explanation_completeness=obj.get(
+                                    "explanation_completeness"
+                                ),
+                                draft_id=obj.get("draft_id"),
+                                content_id=obj.get("content_id"),
+                                document_text_reference=obj.get(
+                                    "document_text_reference"
+                                ),
+                                draft=obj.get("draft"),
+                            )
+
+                            fact_count += 1
+
+                            data_obj_facts.db_populate_sbs_fact(row)
+                            print(f"Inserted row {fact_count}")
+                            yield f"Scanning fact {fact_count}...\n"
+
+                data_obj_sessions.db_patch_sbs_session(
+                    session_id, SbsSessionUpdateRequest(fact_count=fact_count)
+                )
+                os.remove(path_local)
+
+            yield f"Session={session_id}\n"
+
+        return StreamingResponse(
+            generate_stream(session_id, path, fact_count),
+            media_type="text/event-stream",
+        )
+
+    except Exception as error:
+        return make_response_payload(str(error))
+
+
 @config.app.get("/sbs_fact/", response_model=None)
 async def sbs_fact_get(
     request: Request,
@@ -139,7 +227,7 @@ async def sbs_fact_get(
             return make_response_payload("No data found")
 
         session_id = session_data[0]["id"]
-        fact_count = session_data[0]["fact_count"]
+        # fact_count = session_data[0]["fact_count"]
         path = session_data[0]["path"]
         data_obj_facts = SbsSqlite(get_db_path(session_id))
 
@@ -148,47 +236,8 @@ async def sbs_fact_get(
 
         data_obj_facts.db_create_fact_table()
 
-        if fact_count == 0:
-            idx = 0
-            for line in run_bash_script(blob_name=path):
-                idx += 1
-                print(f"{idx} - {line}")
-                path = line
-
-            with jsonlines.open(path) as reader:
-                for obj in reader:
-                    if obj.get("draft_id") is None:
-                        print(f"Skipped row {fact_count} due to missing draft_id")
-                    else:
-                        row: sbs_fact = sbs_fact(
-                            session_id=commons.id_to_fetch,
-                            main_clause=obj.get("main_clause"),
-                            subclause_id=obj.get("subclause_id"),
-                            subclause=obj.get("subclause"),
-                            content=obj.get("content"),
-                            score_completeness=obj.get("score_completeness"),
-                            explanation_completeness=obj.get(
-                                "explanation_completeness"
-                            ),
-                            draft_id=obj.get("draft_id"),
-                            content_id=obj.get("content_id"),
-                            document_text_reference=obj.get("document_text_reference"),
-                            draft=obj.get("draft"),
-                        )
-
-                        data_obj_facts.db_populate_sbs_fact(row)
-
-                        print(f"Inserted row {fact_count}")
-
-                        fact_count += 1
-
-            data_obj_sessions.db_patch_sbs_session(
-                session_id, SbsSessionUpdateRequest(fact_count=fact_count)
-            )
-            os.remove(path)
-
         session_data, total_count = data_obj_facts.db_get_sbs_fact_list(
-            commons.id_to_fetch, commons.id2_to_fetch, commons.pagination
+            session_id, commons.id2_to_fetch, commons.pagination
         )
         row_count = len(session_data)
 
@@ -215,10 +264,17 @@ async def sbs_fact_patch(
 ):
     """Endpoint to patch sbs_fact table"""
     try:
-        data_obj_facts = SbsSqlite(get_db_path(commons.id_to_fetch))
-        data_obj_facts.db_patch_sbs_fact(
-            commons.id_to_fetch, commons.id2_to_fetch, item
-        )
+        data_obj_sessions = SbsSqlite(get_db_path())
+
+        data_obj_sessions.db_create_sessions_table()
+
+        if commons.id_to_fetch == 0:
+            session_id = data_obj_sessions.db_upsert_sbs_session(commons.global_filter)
+        else:
+            session_id = commons.id_to_fetch
+
+        data_obj_facts = SbsSqlite(get_db_path(session_id))
+        data_obj_facts.db_patch_sbs_fact(session_id, commons.id2_to_fetch, item)
 
         return CommonQueryResponse(
             CommonError(0, "OK", CommonError.ErrorLevel.SUCCESS),

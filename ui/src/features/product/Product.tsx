@@ -40,6 +40,7 @@ import {
     actionSelectCurrFactZoomed,
     actionResetFactZoomed,
     selectGetQueryParamscurrSessions,
+    selectScannedSessions,
 } from "./productSlice";
 import { useOutletContext } from "react-router";
 import FvBoundaryMarker from "@foodvibes/components/FvBoundaryMarker";
@@ -58,6 +59,7 @@ export const Product = () => {
     const lastIdFactZoomed: number = useAppSelector(selectLastIdFactZoomed);
     const queryParamsCurrSessions: QueryParamsType = useAppSelector(selectGetQueryParamscurrSessions);
     const queryParamsCurrFacts: QueryParamsType = useAppSelector(selectGetQueryParamsCurrFacts);
+    const scannedSessions: string[] = useAppSelector(selectScannedSessions);
     // const setPagingIncreasing: (doLoad: boolean) => void = (doLoad: boolean) => dispatch(actionSetPagingIncreasing(doLoad));
     const resetFacts = () => dispatch(actionResetFacts());
     const resetFactZoomed = () => dispatch(actionResetFactZoomed());
@@ -90,6 +92,7 @@ export const Product = () => {
         }));
     };
     const handleFactSelection = (path: string) => {
+        StreamData(dispatch, "sbs_session_load", path);
         setPagingStateFacts(0);
         setDoLoadFacts(false);
         selectCurrFacts(QueryParamsInit({
@@ -202,6 +205,31 @@ export const Product = () => {
 
     return (
         <>
+            {scannedSessions?.length ?
+                <>
+                    <Box sx={{
+                        display: "block",
+                        position: "absolute",
+                        width: "156px",
+                        height: "200px",
+                        bottom: "32px",
+                        right: "8px",
+                        margin: "0 auto",
+                        textAlign: "left",
+                        border: "2px solid red",
+                        borderRadius: "8px",
+                        backgroundColor: "lightyellow",
+                        padding: "8px",
+                        overflow: "auto",
+                        color: "black",
+                    }}>
+                        {scannedSessions.map((msg, idx) => (
+                            <Box component="div" key={`msg${idx}`} sx={{ display: "flex", borderRadius: "8px", border: 0, }}>{msg}</Box>
+                        ))}
+                    </Box>
+                </>
+                : null
+            }
             {queryResponseCurrFacts?.data ?
                 <SbsFacts
                     ref={context.bodyTracker.ref}
@@ -226,7 +254,7 @@ export const Product = () => {
                         patchFact(QueryParamsInit({
                             idToFetch: lastIdSessions,
                             id2ToFetch: id,
-                            globalFilter: "",
+                            globalFilter: queryParamsCurrFacts.globalFilter,
                             includeDetails: false,
                             pagination: {
                                 pageIndex: 0,
@@ -269,7 +297,7 @@ export const Product = () => {
                         }
                     }}
                     refreshCb={() => {
-                        StreamData(dispatch, "sbs_sessions_scan");
+                        // StreamData(dispatch, "sbs_sessions_scan");
                     }}
                 />
             }

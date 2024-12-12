@@ -35,18 +35,21 @@ export const productSlice = createAppSlice({
         }),
         actionScanSessionsStreamSuccess: create.reducer(
             (state, action: PayloadAction<string>) => {
-                console.log(action.payload);
-
-                state.scannedSessions = [
-                    ...state.scannedSessions,
-                    action.payload,
-                ];
-                state.loading = false;
+                if (action.payload === 'Stream ended') {
+                    state.scannedSessions = [];
+                    state.loading = false;
+                } else {
+                    state.scannedSessions = [
+                        ...state.scannedSessions.slice(),
+                        ...action.payload.split('\n').filter(e => e.length),
+                    ].slice(-9);
+                }
             }),
         actionScanSessionsStreamError: create.reducer(
             (state, action: PayloadAction<string>) => {
-                state.loading = false;
+                state.scannedSessions = [];
                 console.error(action.payload);
+                state.loading = false;
             }),
         actionResetFacts: create.reducer(state => {
             state.currFacts = InitSubFeature<ISbsFactType>();
@@ -235,6 +238,7 @@ export const productSlice = createAppSlice({
         selectResponseCurrSessions: state => state.currSessions.queryResponse,
         selectResponseCurrFacts: state => state.currFacts.queryResponse,
         selectResponseCurrFactZoomed: state => state.currFactZoomed.queryResponse,
+        selectScannedSessions: state => state.scannedSessions,
     },
 });
 
@@ -267,4 +271,5 @@ export const {
     selectResponseCurrSessions,
     selectResponseCurrFacts,
     selectResponseCurrFactZoomed,
+    selectScannedSessions,
 } = productSlice.selectors;
