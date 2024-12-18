@@ -68,6 +68,9 @@ export const productSlice = createAppSlice({
                 state.currFacts.pagingIncreasing = action.payload;
             },
         ),
+        actionSetShowUnformattedDraft: create.reducer((state, actions: PayloadAction<boolean>) => {
+            state.showUnformattedDraft = actions.payload;
+        }),
         actionSetDetailLevelFacts: create.reducer(
             (state, action: PayloadAction<CommonDetailLevel>) => {
                 state.currFacts.detailLevel = action.payload;
@@ -215,7 +218,23 @@ export const productSlice = createAppSlice({
                     SetFeatureThunkStatePending(state, state.currFactZoomed, payload);
                 },
                 fulfilled: (state, action) => {
-                    console.log('action.payload', action.payload);
+                    // Apply patch to current cached data
+                    state.currFactZoomed.queryResponse.data = state.currFactZoomed.queryResponse.data?.map(
+                        e => e.id === action.meta.arg.queryParams.id2ToFetch ?
+                            {
+                                ...e,
+                                ...action.meta.arg.rowToUpsert,
+                            } as ISbsFactType :
+                            e
+                    );
+                    state.currFacts.queryResponse.data = state.currFacts.queryResponse.data?.map(
+                        e => e.id === action.meta.arg.queryParams.id2ToFetch ?
+                            {
+                                ...e,
+                                ...action.meta.arg.rowToUpsert,
+                            } as ISbsFactType :
+                            e
+                    );
                     SetFeatureThunkStateFulfilled(state, state.currFactZoomed, null);
                 },
                 rejected: (state, action) => {
@@ -239,6 +258,7 @@ export const productSlice = createAppSlice({
         selectResponseCurrFacts: state => state.currFacts.queryResponse,
         selectResponseCurrFactZoomed: state => state.currFactZoomed.queryResponse,
         selectScannedSessions: state => state.scannedSessions,
+        selectShowUnformattedDraft: state => state.showUnformattedDraft,
     },
 });
 
@@ -250,6 +270,7 @@ export const {
     actionResetFactZoomed,
     actionSetClearStateResponse,
     actionSetPagingIncreasingFacts,
+    actionSetShowUnformattedDraft,
     actionSetDetailLevelFacts,
     actionSetQueryParamsSessions,
     actionSetQueryParamsFacts,
@@ -272,4 +293,5 @@ export const {
     selectResponseCurrFacts,
     selectResponseCurrFactZoomed,
     selectScannedSessions,
+    selectShowUnformattedDraft,
 } = productSlice.selectors;

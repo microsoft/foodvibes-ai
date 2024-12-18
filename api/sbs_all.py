@@ -13,13 +13,8 @@ from typing import Annotated, Any, List
 from fastapi import Depends, Request
 from fastapi.responses import StreamingResponse
 
-# import asyncio
-import re
 import jsonlines
 
-# from api.common.config import logger
-
-# from sqlalchemy import insert, update
 from api.common.blob_utils import run_bash_script
 from api.common.database.common_utils import (
     make_response_payload,
@@ -36,13 +31,6 @@ from api.common.types import (
     sbs_fact,
     sbs_session,
 )
-
-
-def extract_guid(file_path: str) -> str:
-    match = re.search(r"([a-f0-9\-]{36})", file_path)
-    if match:
-        return match.group(1)
-    return None
 
 
 def get_db_path(session_id: int = 0) -> str:

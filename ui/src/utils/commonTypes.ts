@@ -179,6 +179,7 @@ export interface SubFeature<T> {
 }
 
 export interface FeatureSliceState<T1, T2> extends BaseSliceState {
+    showUnformattedDraft: boolean;
     scannedSessions: string[];
     currSessions: SubFeature<T1>;
     currFacts: SubFeature<T2>;
@@ -316,17 +317,25 @@ export interface ISbsFactType extends ISbsCommonType {
     subclause_id?: string;
     subclause?: string;
     content?: string;
-    score_completeness?: number;
     explanation_completeness?: string;
     draft_id?: string;
     content_id?: string;
     document_text_reference?: string;
     draft?: string;
-    score?: number;
+    draft_unjsonified?: string;
+    score_correctness?: number;
+    score_completeness?: number;
+    score_clarity?: number;
+    score_accuracy?: number;
+    score_consistency?: number;
 }
 
 export interface ISbsFactPutType {
-    score?: number;
+    score_correctness?: number;
+    score_completeness?: number;
+    score_clarity?: number;
+    score_accuracy?: number;
+    score_consistency?: number;
     reviewer?: string;
     review_date?: string;
 }

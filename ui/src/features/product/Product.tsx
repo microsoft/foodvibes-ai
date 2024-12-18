@@ -41,6 +41,8 @@ import {
     actionResetFactZoomed,
     selectGetQueryParamscurrSessions,
     selectScannedSessions,
+    selectShowUnformattedDraft,
+    actionSetShowUnformattedDraft,
 } from "./productSlice";
 import { useOutletContext } from "react-router";
 import FvBoundaryMarker from "@foodvibes/components/FvBoundaryMarker";
@@ -60,7 +62,9 @@ export const Product = () => {
     const queryParamsCurrSessions: QueryParamsType = useAppSelector(selectGetQueryParamscurrSessions);
     const queryParamsCurrFacts: QueryParamsType = useAppSelector(selectGetQueryParamsCurrFacts);
     const scannedSessions: string[] = useAppSelector(selectScannedSessions);
+    const showUnformattedDraft: boolean = useAppSelector(selectShowUnformattedDraft);
     // const setPagingIncreasing: (doLoad: boolean) => void = (doLoad: boolean) => dispatch(actionSetPagingIncreasing(doLoad));
+    const setShowUnformattedDraft = (newState: boolean) => dispatch(actionSetShowUnformattedDraft(newState));
     const resetFacts = () => dispatch(actionResetFacts());
     const resetFactZoomed = () => dispatch(actionResetFactZoomed());
     const setQueryParamsCurrSessions = (payload: Partial<QueryParamsType>) => dispatch(actionSetQueryParamsSessions(payload));
@@ -222,6 +226,7 @@ export const Product = () => {
                         padding: "8px",
                         overflow: "auto",
                         color: "black",
+                        zIndex: (theme) => theme.zIndex.drawer + 120,
                     }}>
                         {scannedSessions.map((msg, idx) => (
                             <Box component="div" key={`msg${idx}`} sx={{ display: "flex", borderRadius: "8px", border: 0, }}>{msg}</Box>
@@ -244,13 +249,7 @@ export const Product = () => {
                     setPagingState={(value: number): void => {
                         setPagingStateFacts(value);
                     }}
-                    scoreChangeCb={(id: number, score: number): void => {
-                        const rowToUpsert: ISbsFactPutType = {
-                            score,
-                            reviewer: "Reviewer Name",
-                            review_date: NowTimestamp(),
-                        };
-
+                    scoreChangeCb={(id: number, scores: ISbsFactPutType): void => {
                         patchFact(QueryParamsInit({
                             idToFetch: lastIdSessions,
                             id2ToFetch: id,
@@ -260,7 +259,11 @@ export const Product = () => {
                                 pageIndex: 0,
                                 pageSize: 10,
                             },
-                        }), rowToUpsert);
+                        }), {
+                            ...scores,
+                            reviewer: "Reviewer Name",
+                            review_date: NowTimestamp(),
+                        });
                     }}
                     zoomed={zoomed}
                     zoomCb={(id: number): void => {
@@ -279,6 +282,8 @@ export const Product = () => {
                             resetFactZoomed();
                         }
                     }}
+                    showUnformattedDraft={showUnformattedDraft}
+                    setShowUnformattedDraft={setShowUnformattedDraft}
                 />
                 :
                 <SbsSessions

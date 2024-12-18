@@ -29,3 +29,21 @@ def convert_unix_timestamp_to_iso8601(input_timestamp: int) -> str:
 
 def is_production() -> bool:
     return os.environ.get("ENVIRONMENT") == "production"
+
+
+def unjsonify(data, indent=0) -> str:
+    result = ""
+    for key, value in data.items():
+        result += " " * indent + str(key) + ":\n"
+        if isinstance(value, dict):
+            result += unjsonify(value, indent + 4)
+        elif isinstance(value, list):
+            for item in value:
+                if isinstance(item, dict):
+                    result += unjsonify(item, indent + 4)
+                else:
+                    result += " " * (indent + 4) + str(item) + "\n"
+        else:
+            result += " " * (indent + 4) + str(value) + "\n"
+
+    return result

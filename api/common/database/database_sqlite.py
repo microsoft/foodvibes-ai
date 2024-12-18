@@ -20,6 +20,8 @@ import json
 import sqlite3
 from typing import List
 
+from api.common.utils import unjsonify
+
 
 class SbsSqlite:
     def __init__(self, db_file_name: str):
@@ -93,7 +95,6 @@ class SbsSqlite:
         sql_epxr,
         pagination: CommonQueryParamsPagination = None,
         columns_to_jsonify: List[str] = [],
-        columns_to_truncate: List[str] = [],
         data_size_limit: int = 100,
     ):
         pagination_to_use = (
@@ -129,12 +130,18 @@ class SbsSqlite:
                         except json.JSONDecodeError:
                             print(f"Invalid JSON in row: {item}")
 
-                for column in columns_to_truncate:
+                for column in columns_to_jsonify:
+                    column_unjsonified = f"{column}_unjsonified"
+                    item[column_unjsonified] = unjsonify(json.loads(item[column]))
+
                     if column in item:
                         try:
                             item[column] = ("\n".join(item[column].split("\n")))[
                                 :data_size_limit
                             ]
+                            item[column_unjsonified] = (
+                                "\n".join(item[column_unjsonified].split("\n"))
+                            )[:data_size_limit]
                         except json.JSONDecodeError:
                             print(f"Invalid JSON in row: {item}")
 
@@ -186,13 +193,16 @@ class SbsSqlite:
                 subclause_id TEXT NULL,
                 subclause TEXT NULL,
                 content TEXT NOT NULL,
-                score_completeness INTEGER NULL,
                 explanation_completeness TEXT NULL,
                 draft_id TEXT NOT NULL,
                 content_id TEXT NOT NULL,
                 document_text_reference TEXT NULL,
                 draft TEXT NULL,
-                score INTEGER NULL,
+                score_correctness INTEGER NULL,
+                score_completeness INTEGER NULL,
+                score_clarity INTEGER NULL,
+                score_accuracy INTEGER NULL,
+                score_consistency INTEGER NULL,
                 reviewer TEXT NULL,
                 review_date TEXT NULL
             )
@@ -297,14 +307,17 @@ class SbsSqlite:
                 subclause_id,
                 subclause,
                 content,
-                score_completeness,
                 explanation_completeness,
                 draft_id,
                 content_id,
                 SUBSTR(document_text_reference, 1, {data_size_limit})
                     as document_text_reference,
                 draft,
-                score,
+                score_correctness,
+                score_completeness,
+                score_clarity,
+                score_accuracy,
+                score_consistency,
                 reviewer,
                 review_date
             FROM sbs_fact
@@ -312,7 +325,6 @@ class SbsSqlite:
             """,
             pagination_to_use,
             ["draft"],
-            ["document_text_reference", "draft"],
             data_size_limit,
         )
 

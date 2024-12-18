@@ -3,6 +3,18 @@
     height: 100vh;
 }
 
+.App-icon {
+    /* position: relative;
+    top: 0; */
+    /* left: 0; */
+    height: 26px;
+    pointer-events: none;
+    /* height: 4vmin; */
+    background-color: white;
+    border-radius: 6px;
+    border: 1px solid blue;
+}
+
 .App-logo {
     /* position: relative;
     top: 0; */
@@ -15,11 +27,11 @@
     border: 1px solid blue;
 }
 
-@media (prefers-reduced-motion: no-preference) {
+/* @media (prefers-reduced-motion: no-preference) {
     .App-logo {
         animation: App-logo-float infinite 36s ease-in-out;
     }
-}
+} */
 
 .App-header {
     /* min-width: 100px; */
@@ -158,7 +170,7 @@
     color: rgb(112, 76, 182);
 }
 
-@keyframes App-logo-float {
+/* @keyframes App-logo-float {
     0% {
         transform: translateY(0);
     }
@@ -170,7 +182,7 @@
     100% {
         transform: translateY(0px);
     }
-}
+} */
 
 .MuiCardContent-root {
     padding-bottom: 0 !important;

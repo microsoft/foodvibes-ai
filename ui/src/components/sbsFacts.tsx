@@ -1,12 +1,14 @@
+import FormatClearIcon from '@mui/icons-material/FormatClear';
 import ZoomInIcon from '@material-ui/icons/ZoomIn';
-import { FormControl, InputLabel, makeStyles, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from "@material-ui/core";
-import { ISbsFactType, ISbsSessionType, QueryResponseType } from "@foodvibes/utils/commonTypes";
+import { FormControl, InputLabel, makeStyles, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from "@material-ui/core";
+import { ISbsFactPutType, ISbsFactType, ISbsSessionType, QueryResponseType } from "@foodvibes/utils/commonTypes";
 import { Box, Stack, styled } from "@mui/system";
 import FvBoundaryMarker from "./FvBoundaryMarker";
-import SbsSlider from "./sbsSlider";
-import react, { forwardRef, useEffect, useRef, useState } from "react";
+import react, { forwardRef, useEffect, useMemo, useRef, useState } from "react";
 import SbsButton from './sbsButton';
 import SbsToggle from './sbsToggle';
+import SbsSliderButtons from './sbsSliderButtons';
+import { KScoreLableAc, KScoreLableAcShort, KScoreLableCl, KScoreLableClShort, KScoreLableCn, KScoreLableCnShort, KScoreLableCp, KScoreLableCpShort, KScoreLableCr, KScoreLableCrShort } from '@foodvibes/utils/commonConstants';
 
 const KLineHeight = 16;
 const useStyles = makeStyles({
@@ -71,6 +73,16 @@ const CompactTableCell = styled(TableCell)({
     whiteSpace: "nowrap",
     overflow: "auto",
 });
+const getPayloadToPut = (fact: ISbsFactType, scores: ISbsFactPutType) => ({
+    score_correctness: scores.score_correctness ?? fact.score_correctness,
+    score_completeness: scores.score_completeness ?? fact.score_completeness,
+    score_clarity: scores.score_clarity ?? fact.score_clarity,
+    score_accuracy: scores.score_accuracy ?? fact.score_accuracy,
+    score_consistency: scores.score_consistency ?? fact.score_consistency,
+    reviewer: scores.reviewer ?? fact.reviewer,
+    review_date: scores.review_date ?? fact.review_date,
+} as ISbsFactPutType
+);
 const ReviewTable = (
     { data }: { data: ISbsFactType }
 ) => (
@@ -84,7 +96,18 @@ const ReviewTable = (
             </TableHead>
             <TableBody>
                 {Object.entries(data).filter(([key, value]) =>
-                    !['id', 'session_id', 'score', 'document_text_reference', 'draft'].find(e => e === key)).map(([key, value]) => (
+                    ![
+                        'id',
+                        'session_id',
+                        'score_correctness',
+                        'score_completeness',
+                        'score_clarity',
+                        'score_accuracy',
+                        'score_consistency',
+                        'score_relevance',
+                        'document_text_reference',
+                        'draft'
+                    ].find(e => e === key)).map(([key, value]) => (
                         <CompactTableRow key={key} style={{ height: "36px" }}>
                             <CompactTableCell0>{key.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase())}</CompactTableCell0>
                             <CompactTableCell>{value}</CompactTableCell>
@@ -94,7 +117,74 @@ const ReviewTable = (
         </Table>
     </TableContainer>
 );
-const SbsSubFact = forwardRef((
+const SbsFactScorePicker = (
+    {
+        fact,
+        isHorizontal,
+        scoreChangeCb,
+    }: {
+        fact: ISbsFactType;
+        isHorizontal: boolean;
+        scoreChangeCb: (id: number, scores: ISbsFactPutType) => void;
+    }
+) => {
+    const sliderConfigs = useMemo(() => [
+        {
+            defaultValue: Number(fact.score_correctness) || 0,
+            captionPrefix: KScoreLableCrShort,
+            caption: KScoreLableCr,
+            scoreKey: 'score_correctness',
+        },
+        {
+            defaultValue: Number(fact.score_completeness) || 0,
+            captionPrefix: KScoreLableCpShort,
+            caption: KScoreLableCp,
+            scoreKey: 'score_completeness',
+        },
+        {
+            defaultValue: Number(fact.score_clarity) || 0,
+            captionPrefix: KScoreLableClShort,
+            caption: KScoreLableCl,
+            scoreKey: 'score_clarity',
+        },
+        {
+            defaultValue: Number(fact.score_accuracy) || 0,
+            captionPrefix: KScoreLableAcShort,
+            caption: KScoreLableAc,
+            scoreKey: 'score_accuracy',
+        },
+        {
+            defaultValue: Number(fact.score_consistency) || 0,
+            captionPrefix: KScoreLableCnShort,
+            caption: KScoreLableCn,
+            scoreKey: 'score_consistency',
+        },
+    ], [fact.score_correctness, fact.score_completeness, fact.score_clarity, fact.score_accuracy, fact.score_consistency]);
+
+    return <Box sx={{
+        display: 'flex',
+        flexDirection: isHorizontal ? 'row' : 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+    }}>
+        {sliderConfigs.map((config, index) => (
+            <SbsSliderButtons
+                key={index}
+                isHorizontal={isHorizontal}
+                defaultValue={config.defaultValue}
+                captionPrefix={config.captionPrefix}
+                caption={config.caption}
+                style={{ margin: '0' }}
+                changeCb={(value) => {
+                    scoreChangeCb(fact.id, getPayloadToPut(fact, {
+                        [config.scoreKey]: value as number,
+                    } as ISbsFactPutType));
+                }}
+            />
+        ))}
+    </Box>;
+};
+const SbsFactCell = (
     {
         title,
         body,
@@ -108,19 +198,17 @@ const SbsSubFact = forwardRef((
         rowsMax: number;
         backgroundColor: string;
     }
-    , ref: react.ForwardedRef<HTMLDivElement>
 ) =>
     <Box sx={{ margin: "6px 0 0", padding: "0px", border: "1px solid #ccc", borderRadius: "8px", }}>
         <FormControl fullWidth variant="outlined">
             <InputLabel
                 shrink
                 htmlFor="outlined-read-only-input"
-                style={{ fontSize: "12px", color: "#1976d2", position: "relative", top: "7px", }}
+                style={{ fontSize: "13px", color: "#1976d2", position: "relative", top: "7px", }}
             >
                 {title} -- Chars. {body?.length}{zoomed ? "" : " truncated"}
             </InputLabel>
             <TextField
-                ref={ref}
                 id="outlined-read-only-input"
                 multiline
                 minRows={4}
@@ -136,9 +224,141 @@ const SbsSubFact = forwardRef((
             />
         </FormControl>
     </Box>
-);
-const isZoomed = (factId: number, currFactZoomed: QueryResponseType<ISbsFactType>): boolean =>
-    factId && factId === currFactZoomed?.data?.[0].id ? true : false;
+    ;
+const SbsFactRow = (
+    {
+        height,
+        currFacts,
+        currFactZoomed,
+        pagingState,
+        setPagingState,
+        scoreChangeCb,
+        zoomCb,
+        fact,
+        idx,
+        showUnformattedDraft,
+    }: {
+        height: number;
+        currFacts: QueryResponseType<ISbsFactType>;
+        currFactZoomed: QueryResponseType<ISbsFactType>;
+        pagingState: number;
+        setPagingState: (value: number) => void;
+        scoreChangeCb: (id: number, scores: ISbsFactPutType) => void;
+        zoomCb: (id: number) => void;
+        fact: ISbsFactType;
+        idx: number;
+        showUnformattedDraft: boolean;
+    }
+) => {
+    const classes = useStyles();
+    const [rowsMax, setRowsMax] = useState<number>(4);
+    const [bringIntoView, setBringIntoView] = useState<boolean>(false);
+    const [zoomedCurr, setZoomedCurr] = useState<boolean>(false);
+    const zoomRefStart = useRef<HTMLTableRowElement>(null);
+    const zoomRefEnd = useRef<HTMLTableRowElement>(null);
+
+    useEffect(() => {
+        setRowsMax(Math.floor((height - 200) / KLineHeight));
+    }, [height]);
+    useEffect(() => {
+        setZoomedCurr(fact.id && fact.id === currFactZoomed?.data?.[0].id ? true : false);
+    }, [fact.id === currFactZoomed?.data?.[0].id]);
+    useEffect(() => {
+        if (bringIntoView && zoomRefStart.current && zoomRefEnd.current) {
+            console.log("Scrolling into view", bringIntoView, zoomRefStart.current, zoomRefEnd.current);
+            setBringIntoView(false);
+            setTimeout(() => {
+                console.log("START Scrolling into view");
+                zoomRefStart?.current?.scrollIntoView({ behavior: 'instant', block: 'start', inline: 'nearest' });
+
+                setTimeout(() => {
+                    console.log("END Scrolling into view");
+                    zoomRefEnd?.current?.scrollIntoView({ behavior: 'instant', block: 'end', inline: 'nearest' });
+                }, 100);
+            }, 100);
+        }
+    }, [bringIntoView]);
+
+    return (
+        <>
+            <span ref={zoomRefStart}></span>
+            <TableRow key={`fact${idx}`} className={classes.compactRow}>
+                <TableCell className={classes.compactCell}>
+                    <SbsFactCell
+                        title={`Reference: ${fact.id}`}
+                        zoomed={zoomedCurr}
+                        body={fact.document_text_reference as string}
+                        rowsMax={rowsMax}
+                        backgroundColor="#b2d3c2"
+                    />
+                    {idx === 0 || idx === (currFacts?.data?.length ?? 0) - 1 ?
+                        <FvBoundaryMarker hasComeIntoViewCb={(isInView: boolean) => {
+                            console.info(`Facts: ${idx === 0 ? 'top' : 'bottom'} is in view`, isInView);
+
+                            if (isInView && pagingState === 0) {
+                                setPagingState(idx === 0 ? -1 : 1);
+                            }
+                        }} />
+                        : null
+                    }
+                </TableCell>
+                <TableCell className={classes.compactCell}>
+                    <SbsFactCell
+                        title={`Draft: ${fact.id}`}
+                        zoomed={zoomedCurr}
+                        body={(showUnformattedDraft ? fact.draft : fact.draft_unjsonified) as string}
+                        rowsMax={rowsMax}
+                        backgroundColor="floralwhite"
+                    />
+                </TableCell>
+                <TableCell className={classes.compactCell2}>
+                    <Box sx={{
+                        padding: "0",
+                        margin: "0",
+                        whiteSpace: "nowrap",
+                        borderRadius: "4px",
+                        fontSize: "12px",
+                        textAlign: "left",
+                    }}>
+                        <Box sx={{ padding: "0", margin: "0", display: "inline-flex", }}>
+                            <SbsFactScorePicker fact={fact} isHorizontal={true} scoreChangeCb={scoreChangeCb} />
+                        </Box>
+                        <Box sx={{ padding: "0", display: "inline-flex", }}>
+                            <SbsToggle
+                                selected={zoomedCurr}
+                                style={{
+                                    cursor: 'pointer',
+                                    position: 'relative',
+                                    top: '8px',
+                                    right: '-6px',
+                                }}
+                                clicktCb={(newValue: boolean, arg?: string | number) => {
+                                    zoomCb(newValue ? arg as number : 0);
+
+                                    if (newValue) {
+                                        setBringIntoView(true);
+                                    }
+                                }}
+                                clicktCbArg={fact.id}
+                            >
+                                <ZoomInIcon />
+                            </SbsToggle>
+                        </Box>
+                    </Box>
+                    {zoomedCurr ?
+                        <>
+                            <SbsFactScorePicker fact={fact} isHorizontal={false} scoreChangeCb={scoreChangeCb} />
+                            <Box sx={{ padding: "24px 0 0", maxWidth: "360px" }}>
+                                <ReviewTable data={fact} />
+                            </Box>
+                        </> : null
+                    }
+                </TableCell>
+            </TableRow>
+            <span ref={zoomRefEnd}></span>
+        </>
+    );
+};
 const SbsFacts = forwardRef((
     {
         height,
@@ -151,6 +371,8 @@ const SbsFacts = forwardRef((
         scoreChangeCb,
         zoomed,
         zoomCb,
+        showUnformattedDraft,
+        setShowUnformattedDraft,
     }: {
         height: number;
         showSessions: () => void;
@@ -159,18 +381,15 @@ const SbsFacts = forwardRef((
         currSessionZoomed: ISbsSessionType | undefined;
         pagingState: number;
         setPagingState: (value: number) => void;
-        scoreChangeCb: (id: number, score: number) => void;
+        scoreChangeCb: (id: number, scores: ISbsFactPutType) => void;
         zoomed: boolean;
         zoomCb: (id: number) => void;
+        showUnformattedDraft: boolean;
+        setShowUnformattedDraft: (newState: boolean) => void;
     }
     , ref: react.ForwardedRef<HTMLDivElement>
 ) => {
     const classes = useStyles();
-    const [rowsMax, setRowsMax] = useState<number>(4);
-    const zoomRef = useRef<HTMLTableRowElement>(null);
-    useEffect(() => {
-        setRowsMax(Math.floor((height - 200) / KLineHeight));
-    }, [height]);
 
     return (
         <Stack ref={ref} spacing={2}
@@ -190,7 +409,24 @@ const SbsFacts = forwardRef((
                     <TableHead>
                         <TableRow className={classes.stickyHeader}>
                             <TableCell className={classes.compactCell}>Reference</TableCell>
-                            <TableCell className={classes.compactCell}>Draft</TableCell>
+                            <TableCell className={classes.compactCell}>Draft
+                                <SbsToggle
+                                    title={showUnformattedDraft ? "Show Unformatted Draft" : "Show Formatted Draft"}
+                                    selected={showUnformattedDraft}
+                                    style={{
+                                        cursor: 'pointer',
+                                        position: 'relative',
+                                        top: '0px',
+                                        right: '0px',
+                                        margin: '0 0 0 8px',
+                                    }}
+                                    clicktCb={(newValue: boolean, arg?: string | number) => {
+                                        setShowUnformattedDraft(newValue);
+                                    }}
+                                >
+                                    <FormatClearIcon />
+                                </SbsToggle>
+                            </TableCell>
                             <TableCell className={classes.compactCell2}>Controls</TableCell>
                         </TableRow>
                     </TableHead>
@@ -201,97 +437,22 @@ const SbsFacts = forwardRef((
                                     ...fact,
                                     document_text_reference: currFactZoomed?.data[0].document_text_reference,
                                     draft: currFactZoomed?.data[0].draft,
+                                    draft_unjsonified: currFactZoomed?.data[0].draft_unjsonified,
                                 }) : fact
                         )))?.map((fact: ISbsFactType, idx: number) => (
-                            <TableRow key={`fact${idx}`} className={classes.compactRow}>
-                                <TableCell className={classes.compactCell}>
-                                    <SbsSubFact
-                                        ref={isZoomed(fact.id, currFactZoomed) ? zoomRef : null}
-                                        title={`Reference: ${fact.id}`}
-                                        zoomed={isZoomed(fact.id, currFactZoomed)}
-                                        body={fact.document_text_reference as string}
-                                        rowsMax={rowsMax}
-                                        backgroundColor="#b2d3c2"
-                                    />
-                                    {idx === 0 || idx === (currFacts?.data?.length ?? 0) - 1 ?
-                                        <FvBoundaryMarker hasComeIntoViewCb={(isInView: boolean) => {
-                                            console.info(`Facts: ${idx === 0 ? 'top' : 'bottom'} is in view`, isInView);
-
-                                            if (isInView && pagingState === 0) {
-                                                setPagingState(idx === 0 ? -1 : 1);
-                                            }
-                                        }} />
-                                        : null
-                                    }
-                                </TableCell>
-                                <TableCell className={classes.compactCell}>
-                                    <SbsSubFact
-                                        title={`Draft: ${fact.id}`}
-                                        zoomed={isZoomed(fact.id, currFactZoomed)}
-                                        body={fact.draft as string}
-                                        rowsMax={rowsMax}
-                                        backgroundColor="floralwhite"
-                                    />
-                                </TableCell>
-                                <TableCell className={classes.compactCell2}>
-                                    <Box>
-                                        <Typography
-                                            id="slider-label"
-                                            gutterBottom
-                                            style={{
-                                                backgroundColor: "lavenderblush",
-                                                borderRadius: "4px",
-                                                fontSize: "12px",
-                                                margin: "0",
-                                                width: "96%",
-                                                height: "30px",
-                                                textAlign: "left",
-                                                padding: "6px 0 0 8px",
-                                            }}>
-                                            Score
-                                            <SbsToggle
-                                                selected={isZoomed(fact.id, currFactZoomed)}
-                                                style={{
-                                                    cursor: 'pointer',
-                                                    position: 'relative',
-                                                    top: '-4px',
-                                                    right: '4px',
-                                                    float: 'right',
-                                                }}
-                                                clicktCb={(newValue: boolean, arg?: string | number) => {
-                                                    if (newValue) {
-                                                        zoomCb(arg as number);
-
-                                                        // if (zoomRef.current) {
-                                                        //     zoomRef.current.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
-                                                        // }
-                                                    } else {
-                                                        zoomCb(0);
-                                                    }
-                                                }}
-                                                clicktCbArg={fact.id}
-                                            >
-                                                <ZoomInIcon />
-                                            </SbsToggle>
-                                        </Typography>
-                                    </Box>
-                                    <SbsSlider
-                                        defaultValue={Number(fact.score) || 0}
-                                        max={10} step={1} style={{ margin: "0px 8px", }} changeCb={(value) => {
-                                            console.log("Slider value: ", value);
-
-                                            if (scoreChangeCb) {
-                                                scoreChangeCb(fact.id, value as number);
-                                            }
-                                        }}
-                                    />
-                                    {isZoomed(fact.id, currFactZoomed) ?
-                                        <Box sx={{ padding: "24px 0 0", maxWidth: "360px" }}>
-                                            <ReviewTable data={fact} />
-                                        </Box> : null
-                                    }
-                                </TableCell>
-                            </TableRow>
+                            <SbsFactRow
+                                key={`factRow${idx}`}
+                                height={height}
+                                currFacts={currFacts}
+                                currFactZoomed={currFactZoomed}
+                                pagingState={pagingState}
+                                setPagingState={setPagingState}
+                                scoreChangeCb={scoreChangeCb}
+                                zoomCb={zoomCb}
+                                fact={fact}
+                                idx={idx}
+                                showUnformattedDraft={showUnformattedDraft}
+                            />
                         ))}
                     </TableBody>
                 </Table>

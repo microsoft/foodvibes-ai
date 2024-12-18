@@ -4,7 +4,9 @@ import { Box, Stack } from "@mui/system";
 import FvBoundaryMarker from "./FvBoundaryMarker";
 import react, { forwardRef, useMemo } from "react";
 import SbsButton from "./sbsButton";
-import { join } from "path";
+import { default as iconFile } from "@foodvibes/assets/icon_file.png";
+import { default as iconFileJson } from "@foodvibes/assets/icon_file_json.png";
+import { default as iconFolder } from "@foodvibes/assets/icon_folder.png";
 
 const useStyles = makeStyles({
     tableContainer: {
@@ -27,6 +29,31 @@ const useStyles = makeStyles({
         textAlign: 'right',
     },
 });
+const SbsIcon = (fileName: string) => {
+    let icon: string = iconFile;
+
+    if (fileName.endsWith('.jsonl')) {
+        icon = iconFileJson;
+    } else if (fileName.endsWith('/') || fileName === '..') {
+        icon = iconFolder;
+    }
+
+    return <img
+        src={icon}
+        className={"App-icon"}
+        height={26}
+        // width={24}
+        alt="logo"
+        style={{
+            borderWidth: 0,
+            position: "relative",
+            top: "6px",
+            margin: "0px 6px 0 0",
+            backgroundColor: "inherit",
+        }}
+    />
+
+};
 const SbsSession = forwardRef((
     {
         currSession,
@@ -70,21 +97,27 @@ const SbsSession = forwardRef((
             <TableCell className={classes.compactCell}>{session.reviewer}</TableCell> */}
             <TableCell className={classes.compactCell}>
                 <>
-                    <span style={{ color: 'blue', cursor: 'pointer' }}
-                        title={`Up one level to ${session.path}`}
+                    <span
+                        style={{ cursor: 'pointer' }}
                         onClick={() => {
                             selectCb(session.path);
-                        }}>{idx < 0 ? '..' : session.path}</span>
-                    {idx === 0 || idx === (currSession?.data?.length ?? 0) - 1 ?
-                        <FvBoundaryMarker hasComeIntoViewCb={(isInView: boolean) => {
-                            console.info(`Sessions: ${idx === 0 ? 'top' : 'bottom'} is in view`, isInView);
+                        }}
+                        title={idx < 0 ? `Up one level to ${session.path}` : ''}>
+                        {SbsIcon(idx < 0 ? '..' : session.path)}
+                        <span style={{ color: 'blue' }}>
+                            {idx < 0 ? '..' : session.path}
+                        </span>
+                        {idx === 0 || idx === (currSession?.data?.length ?? 0) - 1 ?
+                            <FvBoundaryMarker hasComeIntoViewCb={(isInView: boolean) => {
+                                console.info(`Sessions: ${idx === 0 ? 'top' : 'bottom'} is in view`, isInView);
 
-                            if (isInView && pagingState === 0) {
-                                setPagingState(idx === 0 ? -1 : 1);
-                            }
-                        }} />
-                        : null
-                    }
+                                if (isInView && pagingState === 0) {
+                                    setPagingState(idx === 0 ? -1 : 1);
+                                }
+                            }} />
+                            : null
+                        }
+                    </span>
                 </>
             </TableCell>
             <TableCell className={classes.compactCell}>{session.modified}</TableCell>

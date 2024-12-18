@@ -18,7 +18,7 @@ import { default as logo } from "@foodvibes/assets/logo.png";
 import { FvIdBadge } from "@foodvibes/components/FvIdBadge";
 import { FvMenu } from "@foodvibes/components/FvMenu";
 import FvMessageShow from "@foodvibes/components/FvMessageShow";
-import { selectProductIsLoading } from "@foodvibes/features/product/productSlice";
+import { selectProductIsLoading, selectScannedSessions } from "@foodvibes/features/product/productSlice";
 import { CommonError, ILayoutTracker } from "@foodvibes/utils/commonTypes";
 import { Avatar, Backdrop, CircularProgress, CssBaseline, IconButton, Toolbar, Tooltip } from "@mui/material";
 import { closeSnackbar, SnackbarProvider } from "notistack";
@@ -33,6 +33,7 @@ const MainContent = () => {
     const commonErrors: CommonError[] = useAppSelector(selectCommonErrors);
     const mainIsLoading: boolean = useAppSelector(selectMainIsLoading);
     const productIsLoading: boolean = useAppSelector(selectProductIsLoading);
+    const scannedSessions: string[] = useAppSelector(selectScannedSessions);
     const username: string | null = useAppSelector(selectUsername);
     const setMainIsLoading = (loading: boolean) => dispatch(actionSetMainIsLoading(loading));
 
@@ -121,7 +122,7 @@ const MainContent = () => {
                                         style={{
                                             borderWidth: windowWidth > 480 ? 1 : 0,
                                             position: "relative",
-                                            top: "4px",
+                                            top: "10px",
                                             marginRight: windowWidth > 480 ? 10 : 0,
                                             backgroundColor: "rgb(25, 118, 210)",
                                         }}
@@ -140,7 +141,7 @@ const MainContent = () => {
                                 borderRadius: "12px 0 0 0",
                                 backgroundColor: "gainsboro",
                                 color: "darkblue",
-                                zIndex: 110,
+                                zIndex: 1320,
                                 position: "absolute",
                                 top: "calc(100vh - 28px)",
                                 right: "0px",
@@ -202,7 +203,7 @@ const MainContent = () => {
             <Backdrop
                 sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 110 }}
                 open={
-                    mainIsLoading //|| productIsLoading
+                    mainIsLoading || scannedSessions?.length > 0 //|| productIsLoading
                 }
             >
                 <CircularProgress color="inherit" />

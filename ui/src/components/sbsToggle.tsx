@@ -7,6 +7,7 @@ const SbsToggle = (
         clicktCb,
         clicktCbArg,
         style,
+        title,
         children,
     }:
         {
@@ -14,6 +15,7 @@ const SbsToggle = (
             clicktCb: (newValue: boolean, arg?: string | number) => void;
             clicktCbArg?: string | number;
             style?: React.CSSProperties;
+            title?: string;
             children?: React.ReactNode;
         }
 ) => {
@@ -25,6 +27,7 @@ const SbsToggle = (
         <ToggleButton
             value="check"
             selected={selected}
+            title={title}
             onChange={handleToggle}
             style={{
                 ...style,

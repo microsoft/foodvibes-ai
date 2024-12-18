@@ -12,7 +12,8 @@ import {
     QueryParamsType,
     QueryResponseApiType,
     QueryResponseType,
-    SubFeature} from "./commonTypes";
+    SubFeature
+} from "./commonTypes";
 
 export const QueryParamsInit = (payload: Partial<QueryParamsType>): QueryParamsType =>
 ({
@@ -129,6 +130,7 @@ export const InitSubFeature = <T>(): SubFeature<T> => ({
 export const GetFeatureInitialState = <T1, T2>(): FeatureSliceState<T1, T2> => ({
     loading: false,
     status: KApiStatusFulfilled,
+    showUnformattedDraft: false,
     scannedSessions: [],
     currSessions: InitSubFeature<T1>(),
     currFacts: InitSubFeature<T2>(),
@@ -434,4 +436,13 @@ export const GetRolesActive = (access_mask: number): string => {
     const rolesCaption: string = rolesActive.filter(e => e.checked).map(e => e.shortName).join(', ');
 
     return rolesCaption.length ? rolesCaption : "NO ROLES DEFINED";
+};
+
+export const HexToRgba = (hex: string, opacity: number): string => {
+    const bigint = parseInt(hex.slice(1), 16);
+    const r = (bigint >> 16) & 255;
+    const g = (bigint >> 8) & 255;
+    const b = bigint & 255;
+
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
 };
