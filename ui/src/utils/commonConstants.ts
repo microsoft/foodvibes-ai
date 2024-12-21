@@ -1,5 +1,5 @@
 export const KAppTitle = "Side-By-Side Document Viewer";
-export const KAppVersion = "20241216.0";
+export const KAppVersion = "20241218.0";
 export const KLedgerIdSearchTokenPrefix = "/ledger_id=";
 export const KLedgerIdSearchTokenSuffix = "/";
 export const KLedgerIdAltSearchTokenPrefix = "/ledger_id_alt=";
@@ -37,6 +37,7 @@ export const KMenuActionLogin = "@@login@@";
 export const KMenuActionLogout = "@@logout@@";
 export const KMenuActionImpersonate = "@@impersonate@@";
 export const KBannerHeightMin = 70;
+export const KLineHeight = 16;
 
 export const KScoreColor0Bc: string = "#dcdcdc";
 export const KScoreColor1Bc: string = "#ff0000";

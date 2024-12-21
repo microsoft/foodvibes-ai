@@ -43,13 +43,15 @@ import {
     selectScannedSessions,
     selectShowUnformattedDraft,
     actionSetShowUnformattedDraft,
+    actionSetEditPropertyName,
+    selectEditPropertyName,
+    selectEditPropertyLabel,
 } from "./productSlice";
 import { useOutletContext } from "react-router";
-import FvBoundaryMarker from "@foodvibes/components/FvBoundaryMarker";
 import SbsSessions from "@foodvibes/components/sbsSessions";
 import SbsFacts from "@foodvibes/components/sbsFacts";
 import StreamData from "./SessionsScan";
-import { current } from "@reduxjs/toolkit";
+import { KLineHeight } from "@foodvibes/utils/commonConstants";
 
 export const Product = () => {
     const context = useOutletContext<{ outletTracker: ILayoutTracker, titleTracker: ILayoutTracker, bodyTracker: ILayoutTracker }>();
@@ -62,8 +64,11 @@ export const Product = () => {
     const queryParamsCurrSessions: QueryParamsType = useAppSelector(selectGetQueryParamscurrSessions);
     const queryParamsCurrFacts: QueryParamsType = useAppSelector(selectGetQueryParamsCurrFacts);
     const scannedSessions: string[] = useAppSelector(selectScannedSessions);
+    const editPropertyName: string | null = useAppSelector(selectEditPropertyName);
+    const editPropertyLabel: string = useAppSelector(selectEditPropertyLabel);
     const showUnformattedDraft: boolean = useAppSelector(selectShowUnformattedDraft);
     // const setPagingIncreasing: (doLoad: boolean) => void = (doLoad: boolean) => dispatch(actionSetPagingIncreasing(doLoad));
+    const setEditPropertyName = (newName: string | null) => dispatch(actionSetEditPropertyName(newName));
     const setShowUnformattedDraft = (newState: boolean) => dispatch(actionSetShowUnformattedDraft(newState));
     const resetFacts = () => dispatch(actionResetFacts());
     const resetFactZoomed = () => dispatch(actionResetFactZoomed());
@@ -126,7 +131,7 @@ export const Product = () => {
     const handlePageChangeSessions = (increasing: boolean) => {
         const pageIndex = handlePageChangeIndex(increasing, queryResponseCurrSessions);
 
-        if (pageIndex > -1) {
+        if (pageIndex > -1 && queryParamsCurrSessions.pagination.pageIndex !== pageIndex) {
             selectCurrSessions({
                 ...queryParamsCurrSessions,
                 id2ToFetch: 0,
@@ -140,7 +145,7 @@ export const Product = () => {
     const handlePageChangeFacts = (increasing: boolean) => {
         const pageIndex = handlePageChangeIndex(increasing, queryResponseCurrFacts);
 
-        if (pageIndex > -1) {
+        if (pageIndex > -1 && queryParamsCurrFacts.pagination.pageIndex !== pageIndex) {
             selectCurrFacts({
                 ...queryParamsCurrFacts,
                 id2ToFetch: 0,
@@ -249,7 +254,7 @@ export const Product = () => {
                     setPagingState={(value: number): void => {
                         setPagingStateFacts(value);
                     }}
-                    scoreChangeCb={(id: number, scores: ISbsFactPutType): void => {
+                    factPatchCb={(id: number, payload: ISbsFactPutType): void => {
                         patchFact(QueryParamsInit({
                             idToFetch: lastIdSessions,
                             id2ToFetch: id,
@@ -260,7 +265,7 @@ export const Product = () => {
                                 pageSize: 10,
                             },
                         }), {
-                            ...scores,
+                            ...payload,
                             reviewer: "Reviewer Name",
                             review_date: NowTimestamp(),
                         });
@@ -282,6 +287,9 @@ export const Product = () => {
                             resetFactZoomed();
                         }
                     }}
+                    editPropertyName={editPropertyName}
+                    setEditPropertyName={setEditPropertyName}
+                    editPropertyLabel={editPropertyLabel}
                     showUnformattedDraft={showUnformattedDraft}
                     setShowUnformattedDraft={setShowUnformattedDraft}
                 />

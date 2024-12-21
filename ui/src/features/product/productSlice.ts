@@ -68,6 +68,10 @@ export const productSlice = createAppSlice({
                 state.currFacts.pagingIncreasing = action.payload;
             },
         ),
+        actionSetEditPropertyName: create.reducer((state, actions: PayloadAction<string | null>) => {
+            state.editPropertyName = actions.payload;
+            state.editPorpertyLabel = (actions.payload ?? "")?.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+        }),
         actionSetShowUnformattedDraft: create.reducer((state, actions: PayloadAction<boolean>) => {
             state.showUnformattedDraft = actions.payload;
         }),
@@ -219,21 +223,28 @@ export const productSlice = createAppSlice({
                 },
                 fulfilled: (state, action) => {
                     // Apply patch to current cached data
-                    state.currFactZoomed.queryResponse.data = state.currFactZoomed.queryResponse.data?.map(
-                        e => e.id === action.meta.arg.queryParams.id2ToFetch ?
-                            {
-                                ...e,
-                                ...action.meta.arg.rowToUpsert,
-                            } as ISbsFactType :
-                            e
-                    );
+                    const currFactItem: ISbsFactType = state.currFacts.queryResponse.data?.find(e => e.id === action.meta.arg.queryParams.id2ToFetch) ?? {} as ISbsFactType;
+                    const currFactZoomedItem: ISbsFactType = state.currFactZoomed.queryResponse.data?.find(e => e.id === action.meta.arg.queryParams.id2ToFetch) ?? {} as ISbsFactType;
+
+                    currFactItem[action.meta.arg.rowToUpsert.property_name] = action.meta.arg.rowToUpsert.is_numeric ?
+                        action.meta.arg.rowToUpsert.property_value_numeric : action.meta.arg.rowToUpsert.property_value;
+                    currFactZoomedItem[action.meta.arg.rowToUpsert.property_name] = currFactItem[action.meta.arg.rowToUpsert.property_name];
+
+                    if (action.meta.arg.rowToUpsert.review_date) {
+                        currFactItem[action.meta.arg.rowToUpsert.review_date] = action.meta.arg.rowToUpsert.review_date;
+                        currFactZoomedItem[action.meta.arg.rowToUpsert.review_date] = currFactItem[action.meta.arg.rowToUpsert.review_date];
+                    }
+
+                    if (action.meta.arg.rowToUpsert.reviewer) {
+                        currFactItem[action.meta.arg.rowToUpsert.reviewer] = action.meta.arg.rowToUpsert.reviewer;
+                        currFactZoomedItem[action.meta.arg.rowToUpsert.reviewer] = currFactItem[action.meta.arg.rowToUpsert.reviewer];
+                    }
+
                     state.currFacts.queryResponse.data = state.currFacts.queryResponse.data?.map(
-                        e => e.id === action.meta.arg.queryParams.id2ToFetch ?
-                            {
-                                ...e,
-                                ...action.meta.arg.rowToUpsert,
-                            } as ISbsFactType :
-                            e
+                        e => e.id === action.meta.arg.queryParams.id2ToFetch ? currFactItem : e
+                    );
+                    state.currFactZoomed.queryResponse.data = state.currFactZoomed.queryResponse.data?.map(
+                        e => e.id === action.meta.arg.queryParams.id2ToFetch ? currFactZoomedItem : e
                     );
                     SetFeatureThunkStateFulfilled(state, state.currFactZoomed, null);
                 },
@@ -258,6 +269,8 @@ export const productSlice = createAppSlice({
         selectResponseCurrFacts: state => state.currFacts.queryResponse,
         selectResponseCurrFactZoomed: state => state.currFactZoomed.queryResponse,
         selectScannedSessions: state => state.scannedSessions,
+        selectEditPropertyName: state => state.editPropertyName,
+        selectEditPropertyLabel: state => state.editPorpertyLabel,
         selectShowUnformattedDraft: state => state.showUnformattedDraft,
     },
 });
@@ -270,6 +283,7 @@ export const {
     actionResetFactZoomed,
     actionSetClearStateResponse,
     actionSetPagingIncreasingFacts,
+    actionSetEditPropertyName,
     actionSetShowUnformattedDraft,
     actionSetDetailLevelFacts,
     actionSetQueryParamsSessions,
@@ -293,5 +307,7 @@ export const {
     selectResponseCurrFacts,
     selectResponseCurrFactZoomed,
     selectScannedSessions,
+    selectEditPropertyName,
+    selectEditPropertyLabel,
     selectShowUnformattedDraft,
 } = productSlice.selectors;

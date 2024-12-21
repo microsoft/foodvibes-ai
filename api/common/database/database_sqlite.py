@@ -155,10 +155,10 @@ class SbsSqlite:
         cursor,
         table_name: str,
         where_expr: str,
-        item: SbsSessionUpdateRequest | SbsFactReviewRequest,
+        item,
     ):
         # Convert the item object to a dictionary
-        update_data = item.__dict__
+        update_data = item if isinstance(item, dict) else item.__dict__
 
         # Generate the SQL update statement
         set_clause = ", ".join([f"{key} = ?" for key in update_data.keys()])
@@ -375,7 +375,18 @@ class SbsSqlite:
     ):
         self.enter()
         SbsSqlite.db_update_common(
-            self.cursor, "sbs_fact", f"id={fact_id} and session_id={session_id}", item
+            self.cursor,
+            "sbs_fact",
+            f"id={fact_id} and session_id={session_id}",
+            {
+                "reviewer": item.reviewer,
+                "review_date": item.review_date,
+                item.property_name: (
+                    item.property_value_numeric
+                    if item.is_numeric
+                    else item.property_value
+                ),
+            },
         )
         self.exit()
 

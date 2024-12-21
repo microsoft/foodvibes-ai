@@ -111,13 +111,12 @@ const MainContent = () => {
                             <MenuIcon />
                         </IconButton>
                         <Box className="App-header">
-                            <a href="/" style={{ color: "white", position: "absolute", left: "60px", top: "0px" }}>
-                                <Box>
+                            <a href="/" style={{ color: "white", position: "absolute", left: "60px", top: "0px", height: "48px", }}>
+                                <Box sx={{ height: "48px" }}>
                                     <img
                                         src={logo}
                                         className={"App-logo"}
                                         height={26}
-                                        width={windowWidth > 480 ? 80.97 : 0}
                                         alt="logo"
                                         style={{
                                             borderWidth: windowWidth > 480 ? 1 : 0,

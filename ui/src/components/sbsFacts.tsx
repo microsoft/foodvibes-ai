@@ -1,16 +1,18 @@
 import FormatClearIcon from '@mui/icons-material/FormatClear';
 import ZoomInIcon from '@material-ui/icons/ZoomIn';
+import EditIcon from '@mui/icons-material/Edit';
+import SaveIcon from '@mui/icons-material/Save';
 import { FormControl, InputLabel, makeStyles, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from "@material-ui/core";
 import { ISbsFactPutType, ISbsFactType, ISbsSessionType, QueryResponseType } from "@foodvibes/utils/commonTypes";
-import { Box, Stack, styled } from "@mui/system";
+import { Box, Stack, styled, width } from "@mui/system";
 import FvBoundaryMarker from "./FvBoundaryMarker";
 import react, { forwardRef, useEffect, useMemo, useRef, useState } from "react";
 import SbsButton from './sbsButton';
 import SbsToggle from './sbsToggle';
 import SbsSliderButtons from './sbsSliderButtons';
-import { KScoreLableAc, KScoreLableAcShort, KScoreLableCl, KScoreLableClShort, KScoreLableCn, KScoreLableCnShort, KScoreLableCp, KScoreLableCpShort, KScoreLableCr, KScoreLableCrShort } from '@foodvibes/utils/commonConstants';
+import { KLineHeight, KScoreLableAc, KScoreLableAcShort, KScoreLableCl, KScoreLableClShort, KScoreLableCn, KScoreLableCnShort, KScoreLableCp, KScoreLableCpShort, KScoreLableCr, KScoreLableCrShort } from '@foodvibes/utils/commonConstants';
+import { Button } from '@mui/material';
 
-const KLineHeight = 16;
 const useStyles = makeStyles({
     tableContainer: {
         // maxHeight: 440,
@@ -52,14 +54,21 @@ const useStyles = makeStyles({
 });
 const CompactTableRow = styled(TableRow)({
     verticalAlign: 'top',
-    // height: '36px',
     overflow: 'auto',
+});
+const CompactTableCellHeader = styled(TableCell)({
+    padding: '6px 8px 0',
+    fontSize: '12px',
+    verticalAlign: 'top',
+    fontWeight: 'bold',
+    backgroundColor: 'lavenderblush',
+    zIndex: 1,
 });
 const CompactTableCell0 = styled(TableCell)({
     padding: '6px 8px 0',
-    fontSize: '0.875rem',
+    fontSize: '12px',
     verticalAlign: 'top',
-    fontWeight: 'semi-bold',
+    fontWeight: '100',
     fontStyle: 'italic',
     position: 'sticky',
     left: 0,
@@ -68,64 +77,144 @@ const CompactTableCell0 = styled(TableCell)({
 });
 const CompactTableCell = styled(TableCell)({
     padding: '6px 8px 0',
-    fontSize: '0.875rem',
+    fontSize: '12px',
+    fontWeight: '100',
     verticalAlign: 'top',
     whiteSpace: "nowrap",
     overflow: "auto",
 });
-const getPayloadToPut = (fact: ISbsFactType, scores: ISbsFactPutType) => ({
-    score_correctness: scores.score_correctness ?? fact.score_correctness,
-    score_completeness: scores.score_completeness ?? fact.score_completeness,
-    score_clarity: scores.score_clarity ?? fact.score_clarity,
-    score_accuracy: scores.score_accuracy ?? fact.score_accuracy,
-    score_consistency: scores.score_consistency ?? fact.score_consistency,
-    reviewer: scores.reviewer ?? fact.reviewer,
-    review_date: scores.review_date ?? fact.review_date,
-} as ISbsFactPutType
-);
+const CompactTableCellLong = styled(CompactTableCell)({
+    whiteSpace: "wrap",
+    maxHeight: "60px",
+    minHeight: "20px",
+    display: "block",
+});
+const ReviewTableRow = (
+    {
+        name,
+        value,
+        canEdit,
+        editPropertyName,
+        setEditPropertyName,
+    }: {
+        name: string;
+        value: string;
+        canEdit?: boolean;
+        editPropertyName: string | null;
+        setEditPropertyName: (newName: string | null) => void;
+    }
+) => {
+    const label: string = useMemo(() => name.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase()), [name]);
+
+    return (
+        <>
+            <CompactTableRow style={{ height: "36px" }}>
+                <CompactTableCell0>
+                    <>
+                        {label}
+                        {canEdit ?
+                            <SbsToggle
+                                selected={editPropertyName === name}
+                                style={{
+                                    cursor: 'pointer',
+                                    position: 'absolute',
+                                    top: '0px',
+                                    right: '-6px',
+                                    border: 0,
+                                }}
+                                clicktCb={(newValue: boolean, arg?: string | number) => {
+                                    setEditPropertyName(newValue ? arg as string : null);
+                                }}
+                                clicktCbArg={name}
+                                title='Edit'
+                            >
+                                <EditIcon />
+                            </SbsToggle> :
+                            null
+                        }
+                    </>
+                </CompactTableCell0>
+                <CompactTableCellLong>{value}</CompactTableCellLong>
+            </CompactTableRow>
+        </>
+    );
+};
 const ReviewTable = (
-    { data }: { data: ISbsFactType }
+    {
+        fact,
+        factPatchCb,
+        editPropertyName,
+        setEditPropertyName,
+    }: {
+        fact: ISbsFactType;
+        factPatchCb: (id: number, payload: ISbsFactPutType) => void;
+        editPropertyName: string | null;
+        setEditPropertyName: (newName: string | null) => void;
+    }
 ) => (
-    <TableContainer component={Paper}>
-        <Table size="small">
-            <TableHead>
-                <CompactTableRow>
-                    <CompactTableCell><strong>Field</strong></CompactTableCell>
-                    <CompactTableCell><strong>Value</strong></CompactTableCell>
-                </CompactTableRow>
-            </TableHead>
-            <TableBody>
-                {Object.entries(data).filter(([key, value]) =>
-                    ![
-                        'id',
-                        'session_id',
-                        'score_correctness',
-                        'score_completeness',
-                        'score_clarity',
-                        'score_accuracy',
-                        'score_consistency',
-                        'score_relevance',
-                        'document_text_reference',
-                        'draft'
-                    ].find(e => e === key)).map(([key, value]) => (
-                        <CompactTableRow key={key} style={{ height: "36px" }}>
-                            <CompactTableCell0>{key.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase())}</CompactTableCell0>
-                            <CompactTableCell>{value}</CompactTableCell>
-                        </CompactTableRow>
-                    ))}
-            </TableBody>
-        </Table>
-    </TableContainer>
+    <>
+        <TableContainer component={Paper}>
+            <Table size="small">
+                <TableHead>
+                    <CompactTableRow>
+                        <CompactTableCellHeader>Scores</CompactTableCellHeader>
+                    </CompactTableRow>
+                </TableHead>
+                <TableBody>
+                    <CompactTableRow>
+                        <CompactTableCell>
+                            <SbsFactScorePicker fact={fact} isHorizontal={false} factPatchCb={factPatchCb} />
+                        </CompactTableCell>
+                    </CompactTableRow>
+                </TableBody>
+            </Table>
+        </TableContainer>
+        <TableContainer component={Paper}>
+            <Table size="small">
+                <TableHead>
+                    <CompactTableRow>
+                        <CompactTableCellHeader>Property</CompactTableCellHeader>
+                        <CompactTableCellHeader>Value</CompactTableCellHeader>
+                    </CompactTableRow>
+                </TableHead>
+                <TableBody>
+                    {Object.entries(fact).filter(([key, value]) =>
+                        ![
+                            'id',
+                            'session_id',
+                            'score_correctness',
+                            'score_completeness',
+                            'score_clarity',
+                            'score_accuracy',
+                            'score_consistency',
+                            'score_relevance',
+                            'document_text_reference',
+                            'draft',
+                            'draft_unjsonified',
+                        ].find(e => e === key)).map(([key, value]) => (
+                            <ReviewTableRow
+                                key={key}
+                                name={key}
+                                value={value as string}
+                                canEdit={key === 'main_clause' || key === 'content' || key === 'explanation_completeness'}
+                                editPropertyName={editPropertyName}
+                                setEditPropertyName={setEditPropertyName}
+                            />
+                        ))}
+                </TableBody>
+            </Table>
+        </TableContainer>
+    </>
 );
 const SbsFactScorePicker = (
     {
         fact,
         isHorizontal,
-        scoreChangeCb,
+        factPatchCb,
     }: {
         fact: ISbsFactType;
         isHorizontal: boolean;
-        scoreChangeCb: (id: number, scores: ISbsFactPutType) => void;
+        factPatchCb: (id: number, payload: ISbsFactPutType) => void;
     }
 ) => {
     const sliderConfigs = useMemo(() => [
@@ -176,9 +265,11 @@ const SbsFactScorePicker = (
                 caption={config.caption}
                 style={{ margin: '0' }}
                 changeCb={(value) => {
-                    scoreChangeCb(fact.id, getPayloadToPut(fact, {
-                        [config.scoreKey]: value as number,
-                    } as ISbsFactPutType));
+                    factPatchCb(fact.id, {
+                        property_name: config.scoreKey,
+                        is_numeric: true,
+                        property_value_numeric: value as number
+                    } as ISbsFactPutType);
                 }}
             />
         ))}
@@ -216,11 +307,12 @@ const SbsFactCell = (
                 value={body}
                 InputProps={{
                     readOnly: true,
-                    style: { fontSize: "12px", padding: "4px 8px", color: "black", backgroundColor, lineHeight: `${KLineHeight}px` },
+                    style: { fontSize: "12px", padding: "0", color: "black", backgroundColor, lineHeight: `${KLineHeight}px` },
                 }}
                 variant="standard"
                 fullWidth
                 classes={{ root: useStyles().customOutlinedInputRoot }}
+                style={{ padding: "4px 8px", backgroundColor, }}
             />
         </FormControl>
     </Box>
@@ -232,10 +324,12 @@ const SbsFactRow = (
         currFactZoomed,
         pagingState,
         setPagingState,
-        scoreChangeCb,
+        factPatchCb,
         zoomCb,
         fact,
         idx,
+        editPropertyName,
+        setEditPropertyName,
         showUnformattedDraft,
     }: {
         height: number;
@@ -243,10 +337,12 @@ const SbsFactRow = (
         currFactZoomed: QueryResponseType<ISbsFactType>;
         pagingState: number;
         setPagingState: (value: number) => void;
-        scoreChangeCb: (id: number, scores: ISbsFactPutType) => void;
+        factPatchCb: (id: number, payload: ISbsFactPutType) => void;
         zoomCb: (id: number) => void;
         fact: ISbsFactType;
         idx: number;
+        editPropertyName: string | null;
+        setEditPropertyName: (newName: string | null) => void;
         showUnformattedDraft: boolean;
     }
 ) => {
@@ -321,7 +417,7 @@ const SbsFactRow = (
                         textAlign: "left",
                     }}>
                         <Box sx={{ padding: "0", margin: "0", display: "inline-flex", }}>
-                            <SbsFactScorePicker fact={fact} isHorizontal={true} scoreChangeCb={scoreChangeCb} />
+                            <SbsFactScorePicker fact={fact} isHorizontal={true} factPatchCb={factPatchCb} />
                         </Box>
                         <Box sx={{ padding: "0", display: "inline-flex", }}>
                             <SbsToggle
@@ -346,17 +442,125 @@ const SbsFactRow = (
                         </Box>
                     </Box>
                     {zoomedCurr ?
-                        <>
-                            <SbsFactScorePicker fact={fact} isHorizontal={false} scoreChangeCb={scoreChangeCb} />
-                            <Box sx={{ padding: "24px 0 0", maxWidth: "360px" }}>
-                                <ReviewTable data={fact} />
-                            </Box>
-                        </> : null
+                        <Box sx={{ padding: "12px 0 0", maxWidth: "360px" }}>
+                            <ReviewTable
+                                fact={fact}
+                                factPatchCb={factPatchCb}
+                                editPropertyName={editPropertyName}
+                                setEditPropertyName={setEditPropertyName}
+                            />
+                        </Box> :
+                        null
                     }
                 </TableCell>
             </TableRow>
             <span ref={zoomRefEnd}></span>
         </>
+    );
+};
+const ReviewTableCellEdit = (
+    {
+        name,
+        label,
+        value,
+        changeCb,
+    }: {
+        name: string;
+        label: string;
+        value: string;
+        changeCb: (value: string) => void;
+    }
+) => {
+    const [textValue, setTextValue] = useState<string>(value);
+
+    return (
+        <Box sx={{
+            display: "block",
+            position: "absolute",
+            width: "360px",
+            height: "200px",
+            bottom: "32px",
+            right: "8px",
+            margin: "0 auto",
+            textAlign: "left",
+            border: "2px solid red",
+            padding: "8px",
+            overflow: "auto",
+            backgroundColor: "lightyellow",
+            color: "black",
+            whiteSpace: "nowrap",
+            borderRadius: "4px",
+            fontSize: "12px",
+            zIndex: 3,
+        }}>
+            <Box component="div" sx={{
+                display: "flex",
+                borderRadius: "8px",
+                border: 0,
+                background: '#fff',
+            }}>
+                <Box component="span" sx={{
+                    display: "flex",
+                    float: "left",
+                    width: "100%",
+                    fontSize: '12px',
+                    verticalAlign: 'top',
+                    fontWeight: '100',
+                    fontStyle: 'italic',
+
+                }}>{label}</Box>
+                <Box component="span" sx={{ display: "flex", float: "right", margin: "0 16px 0 0" }}>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        startIcon={<SaveIcon />}
+                        sx={{
+                            padding: '2px 6px',
+                            fontSize: '10px',
+                            minWidth: 'auto',
+                        }}
+                        onClick={() => {
+                            changeCb(textValue);
+                        }}
+                    >
+                        Save
+                    </Button>
+                </Box>
+            </Box>
+            <TextField
+                id="outlined-editable-input"
+                multiline
+                minRows={4}
+                // maxRows={20}
+                value={textValue}
+                onChange={(e) => {
+                    setTextValue(e.target.value);
+                }}
+                style={{
+                    border: "0",
+                    width: '344px',
+                    height: '152px',
+                    overflowY: 'auto',
+                    verticalAlign: "top",
+                }}
+                InputProps={{
+                    style: {
+                        display: "block",
+                        verticalAlign: "top",
+                        width: '344px',
+                        height: '152px',
+                        overflowY: 'auto',
+                        fontSize: "12px",
+                        padding: "0",
+                        color: "black",
+                        backgroundColor: "lightgreen", // "lightyellow",
+                        lineHeight: `${KLineHeight}px`,
+                    },
+                }}
+                variant="standard"
+                fullWidth
+            />
+        </Box>
     );
 };
 const SbsFacts = forwardRef((
@@ -368,9 +572,12 @@ const SbsFacts = forwardRef((
         currSessionZoomed,
         pagingState,
         setPagingState,
-        scoreChangeCb,
+        factPatchCb,
         zoomed,
         zoomCb,
+        editPropertyName,
+        setEditPropertyName,
+        editPropertyLabel,
         showUnformattedDraft,
         setShowUnformattedDraft,
     }: {
@@ -381,9 +588,12 @@ const SbsFacts = forwardRef((
         currSessionZoomed: ISbsSessionType | undefined;
         pagingState: number;
         setPagingState: (value: number) => void;
-        scoreChangeCb: (id: number, scores: ISbsFactPutType) => void;
+        factPatchCb: (id: number, payload: ISbsFactPutType) => void;
         zoomed: boolean;
         zoomCb: (id: number) => void;
+        editPropertyName: string | null;
+        editPropertyLabel: string;
+        setEditPropertyName: (newName: string | null) => void;
         showUnformattedDraft: boolean;
         setShowUnformattedDraft: (newState: boolean) => void;
     }
@@ -392,72 +602,92 @@ const SbsFacts = forwardRef((
     const classes = useStyles();
 
     return (
-        <Stack ref={ref} spacing={2}
-            style={{
-                height,
-                width: "100%",
-                overflow: 'auto',
-                padding: '6px 0 0 0'
-            }}
-        >
-            <Box sx={{ padding: "0 16px", backgroundColor: "lavenderblush" }}>
-                Fact Count: <strong>{currFacts?.meta?.row_count}</strong> -- Session: <strong>{currFacts?.meta?.query_params?.global_filter}</strong>
-                <SbsButton caption="View Session List" style={{ float: "right" }} clicktCb={showSessions} />
-            </Box>
-            <TableContainer component={Paper} className={classes.tableContainer} style={{ width: '100%', margin: 'auto', height: `${height}px`, }}>
-                <Table stickyHeader>
-                    <TableHead>
-                        <TableRow className={classes.stickyHeader}>
-                            <TableCell className={classes.compactCell}>Reference</TableCell>
-                            <TableCell className={classes.compactCell}>Draft
-                                <SbsToggle
-                                    title={showUnformattedDraft ? "Show Unformatted Draft" : "Show Formatted Draft"}
-                                    selected={showUnformattedDraft}
-                                    style={{
-                                        cursor: 'pointer',
-                                        position: 'relative',
-                                        top: '0px',
-                                        right: '0px',
-                                        margin: '0 0 0 8px',
-                                    }}
-                                    clicktCb={(newValue: boolean, arg?: string | number) => {
-                                        setShowUnformattedDraft(newValue);
-                                    }}
-                                >
-                                    <FormatClearIcon />
-                                </SbsToggle>
-                            </TableCell>
-                            <TableCell className={classes.compactCell2}>Controls</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {(currFacts?.data?.map((fact: ISbsFactType) => (
-                            fact.id === currFactZoomed?.data?.[0].id
-                                ? ({
-                                    ...fact,
-                                    document_text_reference: currFactZoomed?.data[0].document_text_reference,
-                                    draft: currFactZoomed?.data[0].draft,
-                                    draft_unjsonified: currFactZoomed?.data[0].draft_unjsonified,
-                                }) : fact
-                        )))?.map((fact: ISbsFactType, idx: number) => (
-                            <SbsFactRow
-                                key={`factRow${idx}`}
-                                height={height}
-                                currFacts={currFacts}
-                                currFactZoomed={currFactZoomed}
-                                pagingState={pagingState}
-                                setPagingState={setPagingState}
-                                scoreChangeCb={scoreChangeCb}
-                                zoomCb={zoomCb}
-                                fact={fact}
-                                idx={idx}
-                                showUnformattedDraft={showUnformattedDraft}
-                            />
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-        </Stack >
+        <>
+            {editPropertyName?.length && currFactZoomed?.data?.[0]?.id ?
+                <ReviewTableCellEdit
+                    name={editPropertyName}
+                    label={editPropertyLabel}
+                    value={currFactZoomed.data[0][editPropertyName]}
+                    changeCb={(value: string) => {
+                        if (currFactZoomed?.data?.[0]?.id) {
+                            factPatchCb(currFactZoomed?.data?.[0]?.id, {
+                                property_name: editPropertyName,
+                                property_value: value
+                            } as ISbsFactPutType);
+                        }
+                    }}
+                />
+                : null
+            }
+            <Stack ref={ref} spacing={2}
+                style={{
+                    height,
+                    width: "100%",
+                    overflow: 'auto',
+                    padding: '6px 0 0 0'
+                }}
+            >
+                <Box sx={{ padding: "0 16px", backgroundColor: "lavenderblush" }}>
+                    Fact Count: <strong>{currFacts?.meta?.row_count}</strong> -- Session: <strong>{currFacts?.meta?.query_params?.global_filter}</strong>
+                    <SbsButton caption="View Session List" style={{ float: "right" }} clicktCb={showSessions} />
+                </Box>
+                <TableContainer component={Paper} className={classes.tableContainer} style={{ width: '100%', margin: 'auto', height: `${height}px`, }}>
+                    <Table stickyHeader>
+                        <TableHead>
+                            <TableRow className={classes.stickyHeader}>
+                                <TableCell className={classes.compactCell}>Reference</TableCell>
+                                <TableCell className={classes.compactCell}>Draft
+                                    <SbsToggle
+                                        title={showUnformattedDraft ? "Unformatted view. Click to show Formatted Draft." : "Formatted view. Click to Show Unformatted Draft."}
+                                        selected={showUnformattedDraft}
+                                        style={{
+                                            cursor: 'pointer',
+                                            position: 'relative',
+                                            top: '0px',
+                                            right: '0px',
+                                            margin: '0 0 0 8px',
+                                        }}
+                                        clicktCb={(newValue: boolean, arg?: string | number) => {
+                                            setShowUnformattedDraft(newValue);
+                                        }}
+                                    >
+                                        <FormatClearIcon />
+                                    </SbsToggle>
+                                </TableCell>
+                                <TableCell className={classes.compactCell2}>Review</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {(currFacts?.data?.map((fact: ISbsFactType) => (
+                                fact.id === currFactZoomed?.data?.[0].id
+                                    ? ({
+                                        ...fact,
+                                        document_text_reference: currFactZoomed?.data[0].document_text_reference,
+                                        draft: currFactZoomed?.data[0].draft,
+                                        draft_unjsonified: currFactZoomed?.data[0].draft_unjsonified,
+                                    }) : fact
+                            )))?.map((fact: ISbsFactType, idx: number) => (
+                                <SbsFactRow
+                                    key={`factRow${idx}`}
+                                    height={height}
+                                    currFacts={currFacts}
+                                    currFactZoomed={currFactZoomed}
+                                    pagingState={pagingState}
+                                    setPagingState={setPagingState}
+                                    factPatchCb={factPatchCb}
+                                    zoomCb={zoomCb}
+                                    fact={fact}
+                                    idx={idx}
+                                    editPropertyName={editPropertyName}
+                                    setEditPropertyName={setEditPropertyName}
+                                    showUnformattedDraft={showUnformattedDraft}
+                                />
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            </Stack >
+        </>
     );
 });
 

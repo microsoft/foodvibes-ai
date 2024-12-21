@@ -255,7 +255,7 @@ const SbsSliderButtons = (
                     backgroundColor: "lavenderblush",
                     borderRadius: "4px",
                     fontSize: "12px",
-                    margin: isHorizontal ? "0" : "6px 0 0",
+                    margin: isHorizontal ? "0" : "0 0 6px",
                     padding: "0",
                     height: isHorizontal ? "22px" : "24px",
                     textAlign: "left",

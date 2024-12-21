@@ -77,7 +77,14 @@ async def sbs_sessions_scan(
 
         paths: List[sbs_session] = []
 
-        print(f"Scan argument is {commons.global_filter}")
+        print(
+            f"""Scan arguments are:
+global_filter: {commons.global_filter}
+id_to_fetch::: {commons.id_to_fetch}
+id2_to_fetch:: {commons.id2_to_fetch}
+pagination:::: {commons.pagination.page_index} {commons.pagination.page_size}
+"""
+        )
 
         if (commons.global_filter or "good").endswith(".jsonl"):
             pass

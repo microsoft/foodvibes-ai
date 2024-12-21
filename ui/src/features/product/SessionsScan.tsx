@@ -11,6 +11,8 @@ async function StreamData(dispatch: Dispatch, url: string, globalFilter: string)
     dispatch(actionScanSessionsStreamStart());
 
     try {
+        console.log(`Stream started for ${url} & ${globalFilter}`);
+
         const response = await fetch(ComposeUrl(url, QueryParamsInit({
             globalFilter,
         })));

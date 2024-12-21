@@ -179,6 +179,8 @@ export interface SubFeature<T> {
 }
 
 export interface FeatureSliceState<T1, T2> extends BaseSliceState {
+    editPropertyName: string | null;
+    editPorpertyLabel: string;
     showUnformattedDraft: boolean;
     scannedSessions: string[];
     currSessions: SubFeature<T1>;
@@ -301,43 +303,43 @@ export interface ILayoutTracker {
 
 export interface ISbsCommonType {
     id: number;
+}
+
+export interface ISbsReviewType {
     reviewer?: string;
     review_date?: string;
 }
 
-export interface ISbsSessionType extends ISbsCommonType {
+export interface ISbsSessionType extends ISbsCommonType, ISbsReviewType {
     fact_count: number;
     path: string;
     modified: string;
 }
 
+export interface ISbsFactPutType extends ISbsReviewType {
+    property_name: string;
+    is_numeric: boolean;
+    property_value: string;
+    property_value_numeric: number;
+}
+
 export interface ISbsFactType extends ISbsCommonType {
     session_id: number;
-    main_clause?: string;
     subclause_id?: string;
     subclause?: string;
-    content?: string;
-    explanation_completeness?: string;
     draft_id?: string;
     content_id?: string;
     document_text_reference?: string;
     draft?: string;
     draft_unjsonified?: string;
+    main_clause?: string;
+    content?: string;
+    explanation_completeness?: string;
     score_correctness?: number;
     score_completeness?: number;
     score_clarity?: number;
     score_accuracy?: number;
     score_consistency?: number;
-}
-
-export interface ISbsFactPutType {
-    score_correctness?: number;
-    score_completeness?: number;
-    score_clarity?: number;
-    score_accuracy?: number;
-    score_consistency?: number;
-    reviewer?: string;
-    review_date?: string;
 }
 
 export interface GeotrackType extends CommonCoordinates {

@@ -284,28 +284,26 @@ class SbsSessionUpdateRequest(SbsBaseRequest):
 
 
 class SbsFactReviewRequest(SbsBaseRequest):
-    score_correctness: int = 0
-    score_completeness: int = 0
-    score_clarity: int = 0
-    score_accuracy: int = 0
-    score_consistency: int = 0
+    property_name: str = ""
+    is_numeric: bool = False
+    property_value: str = ""
+    property_value_numeric: int = 0
 
     def __init__(
         self,
+        property_name: str = "",
+        is_numeric: bool = False,
+        property_value: str = "",
+        property_value_numeric: int = 0,
         reviewer: str = "",
         review_date: str = "",
-        score_correctness: int = 0,
-        score_completeness: int = 0,
-        score_clarity: int = 0,
-        score_accuracy: int = 0,
-        score_consistency: int = 0,
     ):
         super().__init__(reviewer, review_date)
-        self.score_correctness = score_correctness
-        self.score_completeness = score_completeness
-        self.score_clarity = score_clarity
-        self.score_accuracy = score_accuracy
-        self.score_consistency = score_consistency
+
+        self.property_name = property_name
+        self.is_numeric = is_numeric
+        self.property_value = property_value
+        self.property_value_numeric = property_value_numeric
 
 
 config = ConfigSingletonClass()
