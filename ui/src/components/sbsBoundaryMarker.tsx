@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react"
 
-const FvBoundaryMarker = ({ hasComeIntoViewCb }: { hasComeIntoViewCb: (isInView: boolean) => void }) => {
+const SbsBoundaryMarker = ({ hasComeIntoViewCb }: { hasComeIntoViewCb: (isInView: boolean) => void }) => {
     const refBoundaryMarker = useRef(null);
 
     useEffect(() => {
@@ -29,7 +29,7 @@ const FvBoundaryMarker = ({ hasComeIntoViewCb }: { hasComeIntoViewCb: (isInView:
     );
 };
 
-export default FvBoundaryMarker;
+export default SbsBoundaryMarker;
 
 // useEffect(() => {
 //     if (hasHitContentBottom) {

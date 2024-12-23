@@ -1,5 +1,5 @@
-import { GetRolesActive } from "@foodvibes/utils/commonFunctions";
-import { IconButtonAddReplace } from "@foodvibes/utils/commonStyles";
+import { GetRolesActive } from "@sbssrc/utils/commonFunctions";
+import { IconButtonAddReplace } from "@sbssrc/utils/commonStyles";
 import { Box } from "@mui/material";
 import clsx from "clsx";
 
@@ -16,7 +16,7 @@ const BadgeEntry = ({ label, value, title, }: { label: string | null; value: str
     </Box>
 );
 
-export const FvIdBadge = (
+export const SbsIdBadge = (
     {
         forceShowAll = false,
         assumedUsername = null,

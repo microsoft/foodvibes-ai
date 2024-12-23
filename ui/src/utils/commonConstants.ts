@@ -1,5 +1,5 @@
 export const KAppTitle = "Side-By-Side Document Viewer";
-export const KAppVersion = "20241218.0";
+export const KAppVersion = "20241223.0";
 export const KLedgerIdSearchTokenPrefix = "/ledger_id=";
 export const KLedgerIdSearchTokenSuffix = "/";
 export const KLedgerIdAltSearchTokenPrefix = "/ledger_id_alt=";
@@ -19,13 +19,7 @@ export const KApiStatusLoaded = "loaded";
 export const KApiStatusPreloaded = "preloaded";
 export const KApiStatusLoading = "loading";
 export const KApiStatusLocked = "locked";
-export const KStorageKeyGraphCompactMode = "fvGraphCompactMode";
-export const KStorageKeyGraphDirection = "fvGraphDirection";
-export const KStorageKeyHistoryTabIndex = "fvHistoryTabIndex";
-export const KStorageKeyLegendState = "fvLegendState";
-export const KStorageKeyOpacityPercent = "fvOpacityPercent";
-export const KStorageKeyDeforestationAbovePct = "fvDeforestationAbovePct";
-export const KStorageKeyZoomPercent = "fvZoomPercent";
+
 export const KLedgerTypeNone = "";
 export const KLedgerTypeScUser = "sc_user";
 export const KLedgerTypeScGroup = "sc_group";

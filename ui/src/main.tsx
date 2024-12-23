@@ -1,14 +1,14 @@
 // import React from "react";
 import { EventType, PublicClientApplication } from "@azure/msal-browser";
-import { MsalContext } from "@foodvibes/services/authCommon";
-import { MsalConfig } from "@foodvibes/services/authConfig";
+import { MsalContext } from "@sbssrc/services/authCommon";
+import { MsalConfig } from "@sbssrc/services/authConfig";
 import * as ReactDOM from "react-dom/client";
 import { Provider } from "react-redux";
 import { RouterProvider } from "react-router-dom";
 
 import { store } from "./app/store";
 import "./index.css";
-import { FvRouter } from "./routing/FvRouter";
+import { SbsRouter } from "./routing/SbsRouter";
 
 /**
  * MSAL should be instantiated outside of the component tree to prevent it from being re-instantiated on re-renders.
@@ -46,7 +46,7 @@ if (container) {
         // <React.StrictMode>
         <Provider store={store}>
             <MsalContext.Provider value={msalInstance}>
-                <RouterProvider router={FvRouter} />
+                <RouterProvider router={SbsRouter} />
             </MsalContext.Provider>
         </Provider>
         // </React.StrictMode>

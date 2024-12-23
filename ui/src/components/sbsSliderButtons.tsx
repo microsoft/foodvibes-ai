@@ -4,8 +4,8 @@ import {
     KScoreColor0Bc, KScoreColor1Bc, KScoreColor2Bc, KScoreColor3Bc, KScoreColor4Bc, KScoreColor5Bc,
     KScoreCaption0, KScoreCaption1, KScoreCaption2, KScoreCaption3, KScoreCaption4, KScoreCaption5,
 
-} from '@foodvibes/utils/commonConstants';
-import { HexToRgba } from '@foodvibes/utils/commonFunctions';
+} from '@sbssrc/utils/commonConstants';
+import { HexToRgba } from '@sbssrc/utils/commonFunctions';
 import { Dropdown, IDropdown, IDropdownOption } from '@fluentui/react/lib/Dropdown';
 
 const dropdownCommonStyles = {

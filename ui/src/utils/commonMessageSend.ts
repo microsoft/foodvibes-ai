@@ -1,6 +1,6 @@
-import { useAppDispatch } from "@foodvibes/app/hooks";
-import { actionSetCommonError } from "@foodvibes/app/mainSlice";
-import { CommonError } from "@foodvibes/utils/commonTypes";
+import { useAppDispatch } from "@sbssrc/app/hooks";
+import { actionSetCommonError } from "@sbssrc/app/mainSlice";
+import { CommonError } from "@sbssrc/utils/commonTypes";
 import { MakeErrorPayload } from "./commonFunctions";
 
 export default function CommonMessageSend(

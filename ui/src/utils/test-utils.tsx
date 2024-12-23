@@ -1,5 +1,5 @@
-import type { AppStore, RootState } from "@foodvibes/app/store";
-import { makeStore } from "@foodvibes/app/store";
+import type { AppStore, RootState } from "@sbssrc/app/store";
+import { makeStore } from "@sbssrc/app/store";
 import type { RenderOptions } from "@testing-library/react";
 import { render } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";

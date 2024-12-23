@@ -1,8 +1,8 @@
 import Box from "@mui/material/Box";
 import { useMemo } from "react";
 
-import "@foodvibes/App.css";
-import { FvIdBadge } from "@foodvibes/components/FvIdBadge";
+import "@sbssrc/App.css";
+import { SbsIdBadge } from "@sbssrc/components/SbsIdBadge";
 import {
     KMenuActionImpersonate,
     KMenuActionLogin,
@@ -17,13 +17,12 @@ import {
     KMenuLabelProduct,
     KMenuLabelTrackingProducts,
     KMenuLabelUserManagement
-} from "@foodvibes/utils/commonConstants";
-import { MenuItems } from "@foodvibes/utils/commonLookups";
-import { MenuItemType } from "@foodvibes/utils/commonTypes";
+} from "@sbssrc/utils/commonConstants";
+import { MenuItems } from "@sbssrc/utils/commonLookups";
+import { MenuItemType } from "@sbssrc/utils/commonTypes";
 import { Menu, MenuItem } from "@mui/material";
 
-
-export const FvMenu = (
+export const SbsMenu = (
     {
         handleClose,
         anchorEl,

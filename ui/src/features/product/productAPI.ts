@@ -1,11 +1,11 @@
-import { ComposeHttpHeaders, ComposeUrl, HaveError } from "@foodvibes/utils/commonFunctions";
+import { ComposeHttpHeaders, ComposeUrl, HaveError } from "@sbssrc/utils/commonFunctions";
 import {
     ISbsFactPutType,
     ISbsFactType,
     ISbsSessionType,
     QueryParamsType,
     QueryResponseApiType,
-} from "@foodvibes/utils/commonTypes";
+} from "@sbssrc/utils/commonTypes";
 import axios from "axios";
 
 export const sbsSessionsGet = async (queryParams: QueryParamsType) =>

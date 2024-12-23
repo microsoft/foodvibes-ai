@@ -21,7 +21,7 @@ export default defineConfig({
     },
     resolve: {
         alias: [
-            { find: "@foodvibes", replacement: resolve(__dirname, "./src") },
+            { find: "@sbssrc", replacement: resolve(__dirname, "./src") },
         ],
     },
 });

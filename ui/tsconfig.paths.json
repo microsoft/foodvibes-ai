@@ -2,7 +2,7 @@
     "compilerOptions": {
         "baseUrl": "./",
         "paths": {
-            "@foodvibes/*": ["./src/*"]
+            "@sbssrc/*": ["./src/*"]
         }
     }
 }

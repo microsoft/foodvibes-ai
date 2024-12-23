@@ -330,9 +330,9 @@ get_key_vault_secret_sub() {
 
     if [[ $apply_mask -gt 0 && -n $(echo "@database-password@adma-client-secret@" | grep "@${secret_name}@") ]]; then
         mask_value "$secret_value" "" 2
-    elif [[ $apply_mask -gt 0 && -n $(echo "@bingmaps-api-key@foodvibes-app-insights-instrumentation-key@adma-authority@" | grep "@${secret_name}@") ]]; then
+    elif [[ $apply_mask -gt 0 && -n $(echo "@bingmaps-api-key@sbssrc-app-insights-instrumentation-key@adma-authority@" | grep "@${secret_name}@") ]]; then
         mask_value "$secret_value" "" 1
-    elif [[ $apply_mask -gt 0 && -n $(echo "@foodvibes-connection-string@" | grep "@${secret_name}@") ]]; then
+    elif [[ $apply_mask -gt 0 && -n $(echo "@sbssrc-connection-string@" | grep "@${secret_name}@") ]]; then
         local final_value=""
         local -a flds
         IFS=';' read -r -a flds <<<"$secret_value"

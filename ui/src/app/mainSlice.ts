@@ -1,5 +1,5 @@
-import { createAppSlice } from "@foodvibes/app/createAppSlice";
-import { KApiStatusFulfilled, KBannerHeightMin } from "@foodvibes/utils/commonConstants";
+import { createAppSlice } from "@sbssrc/app/createAppSlice";
+import { KApiStatusFulfilled, KBannerHeightMin } from "@sbssrc/utils/commonConstants";
 import type {
     BaseSliceState,
     CommonCardType,
@@ -12,7 +12,7 @@ import type {
     ScGroupType,
     ScUserType,
     TrackingProductsType
-} from "@foodvibes/utils/commonTypes";
+} from "@sbssrc/utils/commonTypes";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
 export interface MainSliceState extends BaseSliceState {

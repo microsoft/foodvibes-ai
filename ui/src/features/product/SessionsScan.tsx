@@ -4,7 +4,7 @@ import {
     actionScanSessionsStreamSuccess,
     actionScanSessionsStreamError
 } from "./productSlice";
-import { ComposeUrl, QueryParamsInit } from "@foodvibes/utils/commonFunctions";
+import { ComposeUrl, QueryParamsInit } from "@sbssrc/utils/commonFunctions";
 
 
 async function StreamData(dispatch: Dispatch, url: string, globalFilter: string) {

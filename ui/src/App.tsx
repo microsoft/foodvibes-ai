@@ -5,21 +5,21 @@ import { useCallback, useEffect, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 
 import { FluentProvider, webLightTheme } from "@fluentui/react-components";
-import "@foodvibes/App.css";
-import { useAppDispatch, useAppSelector } from "@foodvibes/app/hooks";
+import "@sbssrc/App.css";
+import { useAppDispatch, useAppSelector } from "@sbssrc/app/hooks";
 import {
     actionClearCommonError,
     actionSetMainIsLoading,
     selectCommonErrors,
     selectMainIsLoading,
     selectUsername
-} from "@foodvibes/app/mainSlice";
-import { default as logo } from "@foodvibes/assets/logo.png";
-import { FvIdBadge } from "@foodvibes/components/FvIdBadge";
-import { FvMenu } from "@foodvibes/components/FvMenu";
-import FvMessageShow from "@foodvibes/components/FvMessageShow";
-import { selectProductIsLoading, selectScannedSessions } from "@foodvibes/features/product/productSlice";
-import { CommonError, ILayoutTracker } from "@foodvibes/utils/commonTypes";
+} from "@sbssrc/app/mainSlice";
+import { default as logo } from "@sbssrc/assets/logo.png";
+import { SbsIdBadge } from "@sbssrc/components/SbsIdBadge";
+import { SbsMenu } from "@sbssrc/components/sbsMenu";
+import SbsMessageShow from "@sbssrc/components/sbsMessageShow";
+import { selectLastIdFactZoomed, selectProductIsLoading, selectScannedSessions } from "@sbssrc/features/product/productSlice";
+import { CommonError, ILayoutTracker } from "@sbssrc/utils/commonTypes";
 import { Avatar, Backdrop, CircularProgress, CssBaseline, IconButton, Toolbar, Tooltip } from "@mui/material";
 import { closeSnackbar, SnackbarProvider } from "notistack";
 import { KAppTitle, KAppVersion } from "./utils/commonConstants";
@@ -33,6 +33,7 @@ const MainContent = () => {
     const commonErrors: CommonError[] = useAppSelector(selectCommonErrors);
     const mainIsLoading: boolean = useAppSelector(selectMainIsLoading);
     const productIsLoading: boolean = useAppSelector(selectProductIsLoading);
+    const lastIdFactZoomed: number = useAppSelector(selectLastIdFactZoomed);
     const scannedSessions: string[] = useAppSelector(selectScannedSessions);
     const username: string | null = useAppSelector(selectUsername);
     const setMainIsLoading = (loading: boolean) => dispatch(actionSetMainIsLoading(loading));
@@ -87,7 +88,7 @@ const MainContent = () => {
                 onClick={() => closeSnackbar()}
             >
                 <CssBaseline />
-                <FvMenu
+                <SbsMenu
                     handleClose={handleClose}
                     anchorEl={anchorEl}
                     open={open}
@@ -177,7 +178,7 @@ const MainContent = () => {
                             top: "6px",
                             right: "60px",
                         }}>
-                            <FvIdBadge assumedUsername={username} assumedAccessMask={0} />
+                            <SbsIdBadge assumedUsername={username} assumedAccessMask={0} />
                         </Box>
                     </Toolbar>
                 </AppBar>
@@ -195,14 +196,14 @@ const MainContent = () => {
             >
                 <Outlet context={{ outletTracker, titleTracker, bodyTracker }} />
             </Box>
-            <FvMessageShow
+            <SbsMessageShow
                 clearErrorsCb={clearErrorsCb}
                 commonErrors={commonErrors}
             />
             <Backdrop
-                sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 110 }}
+                sx={{ backgroundColor: 'rgb(255, 255, 255, 0.4)', color: 'navy', zIndex: (theme) => theme.zIndex.drawer + 110 }}
                 open={
-                    mainIsLoading || scannedSessions?.length > 0 //|| productIsLoading
+                    mainIsLoading || scannedSessions?.length > 0 || (productIsLoading && !lastIdFactZoomed )
                 }
             >
                 <CircularProgress color="inherit" />

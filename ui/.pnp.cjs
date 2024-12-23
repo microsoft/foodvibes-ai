@@ -11,14 +11,14 @@ const RAW_RUNTIME_STATE =
   ],\
   "dependencyTreeRoots": [\
     {\
-      "name": "food-vibes-2024",\
+      "name": "side-by-side-app",\
       "reference": "workspace:."\
     }\
   ],\
   "enableTopLevelFallback": true,\
   "ignorePatternData": "(^(?:\\\\.yarn\\\\/sdks(?:\\\\/(?!\\\\.{1,2}(?:\\\\/|$))(?:(?:(?!(?:^|\\\\/)\\\\.{1,2}(?:\\\\/|$)).)*?)|$))$)",\
   "fallbackExclusionList": [\
-    ["food-vibes-2024", ["workspace:."]]\
+    ["side-by-side-app", ["workspace:."]]\
   ],\
   "fallbackPool": [\
   ],\
@@ -10279,11 +10279,11 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }]\
     ]],\
-    ["food-vibes-2024", [\
+    ["side-by-side-app", [\
       ["workspace:.", {\
         "packageLocation": "./",\
         "packageDependencies": [\
-          ["food-vibes-2024", "workspace:."],\
+          ["side-by-side-app", "workspace:."],\
           ["@azure/msal-browser", "npm:3.18.0"],\
           ["@azure/msal-react", "virtual:8b79dd5e57214c62ae9f6fe8663a1527ff3a6c5f516059ed8b2c1392fbfc45cfc04b883c4c146c5c0780300b93056c991399dfdc2780147875f1fccdf8e30505#npm:2.0.20"],\
           ["@emotion/react", "virtual:8b79dd5e57214c62ae9f6fe8663a1527ff3a6c5f516059ed8b2c1392fbfc45cfc04b883c4c146c5c0780300b93056c991399dfdc2780147875f1fccdf8e30505#npm:11.11.4"],\

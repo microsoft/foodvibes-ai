@@ -1,10 +1,10 @@
 import { useSnackbar } from "notistack";
 
-import { GetColorVariant } from "@foodvibes/utils/commonFunctions";
-import { CommonError, CommonErrorLevel } from "@foodvibes/utils/commonTypes";
+import { GetColorVariant } from "@sbssrc/utils/commonFunctions";
+import { CommonError, CommonErrorLevel } from "@sbssrc/utils/commonTypes";
 import { useEffect } from "react";
 
-export default function FvMessageShow({
+export default function SbsMessageShow({
     clearErrorsCb,
     commonErrors,
 }: {

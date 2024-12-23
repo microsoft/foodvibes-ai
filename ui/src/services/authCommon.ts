@@ -1,5 +1,5 @@
 import { IPublicClientApplication, PublicClientApplication } from "@azure/msal-browser";
-import { loginRequest } from "@foodvibes/services/authConfig";
+import { loginRequest } from "@sbssrc/services/authConfig";
 import { jwtDecode } from 'jwt-decode';
 import { createContext } from "react";
 

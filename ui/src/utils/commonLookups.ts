@@ -1,5 +1,5 @@
-import { default as iconHome } from "@foodvibes/assets/logo.png";
-import iconProduct from "@foodvibes/assets/product.png";
+import { default as iconHome } from "@sbssrc/assets/logo.png";
+import iconProduct from "@sbssrc/assets/product.png";
 import {
     KMenuLabelHome,
     KMenuLabelProduct,

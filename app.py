@@ -11,7 +11,7 @@ Returns:
 import uvicorn
 from fastapi.responses import RedirectResponse
 from api.common.config import logger
-from api.common.fv_logging import setup_logger
+from api.common.sbs_logging import setup_logger
 import api.sbs_all  # noqa: F401
 from api.common.types import config
 

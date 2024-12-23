@@ -14,7 +14,7 @@ from azure.identity import AzureCliCredential, ManagedIdentityCredential
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.common.fv_logging import fastapi_lifespan
+from api.common.sbs_logging import fastapi_lifespan
 
 title = "SBS Documents API"
 logger = logging.getLogger(title)
@@ -27,15 +27,6 @@ class ConfigSingletonClass(object):
     """Singleton configuration helper class"""
 
     app: FastAPI
-
-    # @classmethod
-    # def test_credential_retrieve(
-    #     cls, credential: AzureCliCredential | ManagedIdentityCredential
-    # ):
-    #     test_client = SecretClient(
-    #         vault_url=DEFAULT_KEY_VAULT_URL, credential=credential
-    #     )
-    #     test_client.get_secret(DEFAULT_FOODVIBES_DB_CONN_STR)
 
     @classmethod
     def acquire_credential(cls) -> AzureCliCredential | ManagedIdentityCredential:

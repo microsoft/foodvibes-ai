@@ -8,7 +8,7 @@ import Typography from "@mui/material/Typography";
 import * as React from "react";
 import { useState } from "react";
 
-export default function FvPopper(contentCb: () => JSX.Element) {
+export default function SbsPopper(contentCb: () => JSX.Element) {
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
     const [open, setOpen] = useState(false);
     const [placement, setPlacement] = useState<PopperPlacementType>();

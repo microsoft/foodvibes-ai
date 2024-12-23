@@ -1,5 +1,5 @@
-import { createAppSlice } from "@foodvibes/app/createAppSlice";
-import { KLedgerTypeProduct } from "@foodvibes/utils/commonConstants";
+import { createAppSlice } from "@sbssrc/app/createAppSlice";
+import { KLedgerTypeProduct } from "@sbssrc/utils/commonConstants";
 import {
     DetailLevelStorageSet,
     GetFeatureInitialState,
@@ -8,7 +8,7 @@ import {
     SetFeatureThunkStateFulfilled,
     SetFeatureThunkStatePending,
     SetFeatureThunkStateRejected,
-} from "@foodvibes/utils/commonFunctions";
+} from "@sbssrc/utils/commonFunctions";
 import {
     CommonDetailLevel,
     FeatureSliceState,
@@ -17,7 +17,7 @@ import {
     ISbsSessionType,
     QueryParamsType,
     QueryResponseApiType,
-} from "@foodvibes/utils/commonTypes";
+} from "@sbssrc/utils/commonTypes";
 import { PayloadAction } from "@reduxjs/toolkit";
 import { sbsFactGet, sbsFactPatch, sbsSessionsGet } from "./productAPI";
 

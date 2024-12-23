@@ -1,14 +1,12 @@
-import { useAppDispatch, useAppSelector } from "@foodvibes/app/hooks";
-import styles from "@foodvibes/components/FvCommon.module.css";
+import { useAppDispatch, useAppSelector } from "@sbssrc/app/hooks";
 import { useEffect, useState } from "react";
 import {
     NowTimestamp,
-    QueryParamsCompareToQueryParamsApi,
     QueryParamsInit
-} from "@foodvibes/utils/commonFunctions";
+} from "@sbssrc/utils/commonFunctions";
 import {
     default as CommonMessageSend,
-} from "@foodvibes/utils/commonMessageSend";
+} from "@sbssrc/utils/commonMessageSend";
 import {
     CommonError,
     ILayoutTracker,
@@ -17,16 +15,13 @@ import {
     ISbsSessionType,
     QueryParamsType,
     QueryResponseType
-} from "@foodvibes/utils/commonTypes";
-import { Box, Button, Stack, TextField } from "@mui/material";
+} from "@sbssrc/utils/commonTypes";
+import { Box } from "@mui/material";
 import {
     actionSelectCurrFacts,
-    actionSetPagingIncreasingFacts,
     actionSetQueryParamsFacts,
     actionPatchProduct,
-    selectPagingIncreasing,
     selectGetQueryParamsCurrFacts,
-    selectProductIsLoading,
     selectResponseCurrFacts,
     actionSetClearStateResponse,
     actionSelectCurrSessions,
@@ -48,10 +43,9 @@ import {
     selectEditPropertyLabel,
 } from "./productSlice";
 import { useOutletContext } from "react-router";
-import SbsSessions from "@foodvibes/components/sbsSessions";
-import SbsFacts from "@foodvibes/components/sbsFacts";
+import SbsSessions from "@sbssrc/components/sbsSessions";
+import SbsFacts from "@sbssrc/components/sbsFacts";
 import StreamData from "./SessionsScan";
-import { KLineHeight } from "@foodvibes/utils/commonConstants";
 
 export const Product = () => {
     const context = useOutletContext<{ outletTracker: ILayoutTracker, titleTracker: ILayoutTracker, bodyTracker: ILayoutTracker }>();

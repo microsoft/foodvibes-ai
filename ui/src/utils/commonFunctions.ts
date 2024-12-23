@@ -77,7 +77,7 @@ export const ComposeIdKey = (
 ): string => `${prefix}${ledgerId}:${txId}`;
 
 export const DetailLevelStorageKeyCompose = (idx: number, suffix: string) =>
-    `fvDetails${idx}_${suffix}`;
+    `sbsDetails${idx}_${suffix}`;
 
 export const DetailLevelStorageGet = (
     idx: number,

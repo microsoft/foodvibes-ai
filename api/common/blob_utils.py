@@ -22,7 +22,7 @@ from azure.storage.blob import (
     generate_blob_sas,
 )
 
-from api.common.fv_logging import setup_logger
+from api.common.sbs_logging import setup_logger
 from api.common.types import config
 
 # Set up logging
