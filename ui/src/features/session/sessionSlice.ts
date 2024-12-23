@@ -1,5 +1,5 @@
 import { createAppSlice } from "@sbssrc/app/createAppSlice";
-import { KLedgerTypeProduct } from "@sbssrc/utils/commonConstants";
+import { KLedgerTypeSession } from "@sbssrc/utils/commonConstants";
 import {
     DetailLevelStorageSet,
     GetFeatureInitialState,
@@ -19,13 +19,13 @@ import {
     QueryResponseApiType,
 } from "@sbssrc/utils/commonTypes";
 import { PayloadAction } from "@reduxjs/toolkit";
-import { sbsFactGet, sbsFactPatch, sbsSessionsGet } from "./productAPI";
+import { sbsFactGet, sbsFactPatch, sbsSessionsGet } from "./sessionApi";
 
-const name: string = KLedgerTypeProduct;
+const name: string = KLedgerTypeSession;
 const initialState: FeatureSliceState<ISbsSessionType, ISbsFactType> =
     GetFeatureInitialState<ISbsSessionType, ISbsFactType>();
 
-export const productSlice = createAppSlice({
+export const sessionSlice = createAppSlice({
     name,
     initialState,
     reducers: create => ({
@@ -208,7 +208,7 @@ export const productSlice = createAppSlice({
                 },
             },
         ),
-        actionPatchProduct: create.asyncThunk(
+        actionPatchSession: create.asyncThunk(
             async ({
                 queryParams,
                 rowToUpsert,
@@ -258,7 +258,7 @@ export const productSlice = createAppSlice({
     }),
     selectors: {
         selectUpsertState: state => state.currFactZoomed.upsertState,
-        selectProductIsLoading: state => state.loading,
+        selectSessionIsLoading: state => state.loading,
         // selectDetailLevelA: state => state.detailLevel,
         selectGetQueryParamscurrSessions: state => state.currSessions.queryParams,
         selectGetQueryParamsCurrFacts: state => state.currFacts.queryParams,
@@ -293,11 +293,11 @@ export const {
     actionSelectCurrSessions,
     actionSelectCurrFacts,
     actionSelectCurrFactZoomed,
-    actionPatchProduct,
-} = productSlice.actions;
+    actionPatchSession: actionPatchSession,
+} = sessionSlice.actions;
 export const {
     selectUpsertState,
-    selectProductIsLoading,
+    selectSessionIsLoading,
     selectGetQueryParamscurrSessions,
     selectGetQueryParamsCurrFacts,
     selectGetQueryParamscurrFactZoomed,
@@ -312,4 +312,4 @@ export const {
     selectEditPropertyName,
     selectEditPropertyLabel,
     selectShowUnformattedDraft,
-} = productSlice.selectors;
+} = sessionSlice.selectors;

@@ -20,7 +20,7 @@ import { Box } from "@mui/material";
 import {
     actionSelectCurrFacts,
     actionSetQueryParamsFacts,
-    actionPatchProduct,
+    actionPatchSession,
     selectGetQueryParamsCurrFacts,
     selectResponseCurrFacts,
     actionSetClearStateResponse,
@@ -29,7 +29,6 @@ import {
     selectResponseCurrSessions,
     actionSetQueryParamsSessions,
     actionResetFacts,
-    selectLastIdFacts,
     selectLastIdFactZoomed,
     selectLastIdSessions,
     actionSelectCurrFactZoomed,
@@ -41,19 +40,16 @@ import {
     actionSetEditPropertyName,
     selectEditPropertyName,
     selectEditPropertyLabel,
-} from "./productSlice";
+} from "./sessionSlice";
 import { useOutletContext } from "react-router";
-import SbsSessions from "@sbssrc/components/sbsSessions";
-import SbsFacts from "@sbssrc/components/sbsFacts";
-import StreamData from "./SessionsScan";
+import SbsSessions from "@sbssrc/components/SbsSessions";
+import SbsFacts from "@sbssrc/components/SbsFacts";
+import StreamData from "./SessionScan";
 
-export const Product = () => {
+export const Session = () => {
     const context = useOutletContext<{ outletTracker: ILayoutTracker, titleTracker: ILayoutTracker, bodyTracker: ILayoutTracker }>();
     const dispatch = useAppDispatch();
-    // const isLoading: boolean = useAppSelector(selectProductIsLoading);
-    // const pagingIncreasing: boolean = useAppSelector(selectPagingIncreasing);
     const lastIdSessions: number = useAppSelector(selectLastIdSessions);
-    const lastIdFacts: number = useAppSelector(selectLastIdFacts);
     const lastIdFactZoomed: number = useAppSelector(selectLastIdFactZoomed);
     const queryParamsCurrSessions: QueryParamsType = useAppSelector(selectGetQueryParamscurrSessions);
     const queryParamsCurrFacts: QueryParamsType = useAppSelector(selectGetQueryParamsCurrFacts);
@@ -74,7 +70,7 @@ export const Product = () => {
     const selectCurrSessions = (queryParams: QueryParamsType) => dispatch(actionSelectCurrSessions({ queryParams }));
     const selectCurrFacts = (queryParams: QueryParamsType) => dispatch(actionSelectCurrFacts({ queryParams }));
     const selectCurrFactZoomed = (queryParams: QueryParamsType) => dispatch(actionSelectCurrFactZoomed({ queryParams }));
-    const patchFact = (queryParams: QueryParamsType, rowToUpsert: ISbsFactPutType) => dispatch(actionPatchProduct({ queryParams, rowToUpsert }));
+    const patchFact = (queryParams: QueryParamsType, rowToUpsert: ISbsFactPutType) => dispatch(actionPatchSession({ queryParams, rowToUpsert }));
     const [pagingStateSessions, setPagingStateSessions] = useState<number>(0);
     const [pagingStateFacts, setPagingStateFacts] = useState<number>(0);
     const [doLoadSessions, setDoLoadSessions] = useState<boolean>(false);

@@ -2,21 +2,9 @@ import Box from "@mui/material/Box";
 import { useMemo } from "react";
 
 import "@sbssrc/App.css";
-import { SbsIdBadge } from "@sbssrc/components/SbsIdBadge";
 import {
-    KMenuActionImpersonate,
-    KMenuActionLogin,
-    KMenuActionLogout,
-    KMenuLabelCircleConfiguration,
-    KMenuLabelGeotrack,
-    KMenuLabelGroupManagement,
     KMenuLabelHome,
-    KMenuLabelImpersonate,
-    KMenuLabelLogIn,
-    KMenuLabelLogOut,
-    KMenuLabelProduct,
-    KMenuLabelTrackingProducts,
-    KMenuLabelUserManagement
+    KMenuLabelSession
 } from "@sbssrc/utils/commonConstants";
 import { MenuItems } from "@sbssrc/utils/commonLookups";
 import { MenuItemType } from "@sbssrc/utils/commonTypes";
@@ -37,8 +25,8 @@ export const SbsMenu = (
         switch (e.label) {
             case KMenuLabelHome:
                 return { ...e, cbFn: () => handleClose("/") };
-            case KMenuLabelProduct:
-                return { ...e, cbFn: () => handleClose("/product") };
+            case KMenuLabelSession:
+                return { ...e, cbFn: () => handleClose("/session") };
             default:
                 return e;
         }

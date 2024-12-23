@@ -1,7 +1,7 @@
 import { ISbsFactPutType, ISbsFactType } from "@sbssrc/utils/commonTypes";
 import { Box } from "@mui/system";
 import { useMemo } from "react";
-import SbsSliderButtons from './sbsSliderButtons';
+import SbsSliderButtons from './SbsSliderButtons';
 import { KScoreLableAc, KScoreLableAcShort, KScoreLableCl, KScoreLableClShort, KScoreLableCn, KScoreLableCnShort, KScoreLableCp, KScoreLableCpShort, KScoreLableCr, KScoreLableCrShort } from '@sbssrc/utils/commonConstants';
 
 const SbsFactScorePicker = (

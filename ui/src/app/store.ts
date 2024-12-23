@@ -1,4 +1,4 @@
-import { productSlice } from "@sbssrc/features/product/productSlice";
+import { sessionSlice } from "@sbssrc/features/session/sessionSlice";
 import type { Action, ThunkAction } from "@reduxjs/toolkit";
 import { combineSlices, configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
@@ -9,7 +9,7 @@ import { mainSlice } from "./mainSlice";
 // their `reducerPath`s, therefore we no longer need to call `combineReducers`.
 const rootReducer = combineSlices(
     mainSlice,
-    productSlice,
+    sessionSlice,
 );
 // Infer the `RootState` type from the root reducer
 export type RootState = ReturnType<typeof rootReducer>;

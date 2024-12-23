@@ -4,10 +4,10 @@ import { ISbsFactPutType, ISbsFactType, ISbsSessionType, QueryResponseType } fro
 import { Box, Stack } from "@mui/system";
 import react, { forwardRef, useEffect } from "react";
 import SbsButton from './sbsButton';
-import SbsToggle from './sbsToggle';
-import SbsFactCellEdit from './sbsFactCellEdit';
-import SbsFactRow from './sbsFactRow';
-import { UseSbsStyles } from './sbsStyledCtls';
+import SbsToggle from './SbsToggle';
+import SbsFactCellEdit from './SbsFactCellEdit';
+import SbsFactRow from './SbsFactRow';
+import { UseSbsStyles } from './SbsStyledCtls';
 import SbsBoundaryMarker from './sbsBoundaryMarker';
 
 const SbsPagingMarker = (

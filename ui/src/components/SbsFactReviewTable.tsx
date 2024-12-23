@@ -9,13 +9,13 @@ import { Box, Stack, styled, width } from "@mui/system";
 import SbsBoundaryMarker from "./sbsBoundaryMarker";
 import react, { forwardRef, useEffect, useMemo, useRef, useState } from "react";
 import SbsButton from './sbsButton';
-import SbsToggle from './sbsToggle';
-import SbsSliderButtons from './sbsSliderButtons';
+import SbsToggle from './SbsToggle';
+import SbsSliderButtons from './SbsSliderButtons';
 import { KLineHeight, KScoreLableAc, KScoreLableAcShort, KScoreLableCl, KScoreLableClShort, KScoreLableCn, KScoreLableCnShort, KScoreLableCp, KScoreLableCpShort, KScoreLableCr, KScoreLableCrShort } from '@sbssrc/utils/commonConstants';
 import { Button } from '@mui/material';
-import SbsFactCellEdit from './sbsFactCellEdit';
-import { CompactTableCell, CompactTableCell0, CompactTableCellHeader, CompactTableCellLong, CompactTableRow } from './sbsStyledCtls';
-import SbsFactScorePicker from './sbsFactScorePicker';
+import SbsFactCellEdit from './SbsFactCellEdit';
+import { CompactTableCell, CompactTableCell0, CompactTableCellHeader, CompactTableCellLong, CompactTableRow } from './SbsStyledCtls';
+import SbsFactScorePicker from './SbsFactScorePicker';
 
 const ReviewTableRow = (
     {

@@ -3,7 +3,7 @@ import {
     actionScanSessionsStreamStart,
     actionScanSessionsStreamSuccess,
     actionScanSessionsStreamError
-} from "./productSlice";
+} from "./sessionSlice";
 import { ComposeUrl, QueryParamsInit } from "@sbssrc/utils/commonFunctions";
 
 

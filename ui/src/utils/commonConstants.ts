@@ -4,13 +4,6 @@ export const KLedgerIdSearchTokenPrefix = "/ledger_id=";
 export const KLedgerIdSearchTokenSuffix = "/";
 export const KLedgerIdAltSearchTokenPrefix = "/ledger_id_alt=";
 export const KLedgerIdAltSearchTokenSuffix = "/";
-export const KLabelScUser = "SC User";
-export const KLabelScGroup = "SC Group";
-export const KLabelScCircle = "SC Circle";
-export const KLabelGeotrack = "Geotrack";
-export const KLabelProduct = "Product";
-export const KLabelImpersonation = "SC User To Impersonate";
-export const KLabelTrackingProducts = "Tracking Products";
 export const KApiStatusUndefined = "undefined";
 export const KApiStatusPending = "pending";
 export const KApiStatusFulfilled = "fulfilled";
@@ -21,15 +14,7 @@ export const KApiStatusLoading = "loading";
 export const KApiStatusLocked = "locked";
 
 export const KLedgerTypeNone = "";
-export const KLedgerTypeScUser = "sc_user";
-export const KLedgerTypeScGroup = "sc_group";
-export const KLedgerTypeScCircle = "sc_circle";
-export const KLedgerTypeGeotrack = "geotrack";
-export const KLedgerTypeProduct = "product";
-export const KLedgerTypeTrackingProducts = "tracking_products";
-export const KMenuActionLogin = "@@login@@";
-export const KMenuActionLogout = "@@logout@@";
-export const KMenuActionImpersonate = "@@impersonate@@";
+export const KLedgerTypeSession = "Session";
 export const KBannerHeightMin = 70;
 export const KLineHeight = 16;
 
@@ -64,32 +49,6 @@ export const KScoreLableCn: string = "Consistency";
 export const KScoreLableCnShort: string = "CNS";
 
 export const KRoleNone = 0b00000;
-export const KRoleProductOwner = 0b00001;
-export const KRoleGeotrackOwner = 0b00010;
-export const KRoleSupplyChainOwner = 0b0100;
-export const KRoleSupplyChainViewer = 0b01000;
-export const KRoleGlobalOwner = 0b10000;
-export const KRoleAll = 0b11111;
-
-export const KRoleNameProductOwner = "Product Owner Role";
-export const KRoleNameGeotrackOwner = "Geotrack Owner Role";
-export const KRoleNameSupplyChainOwner = "Supply Chain Owner Role";
-export const KRoleNameSupplyChainViewer = "Supply Chain Viewer Role";
-export const KRoleNameGlobalOwner = "Global Role";
-
-export const KRoleNameShortProductOwner = "POR";
-export const KRoleNameShortGeotrackOwner = "GOR";
-export const KRoleNameShortSupplyChainOwner = "SCOR";
-export const KRoleNameShortSupplyChainViewer = "SCVR";
-export const KRoleNameShortGlobalOwner = "GLR";
 
 export const KMenuLabelHome = "Home";
-export const KMenuLabelProduct = "Product";
-export const KMenuLabelGeotrack = "Geotrack";
-export const KMenuLabelTrackingProducts = "Tracking Products";
-export const KMenuLabelImpersonate = "User Role Impersonation";
-export const KMenuLabelUserManagement = "User Management";
-export const KMenuLabelGroupManagement = "Group Management";
-export const KMenuLabelCircleConfiguration = "Circle Configuration";
-export const KMenuLabelLogOut = "Log out";
-export const KMenuLabelLogIn = "Log in";
+export const KMenuLabelSession = "Session";

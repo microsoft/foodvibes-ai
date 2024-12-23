@@ -2,17 +2,7 @@ import { createAppSlice } from "@sbssrc/app/createAppSlice";
 import { KApiStatusFulfilled, KBannerHeightMin } from "@sbssrc/utils/commonConstants";
 import type {
     BaseSliceState,
-    CommonCardType,
-    CommonError,
-    CommonScCircleType,
-    EditFieldsType,
-    GeotrackType,
-    ISbsFactType,
-    ScCircleType,
-    ScGroupType,
-    ScUserType,
-    TrackingProductsType
-} from "@sbssrc/utils/commonTypes";
+    CommonError} from "@sbssrc/utils/commonTypes";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
 export interface MainSliceState extends BaseSliceState {

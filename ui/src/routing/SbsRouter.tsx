@@ -1,7 +1,7 @@
 import App from "@sbssrc/App";
-import { Product } from "@sbssrc/features/product/Product";
+import { Session } from "@sbssrc/features/session/Sesseion";
 import { createBrowserRouter } from "react-router-dom";
-import ErrorPage from "./error-page";
+import ErrorPage from "./Error-page";
 
 export const SbsRouter = createBrowserRouter([
     {
@@ -12,11 +12,11 @@ export const SbsRouter = createBrowserRouter([
             {
                 path: "",
                 // element: <FvHome />,
-                element: <Product />,
+                element: <Session />,
             },
             {
-                path: "product",
-                element: <Product />,
+                path: "Session",
+                element: <Session />,
             },
         ],
     },

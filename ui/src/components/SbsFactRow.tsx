@@ -3,11 +3,11 @@ import { FormControl, InputLabel, TableCell, TableRow, TextField } from "@materi
 import { ISbsFactPutType, ISbsFactType, QueryResponseType } from "@sbssrc/utils/commonTypes";
 import { Box } from "@mui/system";
 import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
-import SbsToggle from './sbsToggle';
+import SbsToggle from './SbsToggle';
 import { KLineHeight } from '@sbssrc/utils/commonConstants';
-import SbsFactScorePicker from './sbsFactScorePicker';
-import SbsFactReviewTable from './sbsFactReviewTable';
-import { UseSbsStyles } from './sbsStyledCtls';
+import SbsFactScorePicker from './SbsFactScorePicker';
+import SbsFactReviewTable from './SbsFactReviewTable';
+import { UseSbsStyles } from './SbsStyledCtls';
 
 const SbsFactCell = (
     {

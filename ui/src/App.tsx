@@ -15,15 +15,14 @@ import {
     selectUsername
 } from "@sbssrc/app/mainSlice";
 import { default as logo } from "@sbssrc/assets/logo.png";
-import { SbsIdBadge } from "@sbssrc/components/SbsIdBadge";
-import { SbsMenu } from "@sbssrc/components/sbsMenu";
-import SbsMessageShow from "@sbssrc/components/sbsMessageShow";
-import { selectLastIdFactZoomed, selectProductIsLoading, selectScannedSessions } from "@sbssrc/features/product/productSlice";
+import { SbsMenu } from "@sbssrc/components/SbsMenu";
+import SbsMessageShow from "@sbssrc/components/SbsMessageShow";
+import { selectLastIdFactZoomed, selectSessionIsLoading, selectScannedSessions } from "@sbssrc/features/session/sessionSlice";
 import { CommonError, ILayoutTracker } from "@sbssrc/utils/commonTypes";
 import { Avatar, Backdrop, CircularProgress, CssBaseline, IconButton, Toolbar, Tooltip } from "@mui/material";
 import { closeSnackbar, SnackbarProvider } from "notistack";
 import { KAppTitle, KAppVersion } from "./utils/commonConstants";
-import useLayoutTracker from "./utils/hooks/useLayoutTracker";
+import useLayoutTracker from "./utils/hooks/UseLayoutTracker";
 
 const MainContent = () => {
     const navigate = useNavigate();
@@ -32,7 +31,7 @@ const MainContent = () => {
     const dispatch = useAppDispatch();
     const commonErrors: CommonError[] = useAppSelector(selectCommonErrors);
     const mainIsLoading: boolean = useAppSelector(selectMainIsLoading);
-    const productIsLoading: boolean = useAppSelector(selectProductIsLoading);
+    const sessionIsLoading: boolean = useAppSelector(selectSessionIsLoading);
     const lastIdFactZoomed: number = useAppSelector(selectLastIdFactZoomed);
     const scannedSessions: string[] = useAppSelector(selectScannedSessions);
     const username: string | null = useAppSelector(selectUsername);
@@ -136,7 +135,7 @@ const MainContent = () => {
                                 </Box>
                             </a>
                         </Box>
-                        {productIsLoading ? (
+                        {sessionIsLoading ? (
                             <div style={{
                                 borderRadius: "12px 0 0 0",
                                 backgroundColor: "gainsboro",
@@ -155,31 +154,6 @@ const MainContent = () => {
                                     </span>
                                 </span>
                             </div>) : null}
-                        <Tooltip title={"Profile, roles & permissions"}>
-                            <IconButton
-                                size="large"
-                                edge="start"
-                                color="inherit"
-                                aria-label="menu"
-                                sx={{ margin: 0, padding: 0 }}
-                                id="basic-button"
-                                aria-controls={
-                                    open ? "basic-menu" : undefined
-                                }
-                                aria-haspopup="true"
-                                aria-expanded={open ? "true" : undefined}
-                                onClick={(event: React.MouseEvent<HTMLButtonElement>) => handleClick(true, event)}
-                            >
-                                <Avatar className={"App-profile-badge"}>{username?.substring(0, 1)}</Avatar>
-                            </IconButton>
-                        </Tooltip>
-                        <Box sx={{
-                            position: "absolute",
-                            top: "6px",
-                            right: "60px",
-                        }}>
-                            <SbsIdBadge assumedUsername={username} assumedAccessMask={0} />
-                        </Box>
                     </Toolbar>
                 </AppBar>
             </Box >
@@ -203,7 +177,7 @@ const MainContent = () => {
             <Backdrop
                 sx={{ backgroundColor: 'rgb(255, 255, 255, 0.4)', color: 'navy', zIndex: (theme) => theme.zIndex.drawer + 110 }}
                 open={
-                    mainIsLoading || scannedSessions?.length > 0 || (productIsLoading && !lastIdFactZoomed )
+                    mainIsLoading || scannedSessions?.length > 0 || (sessionIsLoading && !lastIdFactZoomed)
                 }
             >
                 <CircularProgress color="inherit" />

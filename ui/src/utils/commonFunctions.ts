@@ -1,9 +1,7 @@
 import { PayloadAction, SerializedError } from "@reduxjs/toolkit";
 import moment from "moment";
 import { KApiStatusFulfilled, KApiStatusPending, KApiStatusRejected } from "./commonConstants";
-import { RoleChoices } from "./commonLookups";
 import {
-    CommonCheckListType,
     CommonDetailLevel,
     CommonError,
     CommonErrorLevel,
@@ -27,7 +25,6 @@ export const QueryParamsInit = (payload: Partial<QueryParamsType>): QueryParamsT
     includeDetails: false,
     ...payload,
 });
-
 export const QueryParamsInitFromQueryParams = (
     queryParamsApi: QueryParamsApiType,
 ): QueryParamsType =>
@@ -41,44 +38,13 @@ export const QueryParamsInitFromQueryParams = (
         pageSize: queryParamsApi?.pagination?.page_size ?? 10,
     },
 });
-
-export const QueryParamsCompareToQueryParamsApi = (
-    queryParams: QueryParamsType,
-    queryParamsApi: QueryParamsApiType,
-): boolean =>
-    queryParams &&
-    queryParamsApi &&
-    JSON.stringify(queryParams.pagination) ===
-    JSON.stringify({
-        pageIndex: queryParamsApi.pagination?.page_index,
-        pageSize: queryParamsApi.pagination?.page_size,
-    }) &&
-    queryParams.globalFilter === queryParamsApi.global_filter &&
-    queryParams.includeDetails === queryParamsApi.include_details;
-
-export const QueryParamsCompareToQueryParams = (
-    queryParamsA: QueryParamsType,
-    queryParamsB: QueryParamsType,
-): boolean =>
-    queryParamsA &&
-    queryParamsB &&
-    JSON.stringify(queryParamsA.pagination) ===
-    JSON.stringify({
-        pageIndex: queryParamsB.pagination?.pageIndex,
-        pageSize: queryParamsB.pagination?.pageSize,
-    }) &&
-    queryParamsA.globalFilter === queryParamsB.globalFilter &&
-    queryParamsA.includeDetails === queryParamsB.includeDetails;
-
 export const ComposeIdKey = (
     ledgerId: number = 0,
     txId: number = 0,
     prefix: string = "",
 ): string => `${prefix}${ledgerId}:${txId}`;
-
 export const DetailLevelStorageKeyCompose = (idx: number, suffix: string) =>
     `sbsDetails${idx}_${suffix}`;
-
 export const DetailLevelStorageGet = (
     idx: number,
     suffix: string,
@@ -98,7 +64,6 @@ export const DetailLevelStorageGet = (
             return CommonDetailLevel.max;
     }
 };
-
 export const DetailLevelStorageSet = (
     idx: number,
     suffix: string,
@@ -109,13 +74,11 @@ export const DetailLevelStorageSet = (
         valueNew.toString(),
     );
 };
-
 export const MakeErrorPayload = (
     code = 0,
     error_level = CommonErrorLevel.information,
     message = "",
 ): CommonError => ({ code, error_level, message, timestamp: NowTimestamp() });
-
 export const InitSubFeature = <T>(): SubFeature<T> => ({
     queryParams: QueryParamsInit({}),
     queryResponse: {} as QueryResponseType<T>,
@@ -126,7 +89,6 @@ export const InitSubFeature = <T>(): SubFeature<T> => ({
     opacityPercent: 100,
     zoomPercent: 100,
 });
-
 export const GetFeatureInitialState = <T1, T2>(): FeatureSliceState<T1, T2> => ({
     loading: false,
     status: KApiStatusFulfilled,
@@ -138,7 +100,6 @@ export const GetFeatureInitialState = <T1, T2>(): FeatureSliceState<T1, T2> => (
     currFacts: InitSubFeature<T2>(),
     currFactZoomed: InitSubFeature<T2>(),
 });
-
 export const SetFeatureThunkStatePending = <T, T1, T2>(
     state: FeatureSliceState<T1, T2>,
     subState: SubFeature<T>,
@@ -169,7 +130,6 @@ export const SetFeatureThunkStatePending = <T, T1, T2>(
         } as QueryParamsApiType);
     }
 };
-
 export const SetFeatureThunkStateFulfilled = <T, T1, T2>(
     state: FeatureSliceState<T1, T2>,
     subState: SubFeature<T>,
@@ -195,7 +155,6 @@ export const SetFeatureThunkStateFulfilled = <T, T1, T2>(
     subState.upsertState = CommonErrorLevel.success;
     state.loading = false;
 };
-
 export const SetFeatureThunkStateRejected = <T, T1, T2>(
     state: FeatureSliceState<T1, T2>,
     subState: SubFeature<T>,
@@ -224,7 +183,6 @@ export const SetFeatureThunkStateRejected = <T, T1, T2>(
     subState.upsertState = CommonErrorLevel.error;
     state.loading = false;
 };
-
 export const FormatTimestamp = (
     inval?: string | moment.Moment,
     spaceDelimited: boolean = false,
@@ -234,7 +192,6 @@ export const FormatTimestamp = (
             `YYYY-MM-DD${spaceDelimited ? " " : "T"}HH:mm:ss`,
         )
         : (inval as string);
-
 export const FormatTimeDelta = (
     invalBeg?: string | moment.Moment,
     invalEnd?: string | moment.Moment,
@@ -246,14 +203,11 @@ export const FormatTimeDelta = (
 
     return `${deltaD > 0 ? `${deltaD}d ` : ""}${deltaH}h ${deltaM}m`;
 };
-
 export const NowTimestamp = (): string => FormatTimestamp(moment(), true);
-
 export const GetEffectiveApiUrl = (path: string, params?: string): string => {
     const apiUrl = `${import.meta.env.VITE_ENDPOINT_URL}/${path}`;
     return params ? `${apiUrl}/?${encodeURI(params)}` : apiUrl;
 };
-
 export const ComposeUrl = (
     path: string,
     queryParams?: QueryParamsType | null,
@@ -273,94 +227,19 @@ export const ComposeUrl = (
 
     return GetEffectiveApiUrl(path, params);
 };
-
-export const ComposeUrlImage = (
-    path: string,
-    imageId: string,
-    isProduct: boolean,
-    contentType: string,
-): string => {
-    const paramsFlds: string[] = [
-        `image_id=${encodeURIComponent(imageId)}`,
-        `is_product=${isProduct ? true : false}`,
-        `content_type=${encodeURIComponent(contentType)}`,
-    ];
-
-    return GetEffectiveApiUrl(path, paramsFlds.join("&"));
-};
-
 export const ComposeHttpHeaders = (accessToken?: string | null): { headers: { [key: string]: string } } => ({
     headers: {
         "Content-Type": "application/json",
     },
 });
-
-export const GetAggregationLabelColor = (
-    aggregationValue: number,
-    blankColor: string = "inherit",
-): string =>
-    aggregationValue === 2
-        ? "tan"
-        : aggregationValue > 0
-            ? "moccasin"
-            : aggregationValue < 0
-                ? "lightsalmon"
-                : blankColor;
-
-export const GetAggregationLabel = (
-    aggregationValue: number,
-    blankIfNone: boolean = true,
-): string =>
-    aggregationValue === 2
-        ? "Aggr/Disaggr"
-        : aggregationValue > 0
-            ? "Aggregation"
-            : aggregationValue < 0
-                ? "Disaggregation"
-                : blankIfNone
-                    ? ""
-                    : "None";
-
-export const SetAggregationIndicator = (
-    haveAggregation: boolean,
-    haveDisaggregation: boolean,
-): number =>
-    haveAggregation && haveDisaggregation
-        ? 2
-        : haveAggregation
-            ? 1
-            : haveDisaggregation
-                ? -1
-                : 0;
-
-export const LoadMicrosoftMapsApi = (key?: string): Promise<void> => {
-    const callbackName = "GetMap";
-    return new Promise((resolve, reject) => {
-        const script = document.createElement("script");
-        script.type = "text/javascript";
-        script.async = true;
-        script.defer = true;
-        script.src = `https://www.bing.com/api/maps/mapcontrol?branch=experimental&callback=${callbackName}&key=${key}`;
-        window[callbackName] = () => {
-            resolve();
-        };
-        script.onerror = (error: Event | string) => {
-            reject(error);
-        };
-        document.body.appendChild(script);
-    });
-};
-
 export const GetAverage = (arrayOfNumbers: number[]) =>
     arrayOfNumbers?.length
         ? arrayOfNumbers.reduce((sum, currentValue) => sum + currentValue, 0) /
         arrayOfNumbers.length
         : 0;
-
 export const HaveError = (error?: CommonError) =>
     (error?.error_level ?? CommonErrorLevel.information) >
     CommonErrorLevel.information;
-
 export const GetColorVariant = (errorLevel: CommonErrorLevel) => {
     switch (errorLevel) {
         case CommonErrorLevel.error:
@@ -376,7 +255,6 @@ export const GetColorVariant = (errorLevel: CommonErrorLevel) => {
             return "default";
     }
 };
-
 export const CompareObjects = (objLeft?: Object, objRight?: Object): boolean => {
     if (!objLeft && !objRight)
         return true;
@@ -428,18 +306,6 @@ export const CompareObjects = (objLeft?: Object, objRight?: Object): boolean => 
 
     return true;
 };
-
-export const GetRolesActive = (access_mask: number): string => {
-    const rolesActive: CommonCheckListType[] = RoleChoices.map(e => ({
-        ...e,
-        checked: e.value & access_mask ? true : false
-    }));
-
-    const rolesCaption: string = rolesActive.filter(e => e.checked).map(e => e.shortName).join(', ');
-
-    return rolesCaption.length ? rolesCaption : "NO ROLES DEFINED";
-};
-
 export const HexToRgba = (hex: string, opacity: number): string => {
     const bigint = parseInt(hex.slice(1), 16);
     const r = (bigint >> 16) & 255;
