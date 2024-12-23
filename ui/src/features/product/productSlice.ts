@@ -131,13 +131,15 @@ export const productSlice = createAppSlice({
                     if (state.currSessions.queryParams.pagination?.pageIndex === 0) {
                         state.currFacts = InitSubFeature<ISbsFactType>();
                         state.currFactZoomed = InitSubFeature<ISbsFactType>();
+                        state.currSessions.lastId = -1;
                     }
                 },
                 fulfilled: (state, action) => {
                     const dataNew: ISbsSessionType[] = (action.payload.data as ISbsSessionType[]) ?? [];
-                    const dataOld: ISbsSessionType[] = [...((state.currSessions.queryResponse.data as ISbsSessionType[]) ?? [])].filter(e =>
-                        !dataNew.find(e2 => e2.id === e.id)
-                    );
+                    const dataOld: ISbsSessionType[] = state.currSessions.lastId ? [] :
+                        [...((state.currSessions.queryResponse.data as ISbsSessionType[]) ?? [])].filter(e =>
+                            !dataNew.find(e2 => e2.id === e.id)
+                        );
                     const payload: QueryResponseApiType<ISbsSessionType> = {
                         ...action.payload,
                         data: [...dataOld, ...dataNew],

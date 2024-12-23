@@ -32,7 +32,7 @@ const SbsToggle = (
             style={{
                 ...style,
                 color: selected ? 'white' : 'inherit',
-                backgroundColor: selected ? 'navy' : 'inherit',
+                backgroundColor: selected ? 'rgb(25, 118, 210)' : 'inherit',
                 padding: '0',
                 border: '1px solid navy',
                 borderRadius: '4px',

@@ -2,6 +2,7 @@ import FormatClearIcon from '@mui/icons-material/FormatClear';
 import ZoomInIcon from '@material-ui/icons/ZoomIn';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
+import CancelIcon from '@mui/icons-material/Cancel';
 import { FormControl, InputLabel, makeStyles, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from "@material-ui/core";
 import { ISbsFactPutType, ISbsFactType, ISbsSessionType, QueryResponseType } from "@foodvibes/utils/commonTypes";
 import { Box, Stack, styled, width } from "@mui/system";
@@ -123,7 +124,11 @@ const ReviewTableRow = (
                                     border: 0,
                                 }}
                                 clicktCb={(newValue: boolean, arg?: string | number) => {
-                                    setEditPropertyName(newValue ? arg as string : null);
+                                    if (newValue) {
+                                        setEditPropertyName(newValue ? arg as string : null);
+                                    } else {
+                                        setEditPropertyName(null);
+                                    }
                                 }}
                                 clicktCbArg={name}
                                 title='Edit'
@@ -468,10 +473,14 @@ const ReviewTableCellEdit = (
         name: string;
         label: string;
         value: string;
-        changeCb: (value: string) => void;
+        changeCb: (value: string | null) => void;
     }
 ) => {
     const [textValue, setTextValue] = useState<string>(value);
+
+    useEffect(() => {
+        setTextValue(value);
+    }, [name]);
 
     return (
         <Box sx={{
@@ -483,10 +492,10 @@ const ReviewTableCellEdit = (
             right: "8px",
             margin: "0 auto",
             textAlign: "left",
-            border: "2px solid red",
-            padding: "8px",
+            border: "1px solid black",
+            padding: "0",
             overflow: "auto",
-            backgroundColor: "lightyellow",
+            backgroundColor: "white",
             color: "black",
             whiteSpace: "nowrap",
             borderRadius: "4px",
@@ -495,66 +504,79 @@ const ReviewTableCellEdit = (
         }}>
             <Box component="div" sx={{
                 display: "flex",
-                borderRadius: "8px",
-                border: 0,
-                background: '#fff',
+                padding: "2px 6px",
+                background: 'rgb(25, 118, 210)',
             }}>
                 <Box component="span" sx={{
                     display: "flex",
                     float: "left",
                     width: "100%",
-                    fontSize: '12px',
+                    fontSize: '14px',
                     verticalAlign: 'top',
-                    fontWeight: '100',
-                    fontStyle: 'italic',
+                    color: 'white',
+                    lineHeight: '28px',
 
                 }}>{label}</Box>
-                <Box component="span" sx={{ display: "flex", float: "right", margin: "0 16px 0 0" }}>
+                <Box component="span" sx={{ display: "flex", float: "right", margin: "0" }}>
                     <Button
                         variant="contained"
                         color="primary"
-                        startIcon={<SaveIcon />}
+                        disabled={textValue === value}
                         sx={{
-                            padding: '2px 6px',
+                            border: '1px solid white',
+                            margin: '0 4px 0 0',
+                            padding: '2px',
                             fontSize: '10px',
                             minWidth: 'auto',
                         }}
                         onClick={() => {
                             changeCb(textValue);
                         }}
-                    >
-                        Save
-                    </Button>
+                    ><SaveIcon /></Button>
+                    <Button
+                        variant="contained"
+                        color="error"
+                        sx={{
+                            border: '1px solid white',
+                            padding: '2px',
+                            fontSize: '10px',
+                            minWidth: 'auto',
+                        }}
+                        onClick={() => {
+                            changeCb(null);
+                        }}
+                    >{<CancelIcon />}</Button>
                 </Box>
             </Box>
             <TextField
                 id="outlined-editable-input"
                 multiline
                 minRows={4}
-                // maxRows={20}
+                maxRows={20}
                 value={textValue}
                 onChange={(e) => {
                     setTextValue(e.target.value);
                 }}
                 style={{
+                    padding: "0",
                     border: "0",
-                    width: '344px',
-                    height: '152px',
-                    overflowY: 'auto',
+                    width: '340px',
+                    height: '162px',
+                    maxHeight: '166px',
+                    overflowY: 'hidden',
                     verticalAlign: "top",
                 }}
                 InputProps={{
                     style: {
                         display: "block",
                         verticalAlign: "top",
-                        width: '344px',
-                        height: '152px',
-                        overflowY: 'auto',
+                        width: '340px',
+                        height: '162px',
+                        // overflowY: 'hidden',
                         fontSize: "12px",
-                        padding: "0",
-                        color: "black",
-                        backgroundColor: "lightgreen", // "lightyellow",
-                        lineHeight: `${KLineHeight}px`,
+                        padding: "6px",
+                        // color: "black",
+                        // lineHeight: `${KLineHeight}px`,
                     },
                 }}
                 variant="standard"
@@ -608,13 +630,15 @@ const SbsFacts = forwardRef((
                     name={editPropertyName}
                     label={editPropertyLabel}
                     value={currFactZoomed.data[0][editPropertyName]}
-                    changeCb={(value: string) => {
-                        if (currFactZoomed?.data?.[0]?.id) {
+                    changeCb={(value: string | null) => {
+                        if (value !== null && currFactZoomed?.data?.[0]?.id) {
                             factPatchCb(currFactZoomed?.data?.[0]?.id, {
                                 property_name: editPropertyName,
                                 property_value: value
                             } as ISbsFactPutType);
                         }
+
+                        setEditPropertyName(null);
                     }}
                 />
                 : null

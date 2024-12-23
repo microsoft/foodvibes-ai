@@ -8,12 +8,6 @@ import {
 } from "@foodvibes/utils/commonTypes";
 import axios from "axios";
 
-export const sbsSessionsScan = async (queryParams: QueryParamsType) =>
-    await axios.get(ComposeUrl("sbs_sessions_scan", queryParams), ComposeHttpHeaders()).then(res => {
-        return res.data as QueryResponseApiType<number>;
-        // Ignore .catch() here to allow slice rejected() handle errors
-    });
-
 export const sbsSessionsGet = async (queryParams: QueryParamsType) =>
     await axios.get(ComposeUrl("sbs_sessions_get", queryParams), ComposeHttpHeaders()).then(res => {
         return res.data as QueryResponseApiType<ISbsSessionType>;

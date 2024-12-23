@@ -310,7 +310,7 @@ export const Product = () => {
                         }
                     }}
                     refreshCb={() => {
-                        // StreamData(dispatch, "sbs_sessions_scan");
+                        // StreamData(dispatch, "sbs_sessions_get");
                     }}
                 />
             }

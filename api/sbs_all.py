@@ -38,11 +38,11 @@ def get_db_path(session_id: int = 0) -> str:
 
 
 @config.app.get("/sbs_sessions_get/", response_model=None)
-async def sbs_sessions_scan(
+async def sbs_sessions_get(
     request: Request,
     commons: Annotated[Any, Depends(CommonQueryParams)],
 ):
-    """Endpoint for sbs_sessions_scan table query"""
+    """Endpoint for sbs_sessions_get table query"""
     try:
         # service_url = (
         #     "https://farmvibesllm6285804596.blob.core.windows.net/"
@@ -96,8 +96,9 @@ pagination:::: {commons.pagination.page_index} {commons.pagination.page_size}
                 idx += 1
                 flds = f"{entry}\t".split("\t")
 
-                print(f"{idx} - {entry}")
-                paths.append(sbs_session(flds[0], flds[1]))
+                if flds[0].endswith("/") or flds[0].endswith(".jsonl"):
+                    print(f"{idx} - {entry}")
+                    paths.append(sbs_session(flds[0], flds[1]))
 
         return CommonQueryResponse(
             CommonError(0, "OK", CommonError.ErrorLevel.SUCCESS),

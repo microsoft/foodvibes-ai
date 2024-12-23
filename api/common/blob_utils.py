@@ -148,3 +148,104 @@ def run_bash_script(script_path="./api/common/blob_utils.sh", blob_name=""):
     # Ensure the process has finished
     process.stdout.close()
     process.wait()
+
+
+# Variables
+account_name = "farmvibesllm6285804596"
+container_name = "azureml-blobstore-96d2e54b-9c8f-4ea9-b777-c74825e52a83"
+auth_mode = "login"
+
+
+# Function to list all blobs without 5000 limit
+def list_all_blobs(prefix="farmvibes-llm-pipelines/"):
+    marker = ":NONE:"
+
+    # Loop to handle pagination and yield results
+    while marker != "null":
+        command = [
+            "az",
+            "storage",
+            "blob",
+            "list",
+            "--account-name",
+            account_name,
+            "--container-name",
+            container_name,
+            "--auth-mode",
+            auth_mode,
+            "--prefix",
+            prefix,
+            "--num-results",
+            "5",  # "5000",
+            "--query",
+            "[].{name:name, lastModified:properties.lastModified}",
+            "--marker",
+            marker if marker != ":NONE:" else "",
+            "--delimiter",
+            "/",
+            "-o",
+            "json",
+        ]
+        process = subprocess.Popen(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+
+        # Iterate over the output lines
+        for line in iter(process.stdout.readline, ""):
+            if line.startswith("WARNING:"):
+                marker = line.split(" ", 1)[1]
+            else:
+                yield line.strip()
+
+        # Ensure the process has finished
+        process.stdout.close()
+        process.wait()
+
+        # process = subprocess.Popen(
+        #     command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+        # )
+        # output, _ = process.communicate()
+        # warnings = [line for line in output.splitlines() if line.startswith("WARNING:")]
+        # blobs = json.loads(output)
+        # for blob in blobs:
+        #     yield blob
+        # if warnings:
+        #     marker = warnings[1].split(" ", 1)[1]
+        # else:
+        #     marker = "null"
+
+
+# Function to download blob
+def download_blob(blob_name):
+    file_path = f"./data/staging/{blob_name.replace('/', '_')}"
+    command = [
+        "az",
+        "storage",
+        "blob",
+        "download",
+        "--account-name",
+        account_name,
+        "--container-name",
+        container_name,
+        "--name",
+        blob_name,
+        "--file",
+        file_path,
+        "--auth-mode",
+        auth_mode,
+    ]
+    process = subprocess.Popen(
+        command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+    )
+    process.communicate()
+    return file_path
+
+
+def run_bash_script_new(script_path="./api/common/blob_utils.sh", blob_name=""):
+    if blob_name.endswith(".jsonl"):
+        download_blob(blob_name)
+    else:
+        list_all_blobs(blob_name)

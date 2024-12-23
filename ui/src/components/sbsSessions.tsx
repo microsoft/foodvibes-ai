@@ -2,7 +2,7 @@ import { makeStyles, Paper, Table, TableBody, TableCell, TableContainer, TableHe
 import { ISbsSessionType, QueryResponseType } from "@foodvibes/utils/commonTypes";
 import { Box, Stack } from "@mui/system";
 import FvBoundaryMarker from "./FvBoundaryMarker";
-import react, { forwardRef, useMemo } from "react";
+import react, { forwardRef, useEffect, useMemo, useState } from "react";
 import SbsButton from "./sbsButton";
 import { default as iconFile } from "@foodvibes/assets/icon_file.png";
 import { default as iconFileJson } from "@foodvibes/assets/icon_file_json.png";
@@ -56,6 +56,7 @@ const SbsIcon = (fileName: string) => {
 };
 const SbsSession = forwardRef((
     {
+        pathCurrent,
         currSession,
         pagingState,
         setPagingState,
@@ -65,6 +66,7 @@ const SbsSession = forwardRef((
         idx,
         classes,
     }: {
+        pathCurrent: string;
         currSession: QueryResponseType<ISbsSessionType>;
         pagingState: number;
         setPagingState: (value: number) => void;
@@ -74,6 +76,10 @@ const SbsSession = forwardRef((
         idx: number;
         classes: any;
     }, ref: react.ForwardedRef<HTMLDivElement>) => {
+
+    if (idx < 0) {
+        console.info('SbsSession', session);
+    }
 
     return (
         <TableRow key={`session${idx}`} className={classes.compactRow}>
@@ -105,7 +111,7 @@ const SbsSession = forwardRef((
                         title={idx < 0 ? `Up one level to ${session.path}` : ''}>
                         {SbsIcon(idx < 0 ? '..' : session.path)}
                         <span style={{ color: 'blue' }}>
-                            {idx < 0 ? '..' : session.path}
+                            {idx < 0 ? '..' : session.path.substring(pathCurrent.length + 1)}
                         </span>
                         {idx === 0 || idx === (currSession?.data?.length ?? 0) - 1 ?
                             <FvBoundaryMarker hasComeIntoViewCb={(isInView: boolean) => {
@@ -146,30 +152,35 @@ const SbsSessions = forwardRef((
         refreshCb: () => void;
     }, ref: react.ForwardedRef<HTMLDivElement>) => {
     const classes = useStyles();
-    const parentPath: string = useMemo<string>(() => {
-        console.info('parentPath0', currSession.data?.[0].path);
-        if (currSession.data?.length) {
-            const flds: string[] = currSession.data[0].path.split('/');
-            const isJsonl: boolean = flds[flds.length - 1].endsWith('.jsonl');
-            const segmentOffset: number = isJsonl ? 1 : 2;
-            const segmentCount: number = flds.length - segmentOffset;
+    const [pathCurrent, setPathCurrent] = useState<string>('');
+    const [pathCurrentFlds, setPathCurrentFlds] = useState<string[]>([]);
+    const [pathParent, setPathParent] = useState<string>('');
 
-            if (segmentCount > 0) {
-                let path: string = flds.slice(0, segmentCount).join('/');
+    useEffect(() => {
+        let currPathNew: string = currSession.data?.length ? currSession.data[0].path : currSession.meta?.query_params?.global_filter ?? '';
 
-                if (segmentCount === 0) {
-                    path = '';
-                }
+        const flds: string[] = currPathNew.split('/').filter((fld: string) => fld.length > 0);
+        // const segmentCount: number = flds.length - 1;
 
-                console.info('parentPath1', path);
+        currPathNew = flds.slice(0, flds.length - 1).join('/');
 
-                if (segmentCount > 0) {
-                    return path;
-                }
-            }
+        // console.info('currPath', segmentCount, flds, currPathNew);
+
+        // setPathCurrent(segmentCount > 0 ? currPathNew : '');
+
+        setPathCurrent(currPathNew);
+        setPathCurrentFlds(currPathNew.split('/'));
+
+        if (currPathNew.length) {
+            const flds: string[] = currPathNew.split('/').filter((fld: string) => fld.length > 0);
+            // const segmentCount: number = flds.length - 1;
+            const parentPathNew: string = flds.slice(0, flds.length - 1).join('/');
+
+            // console.info('parentPath', segmentCount, flds, parentPathNew);
+
+            // setPathParent(segmentCount > 0 ? [parentPathNew, ''].join('/') : '');
+            setPathParent([parentPathNew, ''].join('/'));
         }
-
-        return '';
     }, [currSession]);
 
     return (
@@ -189,7 +200,23 @@ const SbsSessions = forwardRef((
                             <TableCell className={classes.compactNumericCell}>Fact Count</TableCell>
                             <TableCell className={classes.compactCell}>Review Date</TableCell>
                             <TableCell className={classes.compactCell}>Reviewer</TableCell> */}
-                            <TableCell className={classes.compactCell}>Container <strong>{parentPath}</strong></TableCell>
+                            <TableCell className={classes.compactCell}>Container <strong>{
+                                pathCurrentFlds.map((fld: string, idx: number) => (
+                                    <span
+                                        key={`fld${idx}`}
+                                        onClick={() => {
+                                            if (idx < pathCurrentFlds.length - 1) {
+                                                selectCb([pathCurrentFlds.slice(0, idx + 1).join('/'), ''].join('/'));
+                                            }
+                                        }}
+                                        title={idx < pathCurrentFlds.length - 1 ? `Go to ${pathCurrentFlds.slice(0, idx + 1).join('/')}` : ''}>
+                                        <span style={idx < pathCurrentFlds.length - 1 ? { color: 'blue', cursor: 'pointer', } : {}}>
+                                            {fld}{"/ "}
+                                        </span>
+                                    </span>
+                                ))
+
+                            }</strong></TableCell>
                             <TableCell className={classes.compactCell}>Modified</TableCell>
                             {/* <TableCell className={classes.compactCell}>
                                 <SbsButton caption="Refresh" clicktCb={() => {
@@ -200,8 +227,9 @@ const SbsSessions = forwardRef((
                     </TableHead>
                     <TableBody>
                         <>
-                            {parentPath.length > 0 ?
+                            {pathCurrentFlds.length > 1 ?
                                 <SbsSession
+                                    pathCurrent={pathCurrent}
                                     currSession={currSession}
                                     pagingState={pagingState}
                                     setPagingState={setPagingState}
@@ -211,7 +239,7 @@ const SbsSessions = forwardRef((
                                         id: 0,
                                         fact_count: 0,
                                         modified: '',
-                                        path: parentPath,
+                                        path: pathParent,
                                         review_date: '',
                                         reviewer: '',
                                     } as ISbsSessionType}
@@ -224,6 +252,7 @@ const SbsSessions = forwardRef((
                                 <SbsSession
                                     key={`sessionRow${idx}`}
                                     ref={ref}
+                                    pathCurrent={pathCurrent}
                                     currSession={currSession}
                                     pagingState={pagingState}
                                     setPagingState={setPagingState}
