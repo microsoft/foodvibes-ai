@@ -16,10 +16,8 @@ from fastapi.responses import StreamingResponse
 import jsonlines
 
 from api.common.blob_utils import run_bash_script
-from api.common.database.common_utils import (
-    make_response_payload,
-)
-from api.common.database.database_sqlite import SbsSqlite
+from api.common.utils import make_response_payload
+from api.common.database_sqlite import SbsSqlite
 from api.common.types import (
     CommonError,
     CommonQueryParams,

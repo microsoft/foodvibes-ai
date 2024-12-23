@@ -233,13 +233,13 @@ export const productSlice = createAppSlice({
                     currFactZoomedItem[action.meta.arg.rowToUpsert.property_name] = currFactItem[action.meta.arg.rowToUpsert.property_name];
 
                     if (action.meta.arg.rowToUpsert.review_date) {
-                        currFactItem[action.meta.arg.rowToUpsert.review_date] = action.meta.arg.rowToUpsert.review_date;
-                        currFactZoomedItem[action.meta.arg.rowToUpsert.review_date] = currFactItem[action.meta.arg.rowToUpsert.review_date];
+                        currFactItem.review_date = action.meta.arg.rowToUpsert.review_date;
+                        currFactZoomedItem.review_date = currFactItem[action.meta.arg.rowToUpsert.review_date];
                     }
 
                     if (action.meta.arg.rowToUpsert.reviewer) {
-                        currFactItem[action.meta.arg.rowToUpsert.reviewer] = action.meta.arg.rowToUpsert.reviewer;
-                        currFactZoomedItem[action.meta.arg.rowToUpsert.reviewer] = currFactItem[action.meta.arg.rowToUpsert.reviewer];
+                        currFactItem.reviewer = action.meta.arg.rowToUpsert.reviewer;
+                        currFactZoomedItem.reviewer = currFactItem[action.meta.arg.rowToUpsert.reviewer];
                     }
 
                     state.currFacts.queryResponse.data = state.currFacts.queryResponse.data?.map(

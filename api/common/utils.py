@@ -1,34 +1,43 @@
-"""database.py
+"""common_utils.py
 
-Common objects and functions used by all modules
+Common objects and functions used by database operations
 
-20240625 Cyrus Kasra -- v-cyruskasra@microsoft.com -- Initial release
+20240708 Cyrus Kasra -- v-cyruskasra@microsoft.com -- Initial release
 
 Returns:
     _type_: None
 """
 
-import hashlib
-from datetime import datetime, timezone
-import os
+from http import HTTPStatus
+from fastapi.responses import HTMLResponse
+
+from api.common.config import logger
+from api.common.types import (
+    CommonError,
+    CommonQueryParams,
+    CommonQueryResponse,
+    CommonQueryResponseMeta,
+)
 
 
-def calculate_hash(polygon_wkt: str) -> str:
-    return hashlib.md5(polygon_wkt.encode()).hexdigest()
+def make_response_payload(
+    content: str = "Error",
+    status_code: int = HTTPStatus.INTERNAL_SERVER_ERROR,
+    is_html: bool = False,
+):
+    if is_html is True:
+        return HTMLResponse(content=content, status_code=HTTPStatus.OK)
 
+    if status_code != HTTPStatus.OK:
+        logger.error(content)
 
-def convert_unix_timestamp_to_iso8601(input_timestamp: int) -> str:
-    # Convert the Unix timestamp to a datetime object with UTC timezone
-    dt_object = datetime.fromtimestamp(input_timestamp, tz=timezone.utc)
-
-    # Convert the datetime object to an ISO 8601 string
-    iso_string = dt_object.isoformat()
-
-    return iso_string
-
-
-def is_production() -> bool:
-    return os.environ.get("ENVIRONMENT") == "production"
+    return CommonQueryResponse(
+        CommonError(
+            error_level=CommonError.ErrorLevel.ERROR, code=1, msessage=str(content)
+        ),
+        CommonQueryResponseMeta(0, 0, CommonQueryParams()),
+        [],
+    )
 
 
 def unjsonify(data, indent=0) -> str:

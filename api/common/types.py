@@ -11,41 +11,13 @@ Returns:
 import json
 import os
 from enum import Enum
-from typing import Union
 from pydantic import BaseModel
 from datetime import datetime
 import getpass
 
 from api.common.config import ConfigSingletonClass
-from api.common.models import (
-    FoodvibesConstants,
-    FoodvibesGeotrackLedgerView,
-    FoodvibesProductLedgerView,
-    FoodvibesScGroupLedgerView,
-    FoodvibesScCircleLedgerView,
-    FoodvibesScUserLedgerView,
-    FoodvibesTrackingProductsLedgerView,
-)
 
-ROLE_PRODUCT_OWNER = 0b00001
-ROLE_GEOTRACK_OWNER = 0b00010
-ROLE_SUPPLY_CHAIN_OWNER = 0b0100
-ROLE_SUPPLY_CHAIN_VIEWER = 0b01000
-ROLE_GLOBAL_OWNER = 0b10000
-FETCH_PAGE_SIZE_DEFAULT = 10
-FETCH_PAGE_SIZE = os.environ.get("FETCH_PAGE_SIZE", f"{FETCH_PAGE_SIZE_DEFAULT}")
-
-
-CommonQueryResponseRow = Union[
-    dict,
-    FoodvibesConstants,
-    FoodvibesGeotrackLedgerView,
-    FoodvibesProductLedgerView,
-    FoodvibesTrackingProductsLedgerView,
-    FoodvibesScGroupLedgerView,
-    FoodvibesScCircleLedgerView,
-    FoodvibesScUserLedgerView,
-]
+FETCH_PAGE_SIZE = os.environ.get("FETCH_PAGE_SIZE", 10)
 
 
 class JsonEnabled(object):
@@ -57,50 +29,9 @@ class JsonEnabled(object):
         return json.loads(json_string, object_hook=cls)
 
 
-class CommonQueryParamsColFilter(JsonEnabled):
-    id: str
-    value: str
-
-
-class CommonQueryParamsColSorting(JsonEnabled):
-    id: str
-    desc: bool
-
-
 class CommonQueryParamsPagination(JsonEnabled):
     page_index: int
     page_size: int
-
-
-class CommonQueryParamsRole:
-    sc_user_ledger_id: int
-    sc_group_ledger_id: int
-    sc_circle_ledger_id: int
-    sc_user_id: str
-    active_access_mask: int
-
-    def __init__(
-        self,
-        sc_user_ledger_id: int,
-        sc_group_ledger_id: int,
-        sc_circle_ledger_id: int,
-        sc_user_id: str,
-        active_access_mask: int,
-    ):
-        """_summary_
-
-        Args:
-            sc_user_ledger_id (int): _description_
-            sc_group_ledger_id (int): _description_
-            sc_circle_ledger_id (int): _description_
-            sc_user_id (str): _description_
-            active_access_mask (int): _description_
-        """
-        self.sc_user_ledger_id = sc_user_ledger_id
-        self.sc_group_ledger_id = sc_group_ledger_id
-        self.sc_circle_ledger_id = sc_circle_ledger_id
-        self.sc_user_id = sc_user_id
-        self.active_access_mask = active_access_mask
 
 
 class CommonQueryParams:
@@ -181,18 +112,6 @@ class CommonQueryResponse:
         self.error = error or CommonError(0, "", CommonError.ErrorLevel.SUCCESS)
         self.meta = meta or CommonQueryResponseMeta(0, 0, CommonQueryParams())
         self.data = data or []
-
-
-class DatabaseOperation(Enum):
-    CREATE = 0
-    UPDATE = 1
-
-
-class MetadataType(Enum):
-    FARMVIBES_IMAGE = 0
-    FARMVIBES_PIXELS = 1
-    PRODUCT_IMAGE = 2
-    GEOTRACK_IMAGE = 3
 
 
 class sbs_session:

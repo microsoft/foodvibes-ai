@@ -9,6 +9,7 @@ Returns:
 """
 
 from azure.storage.blob import BlobServiceClient
+from api.common.utils import unjsonify
 from api.common.config import logger
 from api.common.types import (
     CommonQueryParamsPagination,
@@ -19,8 +20,6 @@ from api.common.types import (
 import json
 import sqlite3
 from typing import List
-
-from api.common.utils import unjsonify
 
 
 class SbsSqlite:

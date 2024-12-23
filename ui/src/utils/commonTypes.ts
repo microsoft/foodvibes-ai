@@ -323,7 +323,7 @@ export interface ISbsFactPutType extends ISbsReviewType {
     property_value_numeric: number;
 }
 
-export interface ISbsFactType extends ISbsCommonType {
+export interface ISbsFactType extends ISbsCommonType, ISbsReviewType {
     session_id: number;
     subclause_id?: string;
     subclause?: string;
