@@ -24,15 +24,22 @@ const SbsFactCell = (
         backgroundColor: string;
     }
 ) =>
-    <Box sx={{ margin: "6px 0 0", padding: "0px", border: "1px solid #ccc", borderRadius: "8px", }}>
-        <FormControl fullWidth variant="outlined">
-            <InputLabel
-                shrink
-                htmlFor="outlined-read-only-input"
-                style={{ fontSize: "13px", color: "#1976d2", position: "relative", top: "7px", }}
-            >
-                {title} -- Chars. {body?.length}{zoomed ? "" : " truncated"}
-            </InputLabel>
+    <Box sx={{ margin: "0", padding: "0", border: "1px solid #ccc", borderRadius: "8px 8px 0 0", backgroundColor, }}>
+        <Box
+            sx={{
+                fontSize: "9px",
+                backgroundColor: "lavenderblush",
+                color: "#1976d2",
+                width: "100%",
+                display: "block",
+                borderRadius: "8px 8px 0 0",
+                padding: "0 6px", 
+            }}
+        >
+            {title} -- Chars. {body?.length}{zoomed ? "" : " truncated"}
+        </Box>
+
+        <FormControl fullWidth variant="outlined" style={{padding: "0 0 0 6px"}}>
             <TextField
                 id="outlined-read-only-input"
                 multiline
@@ -41,12 +48,13 @@ const SbsFactCell = (
                 value={body}
                 InputProps={{
                     readOnly: true,
-                    style: { fontSize: "12px", padding: "0", color: "black", backgroundColor, lineHeight: `${KLineHeight}px` },
+                    style: { fontSize: "12px", margin: "0", padding: "0", color: "black", backgroundColor, lineHeight: `${KLineHeight}px` },
+                    disableUnderline: true,
                 }}
                 variant="standard"
                 fullWidth
                 classes={{ root: UseSbsStyles().customOutlinedInputRoot }}
-                style={{ padding: "4px 8px", backgroundColor, }}
+                style={{ padding: "0", backgroundColor, }}
             />
         </FormControl>
     </Box>
@@ -73,12 +81,12 @@ const SbsFactRow = forwardRef((
         editPropertyName: string | null;
         setEditPropertyName: (newName: string | null) => void;
         showUnformattedDraft: boolean;
-        bringIntoViewCb: (idx: number) => void;
+        bringIntoViewCb: (id: number) => void;
     }
     , ref: React.ForwardedRef<HTMLTableRowElement>
 ) => {
     const classes = UseSbsStyles();
-    const rowsMax: number = useMemo(() => Math.floor((height - 200) / KLineHeight), [height]);
+    const rowsMax: number = useMemo(() => Math.floor((height - 124) / KLineHeight), [height]);
     const zoomedCurr: boolean = useMemo(() => fact.id && fact.id === currFactZoomed?.data?.[0].id ? true : false, [fact.id, currFactZoomed?.data?.[0].id]);
 
     return (
@@ -127,7 +135,9 @@ const SbsFactRow = forwardRef((
                                     zoomCb(newValue ? arg as number : 0);
 
                                     if (newValue) {
-                                        bringIntoViewCb(idx);
+                                        bringIntoViewCb(fact.id);
+                                    } else {
+                                        setEditPropertyName(null);
                                     }
                                 }}
                                 clicktCbArg={fact.id}
@@ -137,7 +147,15 @@ const SbsFactRow = forwardRef((
                         </Box>
                     </Box>
                     {zoomedCurr ?
-                        <Box sx={{ padding: "12px 0 0", maxWidth: "360px" }}>
+                        <Box sx={{
+                            margin: "6px 0 0",
+                            maxWidth: "360px",
+                            minHeight: "0px",
+                            maxHeight: `${height - 142}px`,
+                            overflow: "auto",
+                            border: "1px solid #ccc",
+                            borderRadius: "8px",
+                        }}>
                             <SbsFactReviewTable
                                 fact={fact}
                                 factPatchCb={factPatchCb}

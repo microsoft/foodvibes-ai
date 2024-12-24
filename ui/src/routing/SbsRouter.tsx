@@ -1,5 +1,5 @@
 import App from "@sbssrc/App";
-import { Session } from "@sbssrc/features/session/Sesseion";
+import { Session } from "@sbssrc/features/session/Session";
 import { createBrowserRouter } from "react-router-dom";
 import ErrorPage from "./Error-page";
 

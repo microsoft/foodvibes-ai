@@ -1,7 +1,7 @@
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
-import { TableCell, TextField } from "@material-ui/core";
-import { Box, styled } from "@mui/system";
+import { TextField } from "@material-ui/core";
+import { Box } from "@mui/system";
 import { useEffect, useState } from "react";
 import { Button } from '@mui/material';
 
@@ -30,8 +30,8 @@ const SbsFactCellEdit = (
             position: "absolute",
             width: "360px",
             height: "200px",
-            bottom: "32px",
-            right: "8px",
+            top: "50px",
+            right: "58px",
             margin: "0 auto",
             textAlign: "left",
             border: "1px solid black",
@@ -61,6 +61,7 @@ const SbsFactCellEdit = (
                 }}>{label}</Box>
                 <Box component="span" sx={{ display: "flex", float: "right", margin: "0" }}>
                     <Button
+                        title='Save & close'
                         variant="contained"
                         color="primary"
                         disabled={textValue === value}
@@ -76,6 +77,7 @@ const SbsFactCellEdit = (
                         }}
                     ><SaveIcon /></Button>
                     <Button
+                        title='Cancel & close'
                         variant="contained"
                         color="error"
                         sx={{
@@ -120,6 +122,7 @@ const SbsFactCellEdit = (
                         // color: "black",
                         // lineHeight: `${KLineHeight}px`,
                     },
+                    disableUnderline: true,
                 }}
                 variant="standard"
                 fullWidth

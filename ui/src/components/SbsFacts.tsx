@@ -1,14 +1,14 @@
 import FormatClearIcon from '@mui/icons-material/FormatClear';
-import { makeStyles, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@material-ui/core";
+import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@material-ui/core";
 import { ISbsFactPutType, ISbsFactType, ISbsSessionType, QueryResponseType } from "@sbssrc/utils/commonTypes";
 import { Box, Stack } from "@mui/system";
-import react, { forwardRef, useEffect } from "react";
-import SbsButton from './sbsButton';
+import react, { createRef, forwardRef, useEffect, useState } from "react";
 import SbsToggle from './SbsToggle';
 import SbsFactCellEdit from './SbsFactCellEdit';
 import SbsFactRow from './SbsFactRow';
 import { UseSbsStyles } from './SbsStyledCtls';
 import SbsBoundaryMarker from './sbsBoundaryMarker';
+import { Button } from '@mui/material';
 
 const SbsPagingMarker = (
     {
@@ -38,11 +38,10 @@ const SbsFacts = forwardRef((
         showSessions,
         currFacts,
         currFactZoomed,
-        currSessionZoomed,
+        lastIdFacts,
         pagingState,
         setPagingState,
         factPatchCb,
-        zoomed,
         zoomCb,
         editPropertyName,
         setEditPropertyName,
@@ -54,11 +53,10 @@ const SbsFacts = forwardRef((
         showSessions: () => void;
         currFacts: QueryResponseType<ISbsFactType>;
         currFactZoomed: QueryResponseType<ISbsFactType>;
-        currSessionZoomed: ISbsSessionType | undefined;
+        lastIdFacts: number;
         pagingState: number;
         setPagingState: (value: number) => void;
         factPatchCb: (id: number, payload: ISbsFactPutType) => void;
-        zoomed: boolean;
         zoomCb: (id: number) => void;
         editPropertyName: string | null;
         editPropertyLabel: string;
@@ -69,31 +67,34 @@ const SbsFacts = forwardRef((
     , ref: react.ForwardedRef<HTMLDivElement>
 ) => {
     const classes = UseSbsStyles();
-    const [rowRefs, setRowRefs] = react.useState<React.RefObject<HTMLTableRowElement>[]>([]);
-    const bringIntoViewCb = (idx: number) => {
-        const zoomRefStart: React.RefObject<HTMLTableRowElement> | null = idx < rowRefs.length ? rowRefs[idx] : null;
-        const zoomRefEnd: React.RefObject<HTMLTableRowElement> | null = idx + 1 < rowRefs.length ? rowRefs[idx + 1] : null;
+    const [rowRefs, setRowRefs] = useState<{ [key: number]: React.RefObject<HTMLTableRowElement> }>({});
+    const bringIntoViewCb = (id: number) => {
+        const zoomRefStart: React.RefObject<HTMLTableRowElement> | null = rowRefs[id];
 
-        console.log("bringIntoViewCb", idx, zoomRefStart, zoomRefEnd);
+        console.log("@@@@@bringIntoViewCb", id, zoomRefStart);
 
-        if (zoomRefEnd?.current) {
+        if (zoomRefStart?.current) {
             setTimeout(() => {
-                console.log("END Scrolling into view");
-                zoomRefEnd?.current?.scrollIntoView({ behavior: 'instant', block: 'end', inline: 'nearest' });
-
-                if (zoomRefStart?.current) {
-                    setTimeout(() => {
-                        console.log("START Scrolling into view");
-                        zoomRefStart?.current?.scrollIntoView({ behavior: 'instant', block: 'start', inline: 'nearest' });
-                        zoomRefStart?.current?.parentElement?.parentElement?.parentElement?.scrollBy(0, -40);
-                    }, 100);
-                }
+                console.log("START Scrolling into view");
+                zoomRefStart?.current?.scrollIntoView({ behavior: 'instant', block: 'start', inline: 'nearest' });
+                zoomRefStart?.current?.parentElement?.parentElement?.parentElement?.scrollBy(0, -40);
             }, 100);
         }
     };
     useEffect(() => {
-        setRowRefs(currFacts?.data?.map(() => react.createRef()) || []);
+        const newRefs: { [key: number]: React.RefObject<HTMLTableRowElement> } = {};
+
+        currFacts?.data?.forEach((fact: ISbsFactType) => {
+            newRefs[fact.id] = createRef<HTMLTableRowElement>();
+        });
+        setRowRefs(newRefs);
+        console.log("@@@@@SbsFacts: newRefs", newRefs);
     }, [currFacts?.data]);
+
+    useEffect(() => {
+        console.log("@@@@@SbsFacts: lastIdFacts", lastIdFacts);
+        bringIntoViewCb(lastIdFacts);
+    }, [lastIdFacts]);
 
     return (
         <>
@@ -124,8 +125,22 @@ const SbsFacts = forwardRef((
                 }}
             >
                 <Box sx={{ padding: "0 16px", backgroundColor: "lavenderblush" }}>
-                    Fact Count: <strong>{currFacts?.meta?.row_count}</strong> -- Session: <strong>{currFacts?.meta?.query_params?.global_filter}</strong>
-                    <SbsButton caption="View Session List" style={{ float: "right" }} clicktCb={showSessions} />
+                    Blob: <strong>{currFacts?.meta?.query_params?.global_filter}</strong> (Fact Count: <strong>{currFacts?.meta?.row_count}</strong>)
+                    <Button
+                        title="View Blob List"
+                        variant="contained"
+                        color="primary"
+                        sx={{
+                            float: "right",
+                            border: '1px solid white',
+                            margin: '0 4px 0 0',
+                            fontSize: '10px',
+                            minWidth: 'auto',
+                            padding: '4px 8px',
+                        }}
+                        onClick={showSessions}
+                    >View Blob List</Button>
+
                 </Box>
                 <TableContainer component={Paper} className={classes.tableContainer} style={{ width: '100%', margin: 'auto', height: `${height}px`, }}>
                     <Table stickyHeader>
@@ -150,7 +165,13 @@ const SbsFacts = forwardRef((
                                         <FormatClearIcon />
                                     </SbsToggle>
                                 </TableCell>
-                                <TableCell className={classes.compactCell2}>Review</TableCell>
+                                <TableCell className={classes.compactCell2}>
+                                    Review
+                                    {" "}pIdx: {currFacts?.meta?.query_params?.pagination?.page_index}
+                                    {" "}pSz: {currFacts?.meta?.query_params?.pagination?.page_size}
+                                    {" "}totalCnt: {currFacts?.meta?.row_count}
+                                    {" "}currCnt: {currFacts?.data?.length}
+                                </TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -169,7 +190,7 @@ const SbsFacts = forwardRef((
                                     }
                                     <SbsFactRow
                                         key={`factRow${idx}`}
-                                        ref={rowRefs[idx]}
+                                        ref={rowRefs[fact.id]}
                                         height={height}
                                         currFactZoomed={currFactZoomed}
                                         factPatchCb={factPatchCb}

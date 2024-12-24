@@ -75,6 +75,9 @@ export const sessionSlice = createAppSlice({
         actionSetShowUnformattedDraft: create.reducer((state, actions: PayloadAction<boolean>) => {
             state.showUnformattedDraft = actions.payload;
         }),
+        actionSetSilentOpInProgress: create.reducer((state, actions: PayloadAction<boolean>) => {
+            state.silentOpInProgress = actions.payload;
+        }),
         actionSetDetailLevelFacts: create.reducer(
             (state, action: PayloadAction<CommonDetailLevel>) => {
                 state.currFacts.detailLevel = action.payload;
@@ -163,28 +166,28 @@ export const sessionSlice = createAppSlice({
                     state.currSessions.lastId = payload.meta.arg.queryParams.idToFetch;
                 },
                 fulfilled: (state, action) => {
-                    // const pageSize = state.queryParams.pagination?.pageSize ?? 10;
-                    // const pageIndexOld = state.queryParams.pagination?.pageIndex ?? 0;
-                    // const pageIndexNew = action.payload.meta?.query_params?.pagination?.page_index ?? 0;
-                    // const pagingIncreasing: boolean = pageIndexOld > pageIndexNew;
-                    // const dataOld: ISbsFactType[] = (state.queryResponse.data as ISbsFactType[]) ?? [];
-                    // const dataNew: ISbsFactType[] = (action.payload.data as ISbsFactType[]) ?? [];
-                    // const data: ISbsFactType[] = pagingIncreasing ?
-                    //     [...dataOld.slice(-pageSize), ...dataNew] :
-                    //     [...dataNew, ...dataOld.slice(0, pageSize)];
-
                     const dataNew: ISbsFactType[] = (action.payload.data as ISbsFactType[]) ?? [];
                     const dataOld: ISbsFactType[] = [...((state.currFacts.queryResponse.data as ISbsFactType[]) ?? [])].filter(e =>
                         !dataNew.find(e2 => e2.id === e.id)
                     );
+                    const pageSize = state.currFacts.queryParams.pagination?.pageSize ?? 10;
+                    const pageIndexNew = state.currFacts.queryParams.pagination?.pageIndex ?? 0;
+                    const pageIndexOld = state.currFacts.queryResponse.meta?.query_params?.pagination?.page_index ?? 0;
+                    const pagingIncreasing: boolean = pageIndexOld < pageIndexNew;
+                    const data = pagingIncreasing ? [...dataOld, ...dataNew] : [...dataNew, ...dataOld];
                     const payload: QueryResponseApiType<ISbsFactType> = {
                         ...action.payload,
-                        data: [...dataOld, ...dataNew],
+                        data: pagingIncreasing ? data.slice(-3 * pageSize) : data.slice(0, 3 * pageSize),
                     };
                     SetFeatureThunkStateFulfilled(state, state.currFacts, payload);
+
+                    state.currFacts.lastId = pagingIncreasing ? data[data.length - pageSize]?.id : data[pageSize - 1]?.id;
+                    state.silentOpInProgress = false;
                 },
                 rejected: (state, action) => {
                     SetFeatureThunkStateRejected(state, state.currFacts, action);
+
+                    state.silentOpInProgress = false;
                 },
             },
         ),
@@ -221,6 +224,8 @@ export const sessionSlice = createAppSlice({
             },
             {
                 pending: (state, payload) => {
+                    state.silentOpInProgress = true;
+
                     SetFeatureThunkStatePending(state, state.currFactZoomed, payload);
                 },
                 fulfilled: (state, action) => {
@@ -249,9 +254,13 @@ export const sessionSlice = createAppSlice({
                         e => e.id === action.meta.arg.queryParams.id2ToFetch ? currFactZoomedItem : e
                     );
                     SetFeatureThunkStateFulfilled(state, state.currFactZoomed, null);
+
+                    state.silentOpInProgress = false;
                 },
                 rejected: (state, action) => {
                     SetFeatureThunkStateRejected(state, state.currFactZoomed, action);
+
+                    state.silentOpInProgress = false;
                 },
             },
         ),
@@ -274,6 +283,7 @@ export const sessionSlice = createAppSlice({
         selectEditPropertyName: state => state.editPropertyName,
         selectEditPropertyLabel: state => state.editPorpertyLabel,
         selectShowUnformattedDraft: state => state.showUnformattedDraft,
+        selectSilentOpInProgress: state => state.silentOpInProgress,
     },
 });
 
@@ -287,13 +297,14 @@ export const {
     actionSetPagingIncreasingFacts,
     actionSetEditPropertyName,
     actionSetShowUnformattedDraft,
+    actionSetSilentOpInProgress,
     actionSetDetailLevelFacts,
     actionSetQueryParamsSessions,
     actionSetQueryParamsFacts,
     actionSelectCurrSessions,
     actionSelectCurrFacts,
     actionSelectCurrFactZoomed,
-    actionPatchSession: actionPatchSession,
+    actionPatchSession,
 } = sessionSlice.actions;
 export const {
     selectUpsertState,
@@ -312,4 +323,5 @@ export const {
     selectEditPropertyName,
     selectEditPropertyLabel,
     selectShowUnformattedDraft,
+    selectSilentOpInProgress,
 } = sessionSlice.selectors;

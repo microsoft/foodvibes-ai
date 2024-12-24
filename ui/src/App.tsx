@@ -17,9 +17,9 @@ import {
 import { default as logo } from "@sbssrc/assets/logo.png";
 import { SbsMenu } from "@sbssrc/components/SbsMenu";
 import SbsMessageShow from "@sbssrc/components/SbsMessageShow";
-import { selectLastIdFactZoomed, selectSessionIsLoading, selectScannedSessions } from "@sbssrc/features/session/sessionSlice";
+import { selectSilentOpInProgress, selectSessionIsLoading, selectScannedSessions } from "@sbssrc/features/session/sessionSlice";
 import { CommonError, ILayoutTracker } from "@sbssrc/utils/commonTypes";
-import { Avatar, Backdrop, CircularProgress, CssBaseline, IconButton, Toolbar, Tooltip } from "@mui/material";
+import { Backdrop, CircularProgress, CssBaseline, IconButton, Toolbar } from "@mui/material";
 import { closeSnackbar, SnackbarProvider } from "notistack";
 import { KAppTitle, KAppVersion } from "./utils/commonConstants";
 import useLayoutTracker from "./utils/hooks/UseLayoutTracker";
@@ -32,7 +32,7 @@ const MainContent = () => {
     const commonErrors: CommonError[] = useAppSelector(selectCommonErrors);
     const mainIsLoading: boolean = useAppSelector(selectMainIsLoading);
     const sessionIsLoading: boolean = useAppSelector(selectSessionIsLoading);
-    const lastIdFactZoomed: number = useAppSelector(selectLastIdFactZoomed);
+    const silentOpInProgress: boolean = useAppSelector(selectSilentOpInProgress);
     const scannedSessions: string[] = useAppSelector(selectScannedSessions);
     const username: string | null = useAppSelector(selectUsername);
     const setMainIsLoading = (loading: boolean) => dispatch(actionSetMainIsLoading(loading));
@@ -177,7 +177,7 @@ const MainContent = () => {
             <Backdrop
                 sx={{ backgroundColor: 'rgb(255, 255, 255, 0.4)', color: 'navy', zIndex: (theme) => theme.zIndex.drawer + 110 }}
                 open={
-                    mainIsLoading || scannedSessions?.length > 0 || (sessionIsLoading && !lastIdFactZoomed)
+                    mainIsLoading || scannedSessions?.length > 0 || (sessionIsLoading && !silentOpInProgress)
                 }
             >
                 <CircularProgress color="inherit" />

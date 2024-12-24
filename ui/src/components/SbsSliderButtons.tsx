@@ -149,7 +149,7 @@ const SbsSliderButtonsVertical = (
     <Box sx={{
         display: "inline-flex",
         padding: "0",
-        margin: "0px 8px",
+        margin: "0",
     }}>
         {caption &&
             <Box sx={{ width: "120px", padding: "4px 0 0 " }}>{
@@ -260,6 +260,7 @@ const SbsSliderButtons = (
                     height: isHorizontal ? "22px" : "24px",
                     textAlign: "left",
                     width: "100%",
+                    maxWidth: "300px",
                 }}
             >
                 {isHorizontal ?
@@ -272,7 +273,8 @@ const SbsSliderButtons = (
                         handleSelection={handleSelection}
                     />
                     :
-                    <SbsSliderButtonsVertical selectedValue={selectedValue}
+                    <SbsSliderButtonsVertical
+                        selectedValue={selectedValue}
                         captionPrefix={captionPrefix}
                         caption={caption}
                         colorsBc={colorsBc}

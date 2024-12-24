@@ -95,6 +95,7 @@ export const GetFeatureInitialState = <T1, T2>(): FeatureSliceState<T1, T2> => (
     editPropertyName: null,
     editPorpertyLabel: "",
     showUnformattedDraft: false,
+    silentOpInProgress: false,
     scannedSessions: [],
     currSessions: InitSubFeature<T1>(),
     currFacts: InitSubFeature<T2>(),

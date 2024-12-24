@@ -98,6 +98,7 @@ export interface FeatureSliceState<T1, T2> extends BaseSliceState {
     editPropertyName: string | null;
     editPorpertyLabel: string;
     showUnformattedDraft: boolean;
+    silentOpInProgress: boolean;
     scannedSessions: string[];
     currSessions: SubFeature<T1>;
     currFacts: SubFeature<T2>;

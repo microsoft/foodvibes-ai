@@ -1,19 +1,8 @@
-import FormatClearIcon from '@mui/icons-material/FormatClear';
-import ZoomInIcon from '@material-ui/icons/ZoomIn';
 import EditIcon from '@mui/icons-material/Edit';
-import SaveIcon from '@mui/icons-material/Save';
-import CancelIcon from '@mui/icons-material/Cancel';
-import { FormControl, InputLabel, makeStyles, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from "@material-ui/core";
-import { ISbsFactPutType, ISbsFactType, ISbsSessionType, QueryResponseType } from "@sbssrc/utils/commonTypes";
-import { Box, Stack, styled, width } from "@mui/system";
-import SbsBoundaryMarker from "./sbsBoundaryMarker";
-import react, { forwardRef, useEffect, useMemo, useRef, useState } from "react";
-import SbsButton from './sbsButton';
+import { Paper, Table, TableBody, TableContainer, TableHead } from "@material-ui/core";
+import { ISbsFactPutType, ISbsFactType } from "@sbssrc/utils/commonTypes";
+import { useMemo } from "react";
 import SbsToggle from './SbsToggle';
-import SbsSliderButtons from './SbsSliderButtons';
-import { KLineHeight, KScoreLableAc, KScoreLableAcShort, KScoreLableCl, KScoreLableClShort, KScoreLableCn, KScoreLableCnShort, KScoreLableCp, KScoreLableCpShort, KScoreLableCr, KScoreLableCrShort } from '@sbssrc/utils/commonConstants';
-import { Button } from '@mui/material';
-import SbsFactCellEdit from './SbsFactCellEdit';
 import { CompactTableCell, CompactTableCell0, CompactTableCellHeader, CompactTableCellLong, CompactTableRow } from './SbsStyledCtls';
 import SbsFactScorePicker from './SbsFactScorePicker';
 

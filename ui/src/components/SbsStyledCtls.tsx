@@ -11,6 +11,12 @@ export const UseSbsStyles = makeStyles({
         backgroundColor: '#fff',
         zIndex: 2,
     },
+    stickyHeader2: {
+        position: 'sticky',
+        top: 33,
+        backgroundColor: '#fff',
+        zIndex: 2,
+    },
     compactRow: {
         height: 24,
         verticalAlign: 'top',
@@ -18,10 +24,25 @@ export const UseSbsStyles = makeStyles({
     compactCell: {
         padding: '4px 8px',
         width: '40%',
+        verticalAlign: 'top',
+    },
+    compactCell1: {
+        padding: '4px 8px',
+        width: '100%',
+        verticalAlign: 'top',
     },
     compactCell2: {
         padding: '4px 8px',
         width: "360px",
+        verticalAlign: 'top',
+    },
+    compactCell3: {
+        padding: '4px 8px',
+        maxWidth: "186px",
+        minWidth: "186px",
+        whiteSpace: "nowrap",
+        verticalAlign: 'top',
+        backgroundColor: 'lavenderblush',
     },
     compactNumericCell: {
         padding: '4px 8px',

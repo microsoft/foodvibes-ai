@@ -25,26 +25,8 @@ const SbsBoundaryMarker = ({ hasComeIntoViewCb }: { hasComeIntoViewCb: (isInView
 
 
     return (
-        <div ref={refBoundaryMarker} style={{ height: "0", width: "0", backgroundColor: "blue" }}></div>
+        <div ref={refBoundaryMarker} style={{ height: "1px", width: "1px", backgroundColor: "transparent" }}></div>
     );
 };
 
 export default SbsBoundaryMarker;
-
-// useEffect(() => {
-//     if (hasHitContentBottom) {
-//         setHasHitContentBottom(false);
-//     }
-
-//     const pageIndex: number = (queryParams.pagination?.pageIndex ?? 0) + (queryParams.pagination?.pageSize ?? 0);
-
-//     if ((contactSearchResults?.meta?.rowCount ?? 0) >= pageIndex) {
-//         setQuery({
-//             …queryParams,
-//             pagination: {
-//                 …queryParams.pagination,
-//                 pageIndex,
-//             },
-//         } as QueryParamsType);
-//     }
-// }, [hasHitContentBottom]);

@@ -14,7 +14,7 @@ export const KApiStatusLoading = "loading";
 export const KApiStatusLocked = "locked";
 
 export const KLedgerTypeNone = "";
-export const KLedgerTypeSession = "Session";
+export const KLedgerTypeSession = "session";
 export const KBannerHeightMin = 70;
 export const KLineHeight = 16;
 

@@ -1,34 +1,13 @@
-import { makeStyles, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@material-ui/core";
+import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@material-ui/core";
 import { ISbsSessionType, QueryResponseType } from "@sbssrc/utils/commonTypes";
-import { Box, Stack } from "@mui/system";
+import { Stack } from "@mui/system";
 import SbsBoundaryMarker from "./sbsBoundaryMarker";
-import react, { forwardRef, useEffect, useMemo, useState } from "react";
-import SbsButton from "./sbsButton";
+import react, { forwardRef, useEffect, useState } from "react";
 import { default as iconFile } from "@sbssrc/assets/icon_file.png";
 import { default as iconFileJson } from "@sbssrc/assets/icon_file_json.png";
 import { default as iconFolder } from "@sbssrc/assets/icon_folder.png";
+import { UseSbsStyles } from "./SbsStyledCtls";
 
-const useStyles = makeStyles({
-    tableContainer: {
-        // maxHeight: 440,
-    },
-    stickyHeader: {
-        position: 'sticky',
-        top: 0,
-        backgroundColor: '#fff',
-        zIndex: 2,
-    },
-    compactRow: {
-        height: 24,
-    },
-    compactCell: {
-        padding: '4px 8px',
-    },
-    compactNumericCell: {
-        padding: '4px 8px',
-        textAlign: 'right',
-    },
-});
 const SbsIcon = (fileName: string) => {
     let icon: string = iconFile;
 
@@ -41,8 +20,6 @@ const SbsIcon = (fileName: string) => {
     return <img
         src={icon}
         className={"App-icon"}
-        height={26}
-        // width={24}
         alt="logo"
         style={{
             borderWidth: 0,
@@ -83,7 +60,7 @@ const SbsSession = forwardRef((
 
     return (
         <TableRow key={`session${idx}`} className={classes.compactRow}>
-            <TableCell className={classes.compactCell}>
+            <TableCell className={classes.compactCell1}>
                 <>
                     <span
                         style={{ cursor: 'pointer' }}
@@ -108,7 +85,11 @@ const SbsSession = forwardRef((
                     </span>
                 </>
             </TableCell>
-            <TableCell className={classes.compactCell}>{session.modified}</TableCell>
+            <TableCell className={classes.compactCell3}>
+                <span style={{ color: '#444444', lineHeight: "30px"}}>
+                    {session.modified.replace('T', ' ').replace('Z', '')}
+                </span>
+            </TableCell>
         </TableRow>
     );
 });
@@ -128,7 +109,7 @@ const SbsSessions = forwardRef((
         selectCb: (path: string) => void;
         refreshCb: () => void;
     }, ref: react.ForwardedRef<HTMLDivElement>) => {
-    const classes = useStyles();
+    const classes = UseSbsStyles();
     const [pathCurrent, setPathCurrent] = useState<string>('');
     const [pathCurrentFlds, setPathCurrentFlds] = useState<string[]>([]);
     const [pathParent, setPathParent] = useState<string>('');
@@ -163,11 +144,7 @@ const SbsSessions = forwardRef((
                 <Table stickyHeader>
                     <TableHead>
                         <TableRow className={classes.stickyHeader}>
-                            {/* <TableCell className={classes.compactNumericCell}>ID</TableCell>
-                            <TableCell className={classes.compactNumericCell}>Fact Count</TableCell>
-                            <TableCell className={classes.compactCell}>Review Date</TableCell>
-                            <TableCell className={classes.compactCell}>Reviewer</TableCell> */}
-                            <TableCell className={classes.compactCell}>Container <strong>{
+                            <TableCell className={classes.compactCell1} colSpan={2} >Container <strong>{
                                 pathCurrentFlds.map((fld: string, idx: number) => (
                                     <span
                                         key={`fld${idx}`}
@@ -184,12 +161,10 @@ const SbsSessions = forwardRef((
                                 ))
 
                             }</strong></TableCell>
-                            <TableCell className={classes.compactCell}>Modified</TableCell>
-                            {/* <TableCell className={classes.compactCell}>
-                                <SbsButton caption="Refresh" clicktCb={() => {
-                                    refreshCb();
-                                }} />
-                            </TableCell> */}
+                        </TableRow>
+                        <TableRow className={classes.stickyHeader2}>
+                            <TableCell className={classes.compactCell1}>Name</TableCell>
+                            <TableCell className={classes.compactCell3}>Modified</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>

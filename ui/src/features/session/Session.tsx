@@ -40,6 +40,8 @@ import {
     actionSetEditPropertyName,
     selectEditPropertyName,
     selectEditPropertyLabel,
+    actionSetSilentOpInProgress,
+    selectLastIdFacts,
 } from "./sessionSlice";
 import { useOutletContext } from "react-router";
 import SbsSessions from "@sbssrc/components/SbsSessions";
@@ -51,6 +53,7 @@ export const Session = () => {
     const dispatch = useAppDispatch();
     const lastIdSessions: number = useAppSelector(selectLastIdSessions);
     const lastIdFactZoomed: number = useAppSelector(selectLastIdFactZoomed);
+    const lastIdFacts: number = useAppSelector(selectLastIdFacts);
     const queryParamsCurrSessions: QueryParamsType = useAppSelector(selectGetQueryParamscurrSessions);
     const queryParamsCurrFacts: QueryParamsType = useAppSelector(selectGetQueryParamsCurrFacts);
     const scannedSessions: string[] = useAppSelector(selectScannedSessions);
@@ -60,6 +63,7 @@ export const Session = () => {
     // const setPagingIncreasing: (doLoad: boolean) => void = (doLoad: boolean) => dispatch(actionSetPagingIncreasing(doLoad));
     const setEditPropertyName = (newName: string | null) => dispatch(actionSetEditPropertyName(newName));
     const setShowUnformattedDraft = (newState: boolean) => dispatch(actionSetShowUnformattedDraft(newState));
+    const setSilentOpInProgress = (newState: boolean) => dispatch(actionSetSilentOpInProgress(newState));
     const resetFacts = () => dispatch(actionResetFacts());
     const resetFactZoomed = () => dispatch(actionResetFactZoomed());
     const setQueryParamsCurrSessions = (payload: Partial<QueryParamsType>) => dispatch(actionSetQueryParamsSessions(payload));
@@ -136,6 +140,7 @@ export const Session = () => {
         const pageIndex = handlePageChangeIndex(increasing, queryResponseCurrFacts);
 
         if (pageIndex > -1 && queryParamsCurrFacts.pagination.pageIndex !== pageIndex) {
+            setSilentOpInProgress(true);
             selectCurrFacts({
                 ...queryParamsCurrFacts,
                 id2ToFetch: 0,
@@ -239,7 +244,7 @@ export const Session = () => {
                     }}
                     currFacts={queryResponseCurrFacts}
                     currFactZoomed={queryResponseCurrFactZoomed}
-                    currSessionZoomed={queryResponseCurrSessions?.data?.find(e => e.id === lastIdSessions)}
+                    lastIdFacts={lastIdFacts}
                     pagingState={0}
                     setPagingState={(value: number): void => {
                         setPagingStateFacts(value);
@@ -260,7 +265,6 @@ export const Session = () => {
                             review_date: NowTimestamp(),
                         });
                     }}
-                    zoomed={zoomed}
                     zoomCb={(id: number): void => {
                         if (id) {
                             selectCurrFactZoomed(QueryParamsInit({
