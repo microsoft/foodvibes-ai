@@ -1,4 +1,4 @@
-import { Box, Slider, Typography } from "@mui/material";
+import { Slider } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 
 const SbsSlider = (
@@ -14,10 +14,12 @@ const SbsSlider = (
         step: number;
         style: React.CSSProperties | undefined;
         changeCb: (value: number) => void;
-    }) => {
+    }
+) => {
     const [value, setValue] = useState(defaultValue);
     const marks = useMemo(() => Array.from({ length: max + 1 }, (_, idx) => {
         const newValue = idx;
+
         return {
             value: newValue,
             label: idx === 0 || idx === max + 1 || (idx + 1) % 2 ? idx : "",

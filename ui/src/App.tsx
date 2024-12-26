@@ -53,9 +53,17 @@ const MainContent = () => {
     const [windowWidth, setWindowWith] = useState(window.innerWidth);
     const [windowHeight, setWindowHeight] = useState(window.innerHeight);
     const headerTracker: ILayoutTracker = useLayoutTracker([windowWidth, windowHeight]);
-    const outletTracker: ILayoutTracker = useLayoutTracker([windowWidth, windowHeight, headerTracker]);
-    const titleTracker: ILayoutTracker = useLayoutTracker([windowWidth, windowHeight, outletTracker]);
-    const bodyTracker: ILayoutTracker = useLayoutTracker([windowWidth, windowHeight, outletTracker, titleTracker]);
+    const titleTracker: ILayoutTracker = useLayoutTracker([windowWidth, windowHeight]);
+    const bodyTracker: ILayoutTracker = useLayoutTracker([windowWidth, windowHeight, titleTracker]);
+    const titleTracker2: ILayoutTracker = useLayoutTracker([windowWidth, windowHeight]);
+    const bodyTracker2: ILayoutTracker = useLayoutTracker([windowWidth, windowHeight, titleTracker2]);
+    const outletTracker: ILayoutTracker = useLayoutTracker(
+        [
+            windowWidth, windowHeight,
+            headerTracker, titleTracker.ref?.current, bodyTracker.ref?.current,
+            titleTracker2.ref?.current, bodyTracker2.ref?.current
+        ]
+    );
     const onResize = useCallback(() => {
         setWindowWith(window.innerWidth);
         setWindowHeight(window.innerHeight);
@@ -72,11 +80,15 @@ const MainContent = () => {
         setMainIsLoading(false); // Do this to flag ending of double mounting of this component by React
     }, []);
 
-    // console.info('----------------------------------------');
-    // console.info('##headerTracker', headerTracker.top, headerTracker.height);
-    // console.info('##outletTracker', outletTracker.top, outletTracker.height);
-    // console.info('##titleTracker', titleTracker.top, titleTracker.height);
-    // console.info('##bodyTracker', bodyTracker.top, bodyTracker.height);
+    console.info('----------------------------------------');
+    console.info('##windowWidth', windowWidth);
+    console.info('##windowHeight', windowHeight);
+    console.info('##headerTracker t,w,h', headerTracker.top, headerTracker.width, headerTracker.height);
+    console.info('##outletTracker t,w,h', outletTracker.top, outletTracker.width, outletTracker.height);
+    console.info('##titleTracker t,w,h', titleTracker.top, titleTracker.width, titleTracker.height);
+    console.info('##bodyTracker t,w,h', bodyTracker.top, bodyTracker.width, bodyTracker.height);
+    console.info('##titleTracker2 t,w,h', titleTracker2.top, titleTracker2.width, titleTracker2.height);
+    console.info('##bodyTracker2 t,w,h', bodyTracker2.top, bodyTracker2.width, bodyTracker2.height);
 
     return (
         <FluentProvider theme={webLightTheme}>
@@ -137,13 +149,13 @@ const MainContent = () => {
                         </Box>
                         {sessionIsLoading ? (
                             <div style={{
-                                borderRadius: "12px 0 0 0",
+                                borderRadius: "12px 12px 0 0",
                                 backgroundColor: "gainsboro",
                                 color: "darkblue",
                                 zIndex: 1320,
                                 position: "absolute",
                                 top: "calc(100vh - 28px)",
-                                right: "0px",
+                                right: "16px",
                                 overflow: "hidden",
                                 padding: "4px 12px",
                             }}>
@@ -164,11 +176,12 @@ const MainContent = () => {
                     display: "block",
                     backgroundColor: "white",
                     width: "100%",
-                    height: `calc(100vh - ${headerTracker.height}px)`,
+                    maxHeight: `calc(100vh - ${headerTracker.height}px)`,
+                    minHeight: `calc(100vh - ${headerTracker.height}px)`,
                     overflow: "hidden",
                 }}
             >
-                <Outlet context={{ outletTracker, titleTracker, bodyTracker }} />
+                <Outlet context={{ outletTracker, titleTracker, bodyTracker, titleTracker2, bodyTracker2 }} />
             </Box>
             <SbsMessageShow
                 clearErrorsCb={clearErrorsCb}

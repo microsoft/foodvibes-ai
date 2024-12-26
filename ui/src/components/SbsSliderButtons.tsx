@@ -47,11 +47,13 @@ const SbsSliderButtonsHorizaontal = (
             title={`${caption}: ${colorText[selectedValue]}`}
             sx={{
                 padding: "0",
-                margin: "0 1px 0 0",
+                margin: "0 2px 0 0",
                 backgroundColor: "lavenderblush",
                 whiteSpace: "nowrap",
                 borderRadius: "4px",
-                border: "1px solid gray",
+                borderTop: "1px solid #bbbbbb",
+                borderBottom: "1px solid #bbbbbb",
+                borderLeft: "1px solid #bbbbbb",
             }}>
             {caption && captionPrefix &&
                 <Box

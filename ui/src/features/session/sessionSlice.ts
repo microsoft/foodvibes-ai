@@ -181,7 +181,7 @@ export const sessionSlice = createAppSlice({
                     };
                     SetFeatureThunkStateFulfilled(state, state.currFacts, payload);
 
-                    state.currFacts.lastId = pagingIncreasing ? data[data.length - pageSize]?.id : data[pageSize - 1]?.id;
+                    state.currFacts.lastId = pagingIncreasing || pageIndexNew === 0 && data.length === pageSize ? data[data.length - pageSize]?.id : data[pageSize - 1]?.id;
                     state.silentOpInProgress = false;
                 },
                 rejected: (state, action) => {

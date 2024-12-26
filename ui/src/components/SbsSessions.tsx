@@ -1,8 +1,8 @@
 import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@material-ui/core";
 import { ISbsSessionType, QueryResponseType } from "@sbssrc/utils/commonTypes";
-import { Stack } from "@mui/system";
+import { Box, Stack } from "@mui/system";
 import SbsBoundaryMarker from "./sbsBoundaryMarker";
-import react, { forwardRef, useEffect, useState } from "react";
+import react, { useEffect, useState } from "react";
 import { default as iconFile } from "@sbssrc/assets/icon_file.png";
 import { default as iconFileJson } from "@sbssrc/assets/icon_file_json.png";
 import { default as iconFolder } from "@sbssrc/assets/icon_folder.png";
@@ -31,7 +31,7 @@ const SbsIcon = (fileName: string) => {
     />
 
 };
-const SbsSession = forwardRef((
+const SbsSession = (
     {
         pathCurrent,
         currSession,
@@ -52,7 +52,8 @@ const SbsSession = forwardRef((
         session: ISbsSessionType;
         idx: number;
         classes: any;
-    }, ref: react.ForwardedRef<HTMLDivElement>) => {
+    }
+) => {
 
     if (idx < 0) {
         console.info('SbsSession', session);
@@ -86,29 +87,36 @@ const SbsSession = forwardRef((
                 </>
             </TableCell>
             <TableCell className={classes.compactCell3}>
-                <span style={{ color: '#444444', lineHeight: "30px"}}>
+                <span style={{ color: '#444444', lineHeight: "30px" }}>
                     {session.modified.replace('T', ' ').replace('Z', '')}
                 </span>
             </TableCell>
         </TableRow>
     );
-});
-const SbsSessions = forwardRef((
+};
+const SbsSessions = (
     {
+        refTitleTracker,
+        refBodyTracker,
         height,
+        subHeight,
         currSession,
         pagingState,
         setPagingState,
         selectCb,
         refreshCb,
     }: {
-        height: string;
+        refTitleTracker: React.RefObject<HTMLDivElement>;
+        refBodyTracker: React.RefObject<HTMLDivElement>;
+        height: number;
+        subHeight: number;
         currSession: QueryResponseType<ISbsSessionType>;
         pagingState: number;
         setPagingState: (value: number) => void;
         selectCb: (path: string) => void;
         refreshCb: () => void;
-    }, ref: react.ForwardedRef<HTMLDivElement>) => {
+    }
+) => {
     const classes = UseSbsStyles();
     const [pathCurrent, setPathCurrent] = useState<string>('');
     const [pathCurrentFlds, setPathCurrentFlds] = useState<string[]>([]);
@@ -132,41 +140,58 @@ const SbsSessions = forwardRef((
     }, [currSession]);
 
     return (
-        <Stack ref={ref} spacing={2}
+        <Stack spacing={1}
             style={{
                 height,
                 width: "100%",
                 overflow: 'auto',
-                padding: '8px 0 0 0'
+                padding: '0'
             }}
         >
-            <TableContainer component={Paper} className={classes.tableContainer} style={{ width: '100%', margin: 'auto', height, }}>
+            <Box ref={refTitleTracker} sx={{ padding: "0", margin: "0", display: "block", }}>
+                <Box sx={{ padding: "8px", backgroundColor: "#dcdcdc", display: "block", }}>
+                    Container <strong>{
+                        pathCurrentFlds.map((fld: string, idx: number) => (
+                            <span
+                                key={`fld${idx}`}
+                                onClick={() => {
+                                    if (idx < pathCurrentFlds.length - 1) {
+                                        selectCb([pathCurrentFlds.slice(0, idx + 1).join('/'), ''].join('/'));
+                                    }
+                                }}
+                                title={idx < pathCurrentFlds.length - 1 ? `Go to ${pathCurrentFlds.slice(0, idx + 1).join('/')}` : ''}>
+                                <span style={idx < pathCurrentFlds.length - 1 ? { color: 'blue', cursor: 'pointer', } : {}}>
+                                    {fld}{"/ "}
+                                </span>
+                            </span>
+                        ))
+                    }</strong>
+                </Box>
+                <TableContainer style={{
+                    width: '100%',
+                    margin: "0",
+                    padding: "0",
+                    maxHeight: `${40}px`,
+                    minHeight: `${40}px`,
+                }}>
+                    <Table stickyHeader>
+                        <TableHead>
+                            <TableRow className={classes.stickyHeader}>
+                                <TableCell className={classes.compactCell1h}>Name</TableCell>
+                                <TableCell className={classes.compactCell3h}>Modified</TableCell>
+                            </TableRow>
+                        </TableHead>
+                    </Table>
+                </TableContainer>
+            </Box>
+            <TableContainer ref={refBodyTracker} component={Paper} className={classes.tableContainer} style={{
+                width: '100%',
+                margin: "0",
+                padding: "0",
+                maxHeight: `${subHeight}px`,
+                minHeight: `${subHeight}px`,
+            }}>
                 <Table stickyHeader>
-                    <TableHead>
-                        <TableRow className={classes.stickyHeader}>
-                            <TableCell className={classes.compactCell1} colSpan={2} >Container <strong>{
-                                pathCurrentFlds.map((fld: string, idx: number) => (
-                                    <span
-                                        key={`fld${idx}`}
-                                        onClick={() => {
-                                            if (idx < pathCurrentFlds.length - 1) {
-                                                selectCb([pathCurrentFlds.slice(0, idx + 1).join('/'), ''].join('/'));
-                                            }
-                                        }}
-                                        title={idx < pathCurrentFlds.length - 1 ? `Go to ${pathCurrentFlds.slice(0, idx + 1).join('/')}` : ''}>
-                                        <span style={idx < pathCurrentFlds.length - 1 ? { color: 'blue', cursor: 'pointer', } : {}}>
-                                            {fld}{"/ "}
-                                        </span>
-                                    </span>
-                                ))
-
-                            }</strong></TableCell>
-                        </TableRow>
-                        <TableRow className={classes.stickyHeader2}>
-                            <TableCell className={classes.compactCell1}>Name</TableCell>
-                            <TableCell className={classes.compactCell3}>Modified</TableCell>
-                        </TableRow>
-                    </TableHead>
                     <TableBody>
                         <>
                             {pathCurrentFlds.length > 1 ?
@@ -193,7 +218,6 @@ const SbsSessions = forwardRef((
                             {currSession?.data?.map((session: ISbsSessionType, idx: number) => (
                                 <SbsSession
                                     key={`sessionRow${idx}`}
-                                    ref={ref}
                                     pathCurrent={pathCurrent}
                                     currSession={currSession}
                                     pagingState={pagingState}
@@ -211,6 +235,6 @@ const SbsSessions = forwardRef((
             </TableContainer>
         </Stack>
     );
-});
+};
 
 export default SbsSessions;

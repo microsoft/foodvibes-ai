@@ -8,13 +8,11 @@ export const UseSbsStyles = makeStyles({
     stickyHeader: {
         position: 'sticky',
         top: 0,
-        backgroundColor: '#fff',
         zIndex: 2,
     },
     stickyHeader2: {
         position: 'sticky',
         top: 33,
-        backgroundColor: '#fff',
         zIndex: 2,
     },
     compactRow: {
@@ -25,11 +23,18 @@ export const UseSbsStyles = makeStyles({
         padding: '4px 8px',
         width: '40%',
         verticalAlign: 'top',
+        whiteSpace: "nowrap",
     },
     compactCell1: {
         padding: '4px 8px',
         width: '100%',
         verticalAlign: 'top',
+    },
+    compactCell1h: {
+        padding: '4px 8px',
+        width: '100%',
+        verticalAlign: 'top',
+        backgroundColor: '#e8e8e8',
     },
     compactCell2: {
         padding: '4px 8px',
@@ -43,6 +48,14 @@ export const UseSbsStyles = makeStyles({
         whiteSpace: "nowrap",
         verticalAlign: 'top',
         backgroundColor: 'lavenderblush',
+    },
+    compactCell3h: {
+        padding: '4px 8px',
+        maxWidth: "186px",
+        minWidth: "186px",
+        whiteSpace: "nowrap",
+        verticalAlign: 'top',
+        backgroundColor: '#e8e8e8',
     },
     compactNumericCell: {
         padding: '4px 8px',
@@ -58,6 +71,45 @@ export const UseSbsStyles = makeStyles({
         },
         "&.Mui-focused fieldset": {
             borderColor: "#0d47a1",
+        },
+    },
+    documentMapContainer: {
+        display: "flex",
+        alignItems: "center",
+        width: "100px",
+        height: "100%",
+    },
+    documentMap: {
+        width: "100px",
+        height: "100%",
+        overflowY: "auto",
+        backgroundColor: "#f0f0f0",
+        border: "1px solid #ccc",
+        fontSize: "11px",
+        lineHeight: "1",
+        color: "#888",
+        cursor: "pointer",
+    },
+    mapLine: {
+        whiteSpace: "nowrap",
+        textOverflow: "ellipsis",
+        overflow: "hidden",
+        padding: "0 2px",
+        "&:hover": {
+            backgroundColor: "yellow",
+            color: "black",
+        },
+    },
+    mapLineInRange: {
+        whiteSpace: "nowrap",
+        textOverflow: "ellipsis",
+        overflow: "hidden",
+        padding: "0 2px",
+        backgroundColor: "black",
+        color: "white",
+        "&:hover": {
+            backgroundColor: "yellow",
+            color: "black",
         },
     },
 });

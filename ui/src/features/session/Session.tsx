@@ -27,9 +27,7 @@ import {
     actionSelectCurrSessions,
     selectResponseCurrFactZoomed,
     selectResponseCurrSessions,
-    actionSetQueryParamsSessions,
     actionResetFacts,
-    selectLastIdFactZoomed,
     selectLastIdSessions,
     actionSelectCurrFactZoomed,
     actionResetFactZoomed,
@@ -49,10 +47,15 @@ import SbsFacts from "@sbssrc/components/SbsFacts";
 import StreamData from "./SessionScan";
 
 export const Session = () => {
-    const context = useOutletContext<{ outletTracker: ILayoutTracker, titleTracker: ILayoutTracker, bodyTracker: ILayoutTracker }>();
+    const context = useOutletContext<{
+        outletTracker: ILayoutTracker,
+        titleTracker: ILayoutTracker,
+        bodyTracker: ILayoutTracker,
+        titleTracker2: ILayoutTracker,
+        bodyTracker2: ILayoutTracker,
+    }>();
     const dispatch = useAppDispatch();
     const lastIdSessions: number = useAppSelector(selectLastIdSessions);
-    const lastIdFactZoomed: number = useAppSelector(selectLastIdFactZoomed);
     const lastIdFacts: number = useAppSelector(selectLastIdFacts);
     const queryParamsCurrSessions: QueryParamsType = useAppSelector(selectGetQueryParamscurrSessions);
     const queryParamsCurrFacts: QueryParamsType = useAppSelector(selectGetQueryParamsCurrFacts);
@@ -60,13 +63,11 @@ export const Session = () => {
     const editPropertyName: string | null = useAppSelector(selectEditPropertyName);
     const editPropertyLabel: string = useAppSelector(selectEditPropertyLabel);
     const showUnformattedDraft: boolean = useAppSelector(selectShowUnformattedDraft);
-    // const setPagingIncreasing: (doLoad: boolean) => void = (doLoad: boolean) => dispatch(actionSetPagingIncreasing(doLoad));
     const setEditPropertyName = (newName: string | null) => dispatch(actionSetEditPropertyName(newName));
     const setShowUnformattedDraft = (newState: boolean) => dispatch(actionSetShowUnformattedDraft(newState));
     const setSilentOpInProgress = (newState: boolean) => dispatch(actionSetSilentOpInProgress(newState));
     const resetFacts = () => dispatch(actionResetFacts());
     const resetFactZoomed = () => dispatch(actionResetFactZoomed());
-    const setQueryParamsCurrSessions = (payload: Partial<QueryParamsType>) => dispatch(actionSetQueryParamsSessions(payload));
     const setQueryParamsCurrFacts = (payload: Partial<QueryParamsType>) => dispatch(actionSetQueryParamsFacts(payload));
     const queryResponseCurrSessions: QueryResponseType<ISbsSessionType> = useAppSelector(selectResponseCurrSessions);
     const queryResponseCurrFacts: QueryResponseType<ISbsFactType> = useAppSelector(selectResponseCurrFacts);
@@ -79,7 +80,6 @@ export const Session = () => {
     const [pagingStateFacts, setPagingStateFacts] = useState<number>(0);
     const [doLoadSessions, setDoLoadSessions] = useState<boolean>(false);
     const [doLoadFacts, setDoLoadFacts] = useState<boolean>(false);
-    const [zoomed, setZoomed] = useState<boolean>(false);
     const handleSessionSelection = (path: string) => {
         setPagingStateSessions(0);
         setDoLoadSessions(false);
@@ -200,10 +200,6 @@ export const Session = () => {
         }
     }, [doLoadFacts, pagingStateFacts, queryResponseCurrFacts?.meta?.row_count]);
     useEffect(() => {
-        console.log("lastIdFactZoomed", lastIdFactZoomed);
-        setZoomed(lastIdFactZoomed ? true : false);
-    }, [lastIdFactZoomed]);
-    useEffect(() => {
         handleSessionSelection("");
     }, []);
 
@@ -237,8 +233,10 @@ export const Session = () => {
             }
             {queryResponseCurrFacts?.data ?
                 <SbsFacts
-                    ref={context.bodyTracker.ref}
+                    refTitleTracker={context.titleTracker.ref}
+                    bodyTracker={context.bodyTracker}
                     height={context.outletTracker.height}
+                    subHeight={context.outletTracker.height - context.titleTracker.height}
                     showSessions={() => {
                         resetFacts();
                     }}
@@ -289,8 +287,10 @@ export const Session = () => {
                 />
                 :
                 <SbsSessions
-                    ref={context.titleTracker.ref}
-                    height={`${context.outletTracker.height}px`}
+                    refTitleTracker={context.titleTracker2.ref}
+                    refBodyTracker={context.bodyTracker2.ref}
+                    height={context.outletTracker.height}
+                    subHeight={context.outletTracker.height - context.titleTracker2.height}
                     currSession={queryResponseCurrSessions}
                     pagingState={0}
                     setPagingState={(value: number): void => {
