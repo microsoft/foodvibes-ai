@@ -320,6 +320,17 @@ export const BookmarkProduct = (dispatch: any, row: any) => {
     }
 };
 
+const HtmlEntities: Record<string, string> = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+};
+
+export const EscapeHtml = (value: string): string =>
+    value.replace(/[&<>"']/g, (character) => HtmlEntities[character]);
+
 export const FormatTimestamp = (
     inval?: string | moment.Moment,
     spaceDelimited: boolean = false,
