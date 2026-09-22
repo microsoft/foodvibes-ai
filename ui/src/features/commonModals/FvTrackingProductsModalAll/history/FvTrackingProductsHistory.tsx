@@ -6,7 +6,7 @@ import iconLocationMid from "@foodvibes/assets/location-mid.png";
 import iconNotAvailable from "@foodvibes/assets/not_available.png";
 import iconRejected from "@foodvibes/assets/rejected.png";
 import { KApiStatusLoaded, KApiStatusLoading, KApiStatusLocked, KApiStatusPreloaded, KApiStatusRejected, KApiStatusUndefined } from "@foodvibes/utils/commonConstants";
-import { ComposeIdKey, FormatTimeDelta, FormatTimestamp, GetAggregationIcon, GetAggregationLabel, GetAggregationLabelColor, GetMovementIcon, GetMovementLabel, GetMovementLabelColor, SetAggregationIndicator } from "@foodvibes/utils/commonFunctions";
+import { ComposeIdKey, EscapeHtml, FormatTimeDelta, FormatTimestamp, GetAggregationIcon, GetAggregationLabel, GetAggregationLabelColor, GetMovementIcon, GetMovementLabel, GetMovementLabelColor, SetAggregationIndicator } from "@foodvibes/utils/commonFunctions";
 import {
     ApiStatusType,
     CommonCoordinates,
@@ -262,6 +262,7 @@ const infoBoxHtmlContent = (
     const prefix2: string = prefix.replace(';"', ';position:relative;top:-10px;height:16px;"');
     const suffix: string = "</b></div>";
     const clickHandler: string = `document.getElementById('javascriptPipe').innerHTML='${idx + 1}'`;
+    const geotrackId: string = EscapeHtml(journey.geotrack_id);
 
     flds.push(
         '<div style="background-color:#ffffff;border:1px solid #000000;border-radius:6px;min-width:160px;max-width:160px;padding:0px;text-align:left;cursor:default;user-select:none;" ',
@@ -324,7 +325,7 @@ const infoBoxHtmlContent = (
     }
 
     flds.push(
-        `" title="${journey.geotrack_id}">${journey.geotrack_id.replace(':', ': ').replace('-', '- ')}</div>`,
+        `" title="${geotrackId}">${geotrackId.replace(':', ': ').replace('-', '- ')}</div>`,
     );
 
     if (showDeforestationBanner) {
